@@ -79,7 +79,7 @@ for METCUT in 130 #0 130
 #Process HiggsNuNu specific backgrounds
 #Signal files and DYtoNuNu
 
-	PREFIX=root://xrootd.grid.hep.ph.ic.ac.uk//store/user/pela/vbfinv/ntuples/V01-00/MC/
+	PREFIX=root://xrootd.grid.hep.ph.ic.ac.uk//store/user/pela/vbfinv/ntuples/
 	for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/*.dat`
 	  do
 	  echo "Processing files in "$FILELIST
@@ -98,11 +98,11 @@ for METCUT in 130 #0 130
 		do
 		WJOB=$JOB"_"$FLAVOUR
 		
-		$JOBWRAPPER "./bin/HiggsNuNu --cfg=$CONFIG --filelist="$FILELIST" --input_prefix=$PREFIX --output_name=$WJOB.root --output_folder=$OUTPUTDIR --met_cut=$METCUT $SYSTOPTIONS --channel=$CHANNEL --wstream=$FLAVOUR &> $JOBDIR/$WJOB.log" $JOBDIR/$WJOB.sh
+		$JOBWRAPPER "./bin/HiggsNuNu_Validation --cfg=$CONFIG --filelist="$FILELIST" --input_prefix=$PREFIX --output_name=$WJOB.root --output_folder=$OUTPUTDIR --met_cut=$METCUT $SYSTOPTIONS --channel=$CHANNEL --wstream=$FLAVOUR &> $JOBDIR/$WJOB.log" $JOBDIR/$WJOB.sh
                 $JOBSUBMIT $JOBDIR/$WJOB.sh                                                                                      
 	      done
 	  else  
-	      $JOBWRAPPER "./bin/HiggsNuNu --cfg=$CONFIG --filelist="$FILELIST" --input_prefix=$PREFIX --output_name=$JOB.root --output_folder=$OUTPUTDIR --met_cut=$METCUT $SYSTOPTIONS --channel=$CHANNEL &> $JOBDIR/$JOB.log" $JOBDIR/$JOB.sh
+	      $JOBWRAPPER "./bin/HiggsNuNu_Validation --cfg=$CONFIG --filelist="$FILELIST" --input_prefix=$PREFIX --output_name=$JOB.root --output_folder=$OUTPUTDIR --met_cut=$METCUT $SYSTOPTIONS --channel=$CHANNEL &> $JOBDIR/$JOB.log" $JOBDIR/$JOB.sh
 	      $JOBSUBMIT $JOBDIR/$JOB.sh
 	  fi
 	  rm tmp.txt tmp2.txt
@@ -148,11 +148,11 @@ for METCUT in 130 #0 130
 		
 		WJOB=$JOB"_"$FLAVOUR
 		
-		$JOBWRAPPER "./bin/HiggsNuNu --cfg=$CONFIG --filelist="$FILELIST" --input_prefix=$SHAREDPREFIX --output_name=$WJOB.root --output_folder=$OUTPUTDIR --met_cut=$METCUT $SYSTOPTIONS --channel=$CHANNEL --wstream=$FLAVOUR &> $JOBDIR/$WJOB.log" $JOBDIR/$WJOB.sh
+		$JOBWRAPPER "./bin/HiggsNuNu_Validation --cfg=$CONFIG --filelist="$FILELIST" --input_prefix=$SHAREDPREFIX --output_name=$WJOB.root --output_folder=$OUTPUTDIR --met_cut=$METCUT $SYSTOPTIONS --channel=$CHANNEL --wstream=$FLAVOUR &> $JOBDIR/$WJOB.log" $JOBDIR/$WJOB.sh
 		$JOBSUBMIT $JOBDIR/$WJOB.sh
 	      done
 	  else  
-	      $JOBWRAPPER "./bin/HiggsNuNu --cfg=$CONFIG --filelist="$FILELIST" --input_prefix=$SHAREDPREFIX --output_name=$JOB.root --output_folder=$OUTPUTDIR --met_cut=$METCUT $SYSTOPTIONS --channel=$CHANNEL &> $JOBDIR/$JOB.log" $JOBDIR/$JOB.sh
+	      $JOBWRAPPER "./bin/HiggsNuNu_Validation --cfg=$CONFIG --filelist="$FILELIST" --input_prefix=$SHAREDPREFIX --output_name=$JOB.root --output_folder=$OUTPUTDIR --met_cut=$METCUT $SYSTOPTIONS --channel=$CHANNEL &> $JOBDIR/$JOB.log" $JOBDIR/$JOB.sh
 	      $JOBSUBMIT $JOBDIR/$JOB.sh
 	  fi
 	  
