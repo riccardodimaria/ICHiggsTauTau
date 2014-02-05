@@ -762,33 +762,33 @@ int main(int argc, char* argv[]){
     .set_max(999);    
 
 
-//   double minmjj=900;
-//   if(do_skim)minmjj=600;
+  double minmjj=900;
+  if(do_skim)minmjj=600;
 
-//   SimpleFilter<CompositeCandidate> looseMassJetPairFilter = SimpleFilter<CompositeCandidate>("LooseMassJetPairFilter")
-//     .set_input_label("jjLeadingCandidates")
-//     .set_predicate( bind(PairMassInRange, _1,minmjj,8000) )
-//     .set_min(1)
-//     .set_max(999);
-//     
-//   SimpleFilter<CompositeCandidate> tightMassJetPairFilter = SimpleFilter<CompositeCandidate>("TightMassJetPairFilter")
-//     .set_input_label("jjLeadingCandidates")
-//     .set_predicate( bind(PairMassInRange, _1,mjj_cut,8000) )
-//     .set_min(1)
-//     .set_max(999);    
-// 
-//  
-//   SimpleFilter<CompositeCandidate> dphiJetPairFilter = SimpleFilter<CompositeCandidate>("DphiJetPairFilter")
-//     .set_input_label("jjLeadingCandidates")
-//     .set_predicate( bind(PairAbsDPhiLessThan, _1,1.0) )
-//     .set_min(1)
-//     .set_max(999);    
-// 
-//   SimpleFilter<CompositeCandidate> dphiQCDJetPairFilter = SimpleFilter<CompositeCandidate>("DphiQCDJetPairFilter")
-//     .set_input_label("jjLeadingCandidates")
-//     .set_predicate( !bind(PairAbsDPhiLessThan, _1,2.6) )
-//     .set_min(1)
-//     .set_max(999);    
+  SimpleFilter<CompositeCandidate> looseMassJetPairFilter = SimpleFilter<CompositeCandidate>("LooseMassJetPairFilter")
+    .set_input_label("jjLeadingCandidates")
+    .set_predicate( bind(PairMassInRange, _1,minmjj,8000) )
+    .set_min(1)
+    .set_max(999);
+    
+  SimpleFilter<CompositeCandidate> tightMassJetPairFilter = SimpleFilter<CompositeCandidate>("TightMassJetPairFilter")
+    .set_input_label("jjLeadingCandidates")
+    .set_predicate( bind(PairMassInRange, _1,mjj_cut,8000) )
+    .set_min(1)
+    .set_max(999);    
+
+ 
+  SimpleFilter<CompositeCandidate> dphiJetPairFilter = SimpleFilter<CompositeCandidate>("DphiJetPairFilter")
+    .set_input_label("jjLeadingCandidates")
+    .set_predicate( bind(PairAbsDPhiLessThan, _1,1.0) )
+    .set_min(1)
+    .set_max(999);    
+
+  SimpleFilter<CompositeCandidate> dphiQCDJetPairFilter = SimpleFilter<CompositeCandidate>("DphiQCDJetPairFilter")
+    .set_input_label("jjLeadingCandidates")
+    .set_predicate( !bind(PairAbsDPhiLessThan, _1,2.6) )
+    .set_min(1)
+    .set_max(999);    
 
 
  
@@ -830,7 +830,7 @@ int main(int argc, char* argv[]){
   // Selection Modules
   // ------------------------------------------------------------------------------------  
 
-  /*
+  
   HinvWeights hinvWeights = HinvWeights("HinvWeights")
     .set_era(era)
     .set_mc(mc)
@@ -896,29 +896,29 @@ int main(int argc, char* argv[]){
 	xsWeights.SetDYInputYields(30459503.0, 24045248.0, 21852156.0, 11015445.0, 6402827.0);
       }
     }
-  }*/
+  }
 
   // ------------------------------------------------------------------------------------
   // Gen particle selection modules
   // ------------------------------------------------------------------------------------
 
-//   int lFlavour = 1;
-//   //if (channel == channel::enu) lFlavour = 11;
-//   //else if (channel == channel::munu) lFlavour = 13;
-//   //else if (channel == channel::taunu) lFlavour = 15;
-//   if (wstream == "enu") lFlavour = 11;
-//   else if (wstream == "munu") lFlavour = 13;
-//   else if (wstream == "taunu") lFlavour = 15;
-// 
-// 
-// 
-//   HinvWDecay WtoLeptonFilter = HinvWDecay("WtoLeptonSelector",lFlavour);
-// 
-//   //if (wstream == "ee") lFlavour = 11;
-//   //else if (wstream == "mumu") lFlavour = 13;
-//   //else if (wstream == "tautau") lFlavour = 15;
-//   //do only muons for Znunu estimate...
-//   HinvZDecay ZmassFilter = HinvZDecay("ZmassFilter",13,60,120);
+  int lFlavour = 1;
+  //if (channel == channel::enu) lFlavour = 11;
+  //else if (channel == channel::munu) lFlavour = 13;
+  //else if (channel == channel::taunu) lFlavour = 15;
+  if (wstream == "enu") lFlavour = 11;
+  else if (wstream == "munu") lFlavour = 13;
+  else if (wstream == "taunu") lFlavour = 15;
+
+
+
+  HinvWDecay WtoLeptonFilter = HinvWDecay("WtoLeptonSelector",lFlavour);
+
+  //if (wstream == "ee") lFlavour = 11;
+  //else if (wstream == "mumu") lFlavour = 13;
+  //else if (wstream == "tautau") lFlavour = 15;
+  //do only muons for Znunu estimate...
+  HinvZDecay ZmassFilter = HinvZDecay("ZmassFilter",13,60,120);
 
 /*
   // ------------------------------------------------------------------------------------
@@ -1137,7 +1137,7 @@ int main(int argc, char* argv[]){
     .set_fs(fs)
     .set_met_label(mettype)
     .set_dijet_label("jjCandidates")
-    .set_sel_label("HLTMetClean")
+    .set_sel_label("GenLevel")
     .set_is_data(is_data)
     .set_channel(channel_str);
   
@@ -1306,8 +1306,81 @@ int main(int argc, char* argv[]){
 
   //_____________________________________________________________________________________
     
-  analysis.AddModule(&preSeletionPlots);  
+  if (!is_data) {
+
+    //do W streaming to e,mu,tau
+    if(output_name.find("JetsToLNu") != output_name.npos || output_name.find("EWK-W2j") != output_name.npos) {
+      if(wstream != "nunu") analysis.AddModule(&WtoLeptonFilter);
+    }
     
+    if (ignoreLeptons) analysis.AddModule(&ZmassFilter);
+  
+    if (!do_skim){
+      analysis.AddModule(&pileupWeight);
+      analysis.AddModule(&pileupWeight_up);
+      analysis.AddModule(&pileupWeight_down);
+
+      //just apply W and Z weights
+      //analysis.AddModule(&xsWeights); //NOTE (J.Pela): I commented this xsec weights already applied 
+    }
+  }
+   
+  //analysis.AddModule(&dataMCTriggerPathFilter); //NOTE (J.Pela): I commented this since do not want to filter on trig
+ 
+  
+  if (is_data && !is_embedded ) {
+    //FIXME: do MetFilters also on MC, but not saved right now in MC...
+    analysis.AddModule(&metFilters);
+    analysis.AddModule(&metLaserFilters);
+    //if (printEventList) analysis.AddModule(&hinvPrintList);
+  }
+  
+  //jet modules
+  analysis.AddModule(&jetIDFilter);
+  //don't want pile-up jets to calculate HT,MHT...
+  analysis.AddModule(&alljetsCopyCollection);
+
+
+  //prepare collections of veto leptons
+  analysis.AddModule(&vetoElectronCopyCollection);
+  analysis.AddModule(&vetoElectronFilter);
+  analysis.AddModule(&vetoElectronIso);
+  analysis.AddModule(&vetoMuonCopyCollection);
+  analysis.AddModule(&vetoMuonFilter);
+  // analysis.AddModule(&vetoMuonNoIsoCopyCollection);
+  //analysis.AddModule(&vetoMuonNoIsoFilter);
+  
+  //filter leptons before making jet pairs and changing MET...
+  analysis.AddModule(&selElectronCopyCollection);
+  analysis.AddModule(&selElectronFilter);
+  analysis.AddModule(&selElectronIso);
+  analysis.AddModule(&selMuonCopyCollection);
+  analysis.AddModule(&selMuonFilter);
+  analysis.AddModule(&elecMuonOverlapFilter);
+
+  //filter taus for plots
+  analysis.AddModule(&tauPtEtaFilter);
+  
+  //add met without leptons for plots
+  analysis.AddModule(&metNoMuons);
+  analysis.AddModule(&metNoElectrons);
+  analysis.AddModule(&metNoENoMu);
+  
+  //if (printEventList) analysis.AddModule(&hinvPrintList);
+
+  //deal with removing overlap with selected leptons
+  analysis.AddModule(&jetMuonOverlapFilter);
+  analysis.AddModule(&jetElecOverlapFilter);
+  //no need to clean taus, we don't do it in the signal selection.
+  //if (channel == channel::taunu) analysis.AddModule(&jetTauOverlapFilter);
+
+  //Module to do jet smearing and systematics
+  if (!do_skim) analysis.AddModule(&ModifyJetMET);
+  
+  analysis.AddModule(&preSeletionPlots);  
+  
+  
+  
   
   
   //_____________________________________________________________________________________
