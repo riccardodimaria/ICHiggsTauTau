@@ -53,7 +53,7 @@ else :
 if isEmbedded:
   print 'Setting up for embedded processing...'
 
-if not(release == '42X' or release == '53X'):
+if not(release == '42X' or release == '53X' or release == '62X'):
   print 'Release not recognised, exiting!'
   sys.exit(1)
 else:
@@ -104,6 +104,7 @@ process.goodOfflinePrimaryVertices = cms.EDFilter(
 ################################################################
 ### Start settting up the PAT default sequence
 ################################################################
+
 process.load("PhysicsTools.PatAlgos.patSequences_cff")
 from PhysicsTools.PatAlgos.tools.coreTools import *
 from PhysicsTools.PatAlgos.tools.pfTools import *
@@ -139,53 +140,55 @@ if (release == '42X'):
 #   doJetID      = True,
 #   jetIdLabel   = "ak5"
 #   )
-switchJetCollection(process,
-  cms.InputTag('ak5PFJets'),
-  doJTA=True,
-  doBTagging=True,
-  jetCorrLabel=('AK5PF', ['L1FastJet','L2Relative', 'L3Absolute','L2L3Residual'] if isData else ['L1FastJet','L2Relative', 'L3Absolute']),
-  doType1MET=True,
-  genJetCollection=cms.InputTag("ak5GenJetsNoNuBSM"),
-  doJetID = True,
-  jetIdLabel = "ak5"
-  )
-process.patJets.embedGenPartonMatch = cms.bool(False)
+if(release != '62X'):
+  switchJetCollection(process,
+                      cms.InputTag('ak5PFJets'),
+                      doJTA=True,
+                      doBTagging=True,
+                      jetCorrLabel=('AK5PF', ['L1FastJet','L2Relative', 'L3Absolute','L2L3Residual'] if isData else ['L1FastJet','L2Relative', 'L3Absolute']),
+                      doType1MET=True,
+                      genJetCollection=cms.InputTag("ak5GenJetsNoNuBSM"),
+                      doJetID = True,
+                      jetIdLabel = "ak5"
+                      )
+  process.patJets.embedGenPartonMatch = cms.bool(False)
 # process.patJetsAK5PF.embedGenPartonMatch = cms.bool(False)
-process.selectedPatJets.cut = cms.string("pt>10. && abs(eta)<5.")
+  process.selectedPatJets.cut = cms.string("pt>10. && abs(eta)<5.")
 #print "cutting selected pat jets"
 
 
 ###############
 #assorted things
 ##############
-process.selectedPatMuons.cut = cms.string("isGlobalMuon && pt>10. && abs(eta)<2.5")
-process.selectedPatElectrons.cut = cms.string("pt>10. && abs(eta)<2.5")
+  process.selectedPatMuons.cut = cms.string("isGlobalMuon && pt>10. && abs(eta)<2.5")
+  process.selectedPatElectrons.cut = cms.string("pt>10. && abs(eta)<2.5")
 
 ################################################################
 ### Set up METs
 ################################################################
-from PhysicsTools.PatAlgos.tools.metTools import addPfMET
-addPfMET(process, 'PF')
+if(release != '62X'):
+  from PhysicsTools.PatAlgos.tools.metTools import addPfMET
+  addPfMET(process, 'PF')
 
-process.patMETsNoCorr = process.patMETs.clone(
+  process.patMETsNoCorr = process.patMETs.clone(
     metSource  = cms.InputTag("pfMet")
       )
 
-process.load("JetMETCorrections.Type1MET.pfMETCorrectionType0_cfi")
-process.pfType1CorrectedMet.applyType0Corrections = cms.bool(False) #set to false because this module does track based corrections
-process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( #this section does pf based type0 corrections as recommended by workbookmetanalysis
-  cms.InputTag('pfMETcorrType0'),
-  cms.InputTag('pfJetMETcorr', 'type1')
-  )
+  process.load("JetMETCorrections.Type1MET.pfMETCorrectionType0_cfi")
+  process.pfType1CorrectedMet.applyType0Corrections = cms.bool(False) #set to false because this module does track based corrections
+  process.pfType1CorrectedMet.srcType1Corrections = cms.VInputTag( #this section does pf based type0 corrections as recommended by workbookmetanalysis
+    cms.InputTag('pfMETcorrType0'),
+    cms.InputTag('pfJetMETcorr', 'type1')
+    )
 
 # Get PFMET from runMEtUncertainties
-from PhysicsTools.PatUtils.tools.metUncertaintyTools import runMEtUncertainties
-process.load("JetMETCorrections.Type1MET.pfMETsysShiftCorrections_cfi")
+  from PhysicsTools.PatUtils.tools.metUncertaintyTools import runMEtUncertainties
+  process.load("JetMETCorrections.Type1MET.pfMETsysShiftCorrections_cfi")
 
-if isData:
-  print "not doing runmetunc for data"
-else:
-  runMEtUncertainties(process,
+  if isData:
+    print "not doing runmetunc for data"
+  else:
+    runMEtUncertainties(process,
                       electronCollection = cms.InputTag('cleanPatElectrons'),
                       photonCollection = '',
                       muonCollection = 'cleanPatMuons',
@@ -201,8 +204,8 @@ else:
                       #sysShiftCorrParameter = process.pfMEtSysShiftCorrParameters_2012runAvsNvtx_mc,
                       doApplySysShiftCorr = False,
                       )
-  process.producePatPFMETCorrections.replace(process.patPFJetMETtype2Corr,process.patPFJetMETtype2Corr + process.type0PFMEtCorrectionPFCandToVertexAssociation + process.patPFMETtype0Corr)
-  process.icJetsmearedcentralJets = cms.EDProducer('ICPatJetCandidateProducer',
+    process.producePatPFMETCorrections.replace(process.patPFJetMETtype2Corr,process.patPFJetMETtype2Corr + process.type0PFMEtCorrectionPFCandToVertexAssociation + process.patPFMETtype0Corr)
+    process.icJetsmearedcentralJets = cms.EDProducer('ICPatJetCandidateProducer',
                                                    
                                                    branchName = cms.untracked.string("jetsmearedcentralJets"),
                                                    
@@ -213,7 +216,7 @@ else:
                                                    maxEta = cms.double(5.0)
                                                    
                                                    )
-  process.icJetsmearedresupJets = cms.EDProducer('ICPatJetCandidateProducer',
+    process.icJetsmearedresupJets = cms.EDProducer('ICPatJetCandidateProducer',
                                                  
                                                  branchName = cms.untracked.string("jetsmearedresupJets"),
                                                  
@@ -224,7 +227,7 @@ else:
                                                  maxEta = cms.double(5.0)
                                                  
                                                  )
-  process.icJetsmearedresdownJets = cms.EDProducer('ICPatJetCandidateProducer',
+    process.icJetsmearedresdownJets = cms.EDProducer('ICPatJetCandidateProducer',
                                                    
                                                    branchName = cms.untracked.string("jetsmearedresdownJets"),
                                                    
@@ -235,32 +238,32 @@ else:
                                                    maxEta = cms.double(5.0)
 
                                                    )
-  process.icpattype1correctedPfMetProducer = cms.EDProducer('ICMetProducer',
+    process.icpattype1correctedPfMetProducer = cms.EDProducer('ICMetProducer',
                                                    inputLabel = cms.InputTag("patType1CorrectedPFMet"),
                                                    branchName = cms.untracked.string("pattype1correctedpfMet"),
                                                    addGen = cms.untracked.bool(False),
                                                    InputSig = cms.untracked.string("")
                                                    )
-  process.icPfMetJetResUpProducer = cms.EDProducer('ICMetProducer',
+    process.icPfMetJetResUpProducer = cms.EDProducer('ICMetProducer',
                                                    inputLabel = cms.InputTag("patType1CorrectedPFMetJetResUp"),
                                                    branchName = cms.untracked.string("pfMetJetResUp"),
                                                    addGen = cms.untracked.bool(False),
                                                    InputSig = cms.untracked.string("")
                                                    )
-  process.icPfMetJetResDownProducer = cms.EDProducer('ICMetProducer',
+    process.icPfMetJetResDownProducer = cms.EDProducer('ICMetProducer',
                                                      inputLabel = cms.InputTag("patType1CorrectedPFMetJetResDown"),
                                                      branchName = cms.untracked.string("pfMetJetResDown"),
                                                      addGen = cms.untracked.bool(False),
                                                      InputSig = cms.untracked.string("")
                                                      )
   
-  process.icPfMetJetEnUpProducer = cms.EDProducer('ICMetProducer',
+    process.icPfMetJetEnUpProducer = cms.EDProducer('ICMetProducer',
                                                   inputLabel = cms.InputTag("patType1CorrectedPFMetJetEnUp"),
                                                   branchName = cms.untracked.string("pfMetJetEnUp"),
                                                   addGen = cms.untracked.bool(False),
                                                   InputSig = cms.untracked.string("")
                                                   )
-  process.icPfMetJetEnDownProducer = cms.EDProducer('ICMetProducer',
+    process.icPfMetJetEnDownProducer = cms.EDProducer('ICMetProducer',
                                                     inputLabel = cms.InputTag("patType1CorrectedPFMetJetEnDown"),
                                                     branchName = cms.untracked.string("pfMetJetEnDown"),
                                                     addGen = cms.untracked.bool(False),
@@ -268,37 +271,37 @@ else:
                                                     )
   
   
-  process.icPfMetUnclusteredEnUpProducer = cms.EDProducer('ICMetProducer',
+    process.icPfMetUnclusteredEnUpProducer = cms.EDProducer('ICMetProducer',
                                                           inputLabel = cms.InputTag("patType1CorrectedPFMetUnclusteredEnUp"),
                                                           branchName = cms.untracked.string("pfMetUnclusteredEnUp"),
                                                           addGen = cms.untracked.bool(False),
                                                           InputSig = cms.untracked.string("")
                                                           )
-  process.icPfMetUnclusteredEnDownProducer = cms.EDProducer('ICMetProducer',
+    process.icPfMetUnclusteredEnDownProducer = cms.EDProducer('ICMetProducer',
                                                             inputLabel = cms.InputTag("patType1CorrectedPFMetUnclusteredEnDown"),
                                                             branchName = cms.untracked.string("pfMetUnclusteredEnDown"),
                                                             addGen = cms.untracked.bool(False),
                                                             InputSig = cms.untracked.string("")
                                                             )
   
-  process.icMetUncertaintySequence = cms.Sequence(
-    process.icPfMetJetResDownProducer
-    +process.icPfMetJetResUpProducer
-    +process.icJetsmearedcentralJets
-    +process.icJetsmearedresupJets
-    +process.icJetsmearedresdownJets
-    +process.icPfMetJetEnDownProducer
-    +process.icPfMetJetEnUpProducer
-    +process.icPfMetUnclusteredEnDownProducer
-    +process.icPfMetUnclusteredEnUpProducer
-    +process.icpattype1correctedPfMetProducer
-    )
+    process.icMetUncertaintySequence = cms.Sequence(
+      process.icPfMetJetResDownProducer
+      +process.icPfMetJetResUpProducer
+      +process.icJetsmearedcentralJets
+      +process.icJetsmearedresupJets
+      +process.icJetsmearedresdownJets
+      +process.icPfMetJetEnDownProducer
+      +process.icPfMetJetEnUpProducer
+      +process.icPfMetUnclusteredEnDownProducer
+      +process.icPfMetUnclusteredEnUpProducer
+      +process.icpattype1correctedPfMetProducer
+      )
   
   # Fix Type0 correction module
-  process.patPFMETtype0Corr.correction.par3 = cms.double(0.909209)
-  process.patPFMETtype0Corr.correction.par2 = cms.double(0.0303531)
-  process.patPFMETtype0Corr.correction.par1 = cms.double(-0.703151)
-  process.patPFMETtype0Corr.correction.par0 = cms.double(0.0)
+    process.patPFMETtype0Corr.correction.par3 = cms.double(0.909209)
+    process.patPFMETtype0Corr.correction.par2 = cms.double(0.0303531)
+    process.patPFMETtype0Corr.correction.par1 = cms.double(-0.703151)
+    process.patPFMETtype0Corr.correction.par0 = cms.double(0.0)
                                                                             
 
 #commented out because they aren't used by chayanit
@@ -355,51 +358,53 @@ process.icPfMetTauEnDownProducer = cms.EDProducer('ICMetProducer',
 ################################################################
 ### Configure kt6PFJets for lepton isolation
 ################################################################
-process.load('RecoJets.JetProducers.kt4PFJets_cfi')
-process.kt6PFJetsForLeptons = process.kt4PFJets.clone( rParam = 0.6, doRhoFastjet = True )
-process.kt6PFJetsForLeptons.Rho_EtaMax = cms.double(2.5)
+if(release!='62X'):
+  process.load('RecoJets.JetProducers.kt4PFJets_cfi')
+  process.kt6PFJetsForLeptons = process.kt4PFJets.clone( rParam = 0.6, doRhoFastjet = True )
+  process.kt6PFJetsForLeptons.Rho_EtaMax = cms.double(2.5)
 
 
 ################################################################
 ### PAT Selections
 ################################################################
-process.selectedPatTaus.cut = 'pt > 18. & abs(eta) < 2.6 & tauID("decayModeFinding") > 0.5'
-process.selectedAndFilteredPatJets = process.selectedPatJets.clone(
-  cut = 'pt > 15. & abs(eta) < 100.'
-  )
+  process.selectedPatTaus.cut = 'pt > 18. & abs(eta) < 2.6 & tauID("decayModeFinding") > 0.5'
+  process.selectedAndFilteredPatJets = process.selectedPatJets.clone(
+    cut = 'pt > 15. & abs(eta) < 100.'
+    )
 
 ################################################################
 ### Configuration of Electron ID MVA
 ################################################################
-process.load("EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi")
-process.mvaElectronIDSequence = cms.Sequence(process.mvaTrigV0 + process.mvaNonTrigV0)
+  process.load("EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi")
+  process.mvaElectronIDSequence = cms.Sequence(process.mvaTrigV0 + process.mvaNonTrigV0)
 
 
 ################################################################
 ### Additional collections for soft lepton + MET
 ################################################################
 process.icSoftLeptonSequence = cms.Sequence( )
-process.load("UserCode.ICHiggsTauTau.emulateHLTPFTau_cff")
-
-process.icHLTTauProducer = cms.EDProducer('ICPFTauProducer',
-    input = cms.InputTag("hltPFTaus"),
-    branchName = cms.string("hltTaus"),
-    vertexCollection = cms.InputTag("goodOfflinePrimaryVertices"),
-    trackCollection = cms.InputTag("generalTracks"),
-    storeAndRequestTrackIds = cms.bool(False),
-    tauIDs = cms.PSet(
-        decayModeFinding = cms.InputTag("hltPFTauTrackFindingDiscriminator"),
-        byIsolation = cms.InputTag("hltPFTauLooseIsolationDiscriminator")
-        ),
-    tauIDCuts = cms.PSet(
-        hltPFTauTrackFindingDiscriminator = cms.double(0.5),
-        hltPFTauLooseIsolationDiscriminator = cms.double(0.5)
-        ),
-    minPt = cms.double(19),
-    maxEta = cms.double(2.6),
-    requireDecayMode = cms.bool(False)
-    )
-process.hltPFTauSequence = cms.Sequence(
+if(release != '62X'):
+  process.load("UserCode.ICHiggsTauTau.emulateHLTPFTau_cff")
+  
+  process.icHLTTauProducer = cms.EDProducer('ICPFTauProducer',
+                                            input = cms.InputTag("hltPFTaus"),
+                                            branchName = cms.string("hltTaus"),
+                                            vertexCollection = cms.InputTag("goodOfflinePrimaryVertices"),
+                                            trackCollection = cms.InputTag("generalTracks"),
+                                            storeAndRequestTrackIds = cms.bool(False),
+                                            tauIDs = cms.PSet(
+      decayModeFinding = cms.InputTag("hltPFTauTrackFindingDiscriminator"),
+      byIsolation = cms.InputTag("hltPFTauLooseIsolationDiscriminator")
+      ),
+                                            tauIDCuts = cms.PSet(
+      hltPFTauTrackFindingDiscriminator = cms.double(0.5),
+      hltPFTauLooseIsolationDiscriminator = cms.double(0.5)
+      ),
+                                            minPt = cms.double(19),
+                                            maxEta = cms.double(2.6),
+                                            requireDecayMode = cms.bool(False)
+                                            )
+  process.hltPFTauSequence = cms.Sequence(
     process.hltAK5PFJetTracksAssociatorAtVertex+
     process.hltPFTauTagInfo+process.hltPFTaus+
     process.hltPFTauTrackFindingDiscriminator+
@@ -451,7 +456,8 @@ process.icL1ExtraHTTProducer = cms.EDProducer('ICL1ExtraHTTProducerModule',
 
 ## Only add HLT tau simulation in MC
 if not isData:
-  process.icSoftLeptonSequence += cms.Sequence(
+  if(release != '62X'):
+    process.icSoftLeptonSequence += cms.Sequence(
       process.hltPFTauSequence
       +process.icHLTTauProducer
       )
@@ -483,91 +489,92 @@ process.icSoftLeptonSequence += cms.Sequence(
 ################################################################
 ### Configuration of MVA MET
 ################################################################
-if (release == '53X'):
+if(release != '62X'):
+  if (release == '53X'):
     process.load("JetMETCorrections.METPUSubtraction.mvaPFMET_leptons_cff")
     from UserCode.ICHiggsTauTau.mvaPFMET_cff_leptons_53X_Dec2012 import mvaMetPairs
-else:
+  else:
     process.load("RecoMET.METProducers.mvaPFMET_cff_leptons")
     process.load("UserCode.ICHiggsTauTau.mvaPFMET_cff_leptons")
 
-process.mvaMetPairsMT = mvaMetPairs.clone(
-  srcLeg1 = cms.InputTag('pfAllMuons'),
-  srcLeg2 = cms.InputTag('selectedPatTaus'),
-  leg1Pt = cms.double(7.0), 
-  leg1Eta = cms.double(2.6),
-  leg2Pt = cms.double(18.0),
-  leg2Eta = cms.double(2.6),
-  minDeltaR = cms.double(0.49)
-  )
-process.mvaMetPairsET = mvaMetPairs.clone(
-  srcLeg1 = cms.InputTag('gsfElectrons'),
-  srcLeg2 = cms.InputTag('selectedPatTaus'),
-  leg1Pt = cms.double(10.0),
-  leg1Eta = cms.double(2.6),
-  leg2Pt = cms.double(18.0),
-  leg2Eta = cms.double(2.6),
-  minDeltaR = cms.double(0.49)
-  )
-process.mvaMetPairsEM = mvaMetPairs.clone(
-  srcLeg1 = cms.InputTag('gsfElectrons'),
-  srcLeg2 = cms.InputTag('pfAllMuons'),
-  leg1Pt = cms.double(9.5),
-  leg1Eta = cms.double(2.6),
-  leg2Pt = cms.double(9.5),
-  leg2Eta = cms.double(2.6),
-  minDeltaR = cms.double(0.29)
-  )
-process.mvaMetPairsMM = mvaMetPairs.clone(
-  srcLeg1 = cms.InputTag('pfAllMuons'),
-  srcLeg2 = cms.InputTag('pfAllMuons'),
-  leg1Pt = cms.double(18.0),
-  leg1Eta = cms.double(2.6),
-  leg2Pt = cms.double(9.5),
-  leg2Eta = cms.double(2.6),
-  minDeltaR = cms.double(0.0)
-  )
-process.mvaMetPairsEE = mvaMetPairs.clone(
-  srcLeg1 = cms.InputTag('gsfElectrons'),
-  srcLeg2 = cms.InputTag('gsfElectrons'),
-  leg1Pt = cms.double(18.0),
-  leg1Eta = cms.double(2.6),
-  leg2Pt = cms.double(9.5),
-  leg2Eta = cms.double(2.6),
-  minDeltaR = cms.double(0.0)
-  )
+  process.mvaMetPairsMT = mvaMetPairs.clone(
+    srcLeg1 = cms.InputTag('pfAllMuons'),
+    srcLeg2 = cms.InputTag('selectedPatTaus'),
+    leg1Pt = cms.double(7.0), 
+    leg1Eta = cms.double(2.6),
+    leg2Pt = cms.double(18.0),
+    leg2Eta = cms.double(2.6),
+    minDeltaR = cms.double(0.49)
+    )
+  process.mvaMetPairsET = mvaMetPairs.clone(
+    srcLeg1 = cms.InputTag('gsfElectrons'),
+    srcLeg2 = cms.InputTag('selectedPatTaus'),
+    leg1Pt = cms.double(10.0),
+    leg1Eta = cms.double(2.6),
+    leg2Pt = cms.double(18.0),
+    leg2Eta = cms.double(2.6),
+    minDeltaR = cms.double(0.49)
+    )
+  process.mvaMetPairsEM = mvaMetPairs.clone(
+    srcLeg1 = cms.InputTag('gsfElectrons'),
+    srcLeg2 = cms.InputTag('pfAllMuons'),
+    leg1Pt = cms.double(9.5),
+    leg1Eta = cms.double(2.6),
+    leg2Pt = cms.double(9.5),
+    leg2Eta = cms.double(2.6),
+    minDeltaR = cms.double(0.29)
+    )
+  process.mvaMetPairsMM = mvaMetPairs.clone(
+    srcLeg1 = cms.InputTag('pfAllMuons'),
+    srcLeg2 = cms.InputTag('pfAllMuons'),
+    leg1Pt = cms.double(18.0),
+    leg1Eta = cms.double(2.6),
+    leg2Pt = cms.double(9.5),
+    leg2Eta = cms.double(2.6),
+    minDeltaR = cms.double(0.0)
+    )
+  process.mvaMetPairsEE = mvaMetPairs.clone(
+    srcLeg1 = cms.InputTag('gsfElectrons'),
+    srcLeg2 = cms.InputTag('gsfElectrons'),
+    leg1Pt = cms.double(18.0),
+    leg1Eta = cms.double(2.6),
+    leg2Pt = cms.double(9.5),
+    leg2Eta = cms.double(2.6),
+    minDeltaR = cms.double(0.0)
+    )
 
-process.pfMEtMVAsequence += process.mvaMetPairsMT
-process.pfMEtMVAsequence += process.mvaMetPairsET
-process.pfMEtMVAsequence += process.mvaMetPairsEM
-if isZStudy:
-  process.pfMEtMVAsequence += process.mvaMetPairsMM
-  process.pfMEtMVAsequence += process.mvaMetPairsEE
-
-if isData:
-  process.calibratedAK5PFJetsForPFMEtMVA.correctors = cms.vstring("ak5PFL1FastL2L3Residual")
-else:
-  process.calibratedAK5PFJetsForPFMEtMVA.correctors = cms.vstring("ak5PFL1FastL2L3")
-
-if (release == '42X'):
-  process.pfMEtMVA.inputFileNames = cms.PSet(
+  process.pfMEtMVAsequence += process.mvaMetPairsMT
+  process.pfMEtMVAsequence += process.mvaMetPairsET
+  process.pfMEtMVAsequence += process.mvaMetPairsEM
+  if isZStudy:
+    process.pfMEtMVAsequence += process.mvaMetPairsMM
+    process.pfMEtMVAsequence += process.mvaMetPairsEE
+    
+  if isData:
+    process.calibratedAK5PFJetsForPFMEtMVA.correctors = cms.vstring("ak5PFL1FastL2L3Residual")
+  else:
+    process.calibratedAK5PFJetsForPFMEtMVA.correctors = cms.vstring("ak5PFL1FastL2L3")
+    
+  if (release == '42X'):
+    process.pfMEtMVA.inputFileNames = cms.PSet(
       DPhi = cms.FileInPath('pharris/MVAMet/data/gbrmetphi_42.root'),
       CovU2 = cms.FileInPath('pharris/MVAMet/data/gbrmetu2cov_42.root'),
       U = cms.FileInPath('pharris/MVAMet/data/gbrmet_42.root'),
       CovU1 = cms.FileInPath('pharris/MVAMet/data/gbrmetu1cov_42.root')
       )
-  process.pfMEtAllPairsMVA.inputFileNames = cms.PSet(
+    process.pfMEtAllPairsMVA.inputFileNames = cms.PSet(
       DPhi = cms.FileInPath('pharris/MVAMet/data/gbrmetphi_42.root'),
       CovU2 = cms.FileInPath('pharris/MVAMet/data/gbrmetu2cov_42.root'),
       U = cms.FileInPath('pharris/MVAMet/data/gbrmet_42.root'),
       CovU1 = cms.FileInPath('pharris/MVAMet/data/gbrmetu1cov_42.root')
       )
 
-process.patPFMetByMVA = process.patMETs.clone(
+  process.patPFMetByMVA = process.patMETs.clone(
     metSource = cms.InputTag('pfMEtMVA'),
     addMuonCorrections = cms.bool(False),
     genMETSource = cms.InputTag('genMetTrue'),
     addGenMET = cms.bool(False)
-)
+    )
 
 
 ################################################################
@@ -656,6 +663,7 @@ if (release == '53X'):
                            residualsTxt     = cms.FileInPath("RecoJets/JetProducers/data/dummy.txt"),
   )
 else:
+  if(release != '62X'):
     process.load("CMGTools.External.pujetidsequence_cff")
     process.puJetId.jets = cms.InputTag("selectedPatJetsAK5PF")
     process.puJetMva.jets = cms.InputTag("selectedPatJetsAK5PF")
@@ -663,24 +671,25 @@ else:
 ################################################################
 ### Lepton Isolation
 ################################################################
-from CommonTools.ParticleFlow.Tools.pfIsolation import setupPFElectronIso, setupPFMuonIso
-process.eleIsoSequence = setupPFElectronIso(process, 'gsfElectrons')
-process.muIsoSequence = setupPFMuonIso(process, 'pfAllMuons')
-process.eleIsoSequence.remove(process.elPFIsoValueCharged03NoPFIdPFIso)
-process.eleIsoSequence.remove(process.elPFIsoValueChargedAll03NoPFIdPFIso)
-process.eleIsoSequence.remove(process.elPFIsoValueGamma03NoPFIdPFIso)
-process.eleIsoSequence.remove(process.elPFIsoValueNeutral03NoPFIdPFIso)
-process.eleIsoSequence.remove(process.elPFIsoValuePU03NoPFIdPFIso)
-process.eleIsoSequence.remove(process.elPFIsoValueCharged04NoPFIdPFIso)
-process.eleIsoSequence.remove(process.elPFIsoValueChargedAll04NoPFIdPFIso)
-process.eleIsoSequence.remove(process.elPFIsoValueGamma04NoPFIdPFIso)
-process.eleIsoSequence.remove(process.elPFIsoValueNeutral04NoPFIdPFIso)
-process.eleIsoSequence.remove(process.elPFIsoValuePU04NoPFIdPFIso)
-process.elPFIsoValueGamma04PFIdPFIso.deposits[0].vetos      = cms.vstring('EcalEndcaps:ConeVeto(0.08)','EcalBarrel:ConeVeto(0.08)')
-process.elPFIsoValueNeutral04PFIdPFIso.deposits[0].vetos    = cms.vstring()
-process.elPFIsoValuePU04PFIdPFIso.deposits[0].vetos         = cms.vstring()
-process.elPFIsoValueCharged04PFIdPFIso.deposits[0].vetos    = cms.vstring('EcalEndcaps:ConeVeto(0.015)')
-process.elPFIsoValueChargedAll04PFIdPFIso.deposits[0].vetos = cms.vstring('EcalEndcaps:ConeVeto(0.015)','EcalBarrel:ConeVeto(0.01)')
+if(release != '62X'):
+  from CommonTools.ParticleFlow.Tools.pfIsolation import setupPFElectronIso, setupPFMuonIso
+  process.eleIsoSequence = setupPFElectronIso(process, 'gsfElectrons')
+  process.muIsoSequence = setupPFMuonIso(process, 'pfAllMuons')
+  process.eleIsoSequence.remove(process.elPFIsoValueCharged03NoPFIdPFIso)
+  process.eleIsoSequence.remove(process.elPFIsoValueChargedAll03NoPFIdPFIso)
+  process.eleIsoSequence.remove(process.elPFIsoValueGamma03NoPFIdPFIso)
+  process.eleIsoSequence.remove(process.elPFIsoValueNeutral03NoPFIdPFIso)
+  process.eleIsoSequence.remove(process.elPFIsoValuePU03NoPFIdPFIso)
+  process.eleIsoSequence.remove(process.elPFIsoValueCharged04NoPFIdPFIso)
+  process.eleIsoSequence.remove(process.elPFIsoValueChargedAll04NoPFIdPFIso)
+  process.eleIsoSequence.remove(process.elPFIsoValueGamma04NoPFIdPFIso)
+  process.eleIsoSequence.remove(process.elPFIsoValueNeutral04NoPFIdPFIso)
+  process.eleIsoSequence.remove(process.elPFIsoValuePU04NoPFIdPFIso)
+  process.elPFIsoValueGamma04PFIdPFIso.deposits[0].vetos      = cms.vstring('EcalEndcaps:ConeVeto(0.08)','EcalBarrel:ConeVeto(0.08)')
+  process.elPFIsoValueNeutral04PFIdPFIso.deposits[0].vetos    = cms.vstring()
+  process.elPFIsoValuePU04PFIdPFIso.deposits[0].vetos         = cms.vstring()
+  process.elPFIsoValueCharged04PFIdPFIso.deposits[0].vetos    = cms.vstring('EcalEndcaps:ConeVeto(0.015)')
+  process.elPFIsoValueChargedAll04PFIdPFIso.deposits[0].vetos = cms.vstring('EcalEndcaps:ConeVeto(0.015)','EcalBarrel:ConeVeto(0.01)')
 
 ################################################################
 ### Final PAT config
@@ -711,14 +720,15 @@ if (release == '42X'):
 
 if isEmbedded:
   process.jetTracksAssociatorAtVertex.tracks = cms.InputTag("tmfTracks")
-  
-process.btaggingAOD = cms.Sequence(
-  process.impactParameterTagInfosAOD
-  +process.secondaryVertexTagInfosAOD
-  +process.simpleSecondaryVertexHighEffBJetTagsAOD
-  +process.simpleSecondaryVertexHighPurBJetTagsAOD
-  +process.combinedSecondaryVertexBJetTagsAOD
-  )
+
+if (release!='62X'):  
+  process.btaggingAOD = cms.Sequence(
+    process.impactParameterTagInfosAOD
+    +process.secondaryVertexTagInfosAOD
+    +process.simpleSecondaryVertexHighEffBJetTagsAOD
+    +process.simpleSecondaryVertexHighPurBJetTagsAOD
+    +process.combinedSecondaryVertexBJetTagsAOD
+    )
 
 ################################################################
 ### MC specific config
@@ -764,28 +774,40 @@ if (release == '53X'):
       #'file:/afs/cern.ch/work/p/pdunne/public/VBF_HToTauTau_M-125-53X.root'
       #'file:/afs/cern.ch/work/a/amagnan/CMSSW_5_3_11_patch6/src/UserCode/ICHiggsTauTau/python/testFile_W2j.root'       
       #'file:/afs/cern.ch/work/a/amagnan/CMSSW_5_3_11_patch6/src/UserCode/ICHiggsTauTau/python/embedded_mcW2jTestfile.root'
-      #'root://gfe02.grid.hep.ph.ic.ac.uk:1097/store/mc/Summer12_DR53X/W3JetsToLNu_TuneZ2Star_8TeV-madgraph/AODSIM/PU_S10_START53_V7A-v1/0000/00514902-F205-E211-83F0-001E6739753A.root'
-'file:/afs/cern.ch/work/p/pela/public/samples/VBF_HToInv_M-125_13TeV_powheg-pythia6/AODSIM/tsg_PU20bx25_POSTLS162_V2-v1/089D91D9-CA6C-E311-B902-00266CFAE684.root'
+      'root://gfe02.grid.hep.ph.ic.ac.uk:1097/store/mc/Summer12_DR53X/W3JetsToLNu_TuneZ2Star_8TeV-madgraph/AODSIM/PU_S10_START53_V7A-v1/0000/00514902-F205-E211-83F0-001E6739753A.root'
       )
         #'file:/Volumes/Storage/samples/VBF_HToTauTau_M-125-53X.root'
         #'file:/Volumes/Storage/samples/embed_mutau_v1_DYJetsToLL.root'
     )
     process.GlobalTag.globaltag = cms.string('START53_V27::All')
 
+if (release == '62X'):
+  if isData:
+    process.source = cms.Source("PoolSource",
+                                fileNames = cms.untracked.vstring('root://gfe02.grid.hep.ph.ic.ac.uk:1097/store/data/Run2012B/VBF1Parked/AOD/22Jan2013-v1/30001/8438FBA5-AB76-E211-8EC6-002618943831.root')
+                                )
+  else:
+    process.source = cms.Source("PoolSource",
+                                fileNames = cms.untracked.vstring('file:/afs/cern.ch/work/p/pela/public/samples/VBF_HToInv_M-125_13TeV_powheg-pythia6/AODSIM/tsg_PU20bx25_POSTLS162_V2-v1/089D91D9-CA6C-E311-B902-00266CFAE684.root'
+                                )
+    )
+    process.GlobalTag.globaltag = cms.string('START62_V1::All')
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ################################################################
 ## Configure private modules
 ################################################################
-process.icPhotonProducer = cms.EDProducer("ICPhotonProducer",
+if(release!='62X'):
+
+  process.icPhotonProducer = cms.EDProducer("ICPhotonProducer",
     input = cms.InputTag("photons"),
     branchName = cms.string("photons"),
     minPt = cms.double(5.0),
     maxEta = cms.double(3.0)
-)
+                                            )
 
-process.icElectronProducer = cms.EDProducer('ICElectronProducer',
+  process.icElectronProducer = cms.EDProducer('ICElectronProducer',
     input = cms.InputTag("gsfElectrons"),
     branchName = cms.string("electrons"),
     minPt = cms.double(9.5),
@@ -793,9 +815,9 @@ process.icElectronProducer = cms.EDProducer('ICElectronProducer',
     vertexCollection = cms.InputTag("goodOfflinePrimaryVertices"),
     pfIsoPostfix = cms.string("PFIso"),
     isPF = cms.bool(False)
-)
+  )
 
-process.icMuonProducer = cms.EDProducer('ICMuonProducer',
+  process.icMuonProducer = cms.EDProducer('ICMuonProducer',
     input = cms.InputTag("pfAllMuons"),
     branchName = cms.string("muonsPFlow"),
     minPt = cms.double(3.0),
@@ -805,22 +827,22 @@ process.icMuonProducer = cms.EDProducer('ICMuonProducer',
     isPF = cms.bool(True)
 )
 
-process.icPFJetProducer = cms.EDProducer('ICPFJetProducer',
+  process.icPFJetProducer = cms.EDProducer('ICPFJetProducer',
     inputLabel = cms.InputTag("selectedAndFilteredPatJets"),
     branchName = cms.untracked.string("pfJetsPFlow"),
     StoreTrackIds = cms.bool(False)
     )
 
-
-process.icPfMetProducer = cms.EDProducer('ICMetProducer',
+if(release!='62X'):
+  process.icPfMetProducer = cms.EDProducer('ICMetProducer',
     inputLabel = cms.InputTag("patMETsNoCorr"),
     branchName = cms.untracked.string("pfMet"),
     addGen = cms.untracked.bool(True),
     InputSig = cms.untracked.string("")
     )
-if isData: process.icPfMetProducer.addGen = cms.untracked.bool(False)
+  if isData: process.icPfMetProducer.addGen = cms.untracked.bool(False)
 
-process.icPfMetType1Producer = cms.EDProducer('ICMetProducer',
+  process.icPfMetType1Producer = cms.EDProducer('ICMetProducer',
     inputLabel = cms.InputTag("patMETs"),
     branchName = cms.untracked.string("pfMetType1"),
     addGen = cms.untracked.bool(False),
@@ -828,22 +850,22 @@ process.icPfMetType1Producer = cms.EDProducer('ICMetProducer',
     )
 
 
-process.icPfMVAMetProducer = cms.EDProducer('ICMetProducer',
+  process.icPfMVAMetProducer = cms.EDProducer('ICMetProducer',
     inputLabel = cms.InputTag("patPFMetByMVA"),
     branchName = cms.untracked.string("pfMVAMet"),
     addGen = cms.untracked.bool(False),
     InputSig = cms.untracked.string("")
     )
 
-process.icPfAllPairsMVAMetProducer = cms.EDProducer('ICMetVectorProducer',
+  process.icPfAllPairsMVAMetProducer = cms.EDProducer('ICMetVectorProducer',
     mergeLabels = cms.untracked.vstring('mvaMetPairsMT','mvaMetPairsET','mvaMetPairsEM'),
     branchName = cms.untracked.string("pfMVAMetVector")
     )
-if isZStudy:
-  process.icPfAllPairsMVAMetProducer.mergeLabels = cms.untracked.vstring(
+  if isZStudy:
+    process.icPfAllPairsMVAMetProducer.mergeLabels = cms.untracked.vstring(
         'mvaMetPairsMT','mvaMetPairsET','mvaMetPairsEM','mvaMetPairsMM','mvaMetPairsEE')
 
-process.icTauProducer = cms.EDProducer('ICTauProducer',
+  process.icTauProducer = cms.EDProducer('ICTauProducer',
     inputLabel = cms.InputTag("selectedPatTaus"),
     branchName = cms.untracked.string("taus"),
     StoreTrackIds = cms.bool(False)
@@ -935,7 +957,8 @@ if release == '42X':
 
 process.icPileupInfoProducer = cms.EDProducer('ICPileupInfoProducer')
 
-process.icEventInfoProducer = cms.EDProducer('ICEventInfoProducer',
+if(release != '62X'):
+  process.icEventInfoProducer = cms.EDProducer('ICEventInfoProducer',
     jetsRhoLabel = cms.string("kt6PFJets"),
     leptonRhoLabel = cms.string("kt6PFJetsForLeptons"),
     vertexLabel = cms.string('goodOfflinePrimaryVertices')
@@ -958,20 +981,25 @@ if release == '53X':
   process.icSequence += process.filterSequence
 
 process.icSequence += cms.Sequence(
-  process.icElectronProducer
-  +process.icPhotonProducer
-  +process.icMuonProducer
-  +process.icPFJetProducer
-  +process.patMETsNoCorr
-  +process.icPfMetProducer
-  +process.icPfMVAMetProducer
-  +process.icPfAllPairsMVAMetProducer
-  # +process.patMETsPFType1
-  +process.icPfMetType1Producer
-  +process.icTauProducer
-  +process.icVertexProducer
-  +process.icEventInfoProducer
+    process.icVertexProducer
   )
+
+if(release!='62X'):
+  process.icSequence += cms.Sequence(
+    process.icMuonProducer
+    +process.icPFJetProducer
+    +process.icTauProducer
+    +process.icPhotonProducer  
+    +process.icElectronProducer  
+    +process.patMETsNoCorr
+    +process.icPfMetProducer
+    +process.icPfMVAMetProducer
+    +process.icPfAllPairsMVAMetProducer
+    # +process.patMETsPFType1
+    +process.icPfMetType1Producer
+    +process.icEventInfoProducer
+
+     )
 
 process.icDataSequence = cms.Sequence(
   process.icTriggerPathProducer
@@ -1078,7 +1106,8 @@ if (release == '53X' and (not isData)):
 process.icSequence += process.icTriggerSequence
 
 if not isData:
-  process.icSequence += process.icMetUncertaintySequence
+  if(release!='62X'):
+    process.icSequence += process.icMetUncertaintySequence
  
 process.icEventProducer = cms.EDProducer('ICEventProducer')
 process.icSequence += process.icEventProducer
@@ -1101,18 +1130,21 @@ process.p = cms.Path(
   +process.pfAllMuons
   +process.extra42XSequence
   +process.extra53XSequence
-  +process.kt6PFJetsForLeptons
-  +process.pfParticleSelectionSequence
-  +process.eleIsoSequence
-  +process.muIsoSequence
-  +process.mvaElectronIDSequence
-  +process.type0PFMEtCorrection
-  +process.patDefaultSequence
-  +process.selectedAndFilteredPatJets
-  +process.puJetMva
-  +process.pfMEtMVAsequence
-  +process.patPFMetByMVA
-  +process.icSequence
-  )
+)
+if(release!='62X'):
+  process.p += cms.Path(
+     process.kt6PFJetsForLeptons
+     +process.pfParticleSelectionSequence
+     +process.eleIsoSequence
+     +process.muIsoSequence
+     +process.mvaElectronIDSequence
+     +process.type0PFMEtCorrection
+     +process.patDefaultSequence
+     +process.selectedAndFilteredPatJets
+     +process.puJetMva
+     +process.pfMEtMVAsequence
+     +process.patPFMetByMVA
+     )
+process.p += process.icSequence
 
 #print process.dumpPython()
