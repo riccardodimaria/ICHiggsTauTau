@@ -421,15 +421,15 @@ process.icL1ExtraMETProducer = cms.EDProducer('ICL1ExtraEtMissProducer',
 process.icL1ExtraMuonsProducer = cms.EDProducer('ICL1ExtraMuonProducer',
   branchName = cms.untracked.string("l1extraMuons"),
   inputLabel = cms.InputTag("l1extraParticles","","RECO"),
-  minPt = cms.double(6.0),
-  maxEta = cms.double(2.2)
+  minPt = cms.double(0.0),
+  maxEta = cms.double(999.0)
   )
 
 process.icL1ExtraEmIsolatedProducer = cms.EDProducer('ICL1ExtraEmParticleProducer',
   branchName = cms.untracked.string("l1extraEmIsolated"),
   inputLabel = cms.InputTag("l1extraParticles","Isolated","RECO"),
-  minPt = cms.double(11.0),
-  maxEta = cms.double(2.2)
+  minPt = cms.double(0.0),
+  maxEta = cms.double(999.0)
   )
 
 process.icL1ExtraCentralJetProducer = cms.EDProducer('ICL1ExtraJetProducer',
