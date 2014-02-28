@@ -103,7 +103,9 @@ void ICL1ExtraProducer<T>::produce(edm::Event& iEvent, const edm::EventSetup& iS
 // ------------ method called once each job just before starting event loop  ------------
 template<class T>
 void ICL1ExtraProducer<T>::beginJob() {
- ic::StaticTree::tree_->Branch(branch_name_.c_str() ,&cand_vec);
+  std::cout<<branch_name_.c_str();
+  std::cout<<&cand_vec;
+  ic::StaticTree::tree_->Branch(branch_name_.c_str() ,&cand_vec);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

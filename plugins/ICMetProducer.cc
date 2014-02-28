@@ -13,7 +13,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
-#include "DataFormats/METReco/interface/PFMEtSignCovMatrix.h"
+//#include "DataFormats/METReco/interface/PFMEtSignCovMatrix.h"
 #include "UserCode/ICHiggsTauTau/interface/Met.hh"
 #include "UserCode/ICHiggsTauTau/interface/StaticTree.hh"
 
@@ -62,20 +62,20 @@ void ICMetProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   met_->set_et_sig(ref.mEtSig());
   met_->set_id(0);
   TMatrixD sig_matrix = ref.getSignificanceMatrix();
-  if (input_sig_ != "") {
-    edm::Handle<PFMEtSignCovMatrix> sig_handle;
-    iEvent.getByLabel(input_sig_,sig_handle);
-    met_->set_xx_sig((*sig_handle)(0,0));
-    //std::cout << (*sig_handle)(0,0) << std::endl;
-    met_->set_xy_sig((*sig_handle)(0,1));
-    met_->set_yx_sig((*sig_handle)(1,0));
-    met_->set_yy_sig((*sig_handle)(1,1));
-  } else {
+  // if (input_sig_ != "") {
+  //   edm::Handle<PFMEtSignCovMatrix> sig_handle;
+  //   iEvent.getByLabel(input_sig_,sig_handle);
+  //   met_->set_xx_sig((*sig_handle)(0,0));
+  //   //std::cout << (*sig_handle)(0,0) << std::endl;
+  //   met_->set_xy_sig((*sig_handle)(0,1));
+  //   met_->set_yx_sig((*sig_handle)(1,0));
+  //   met_->set_yy_sig((*sig_handle)(1,1));
+  // } else {
     met_->set_xx_sig(sig_matrix(0,0));
     met_->set_xy_sig(sig_matrix(0,1));
     met_->set_yx_sig(sig_matrix(1,0));
     met_->set_yy_sig(sig_matrix(1,1));
-  }
+    //}
 
   if (add_gen_) {
     reco::GenMET const *genptr = ref.genMET();
