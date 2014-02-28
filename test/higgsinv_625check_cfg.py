@@ -795,9 +795,9 @@ if (release == '62X'):
                                 )
     )
     process.GlobalTag.globaltag = cms.string('START62_V1::All')
-process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
+process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 #process.options = cms.untracked.PSet( SkipEvent = cms.untracked.vstring('ProductNotFound') )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 ################################################################
 ## Configure private modules
