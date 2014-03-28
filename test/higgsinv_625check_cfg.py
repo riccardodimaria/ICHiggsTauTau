@@ -1058,12 +1058,45 @@ if ((release == '53X' or release =='62X') and (not isData)):
       hltPath = cms.untracked.string("HLT_L1ETM40"), 
       StoreOnlyIfFired = cms.untracked.bool(False)#(True) 
       )
+
+  process.icDiPFJet40PFMETnoMu65MJJ600VBFLeadingJetsObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsDiPFJet40PFMETnoMu65MJJ600VBFLeadingJetsFired"), 
+      hltPath = cms.untracked.string("HLT_DiPFJet40_PFMETnoMu65_MJJ600VBF_LeadingJets_v"), 
+      StoreOnlyIfFired = cms.untracked.bool(False)
+      ) 
+  process.icDiPFJet40PFMETnoMu65MJJ800VBFAllJetsObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsDiPFJet40PFMETnoMu65MJJ800VBFAllJetsFired"), 
+      hltPath = cms.untracked.string("HLT_DiPFJet40_PFMETnoMu65_MJJ800VBF_AllJets_v"), 
+      StoreOnlyIfFired = cms.untracked.bool(False) 
+      ) 
+  process.icDiPFJetAve80ObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsDiPFJetAve80Fired"), 
+      hltPath = cms.untracked.string("HLT_DiPFJetAve80_v"), 
+      StoreOnlyIfFired = cms.untracked.bool(False) 
+      ) 
+  process.icDiPFJetAve40ObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsDiPFJetAve40Fired"), 
+      hltPath = cms.untracked.string("HLT_DiPFJetAve40_v"), 
+      StoreOnlyIfFired = cms.untracked.bool(False) 
+      ) 
+  process.icL1ETM40ObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsL1ETM40Fired"), 
+      hltPath = cms.untracked.string("HLT_L1ETM40"), 
+      StoreOnlyIfFired = cms.untracked.bool(False) 
+      )
+  
   process.icTriggerSequence += ( 
     process.icDiPFJet40PFMETnoMu65MJJ600VBFLeadingJetsObjectProducer 
     +process.icDiPFJet40PFMETnoMu65MJJ800VBFAllJetsObjectProducer 
     +process.icDiPFJetAve80ObjectProducer 
     +process.icDiPFJetAve40ObjectProducer 
-    +process.icL1ETM40ObjectProducer 
+    +process.icL1ETM40ObjectProducer
+
+    +process.icDiPFJet40PFMETnoMu65MJJ600VBFLeadingJetsObjectFiredProducer 
+    +process.icDiPFJet40PFMETnoMu65MJJ800VBFAllJetsObjectFiredProducer 
+    +process.icDiPFJetAve80ObjectFiredProducer 
+    +process.icDiPFJetAve40ObjectFiredProducer 
+    +process.icL1ETM40ObjectFiredProducer 
     )
 
 ################################################################
@@ -1098,6 +1131,35 @@ if ((release == '53X' or release =='62X') and (not isData)):
       hltPath = cms.untracked.string("HLT_DiJet30_MJJ700_AllJets_DEta3p5_VBF_v"),
       StoreOnlyIfFired = cms.untracked.bool(False)#(True) 
       )
+
+    #Run B,C,D
+  process.icDiJet35MJJ650VBFAllJetsObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsDiJet35MJJ650VBFAllJetsFired"),
+      hltPath = cms.untracked.string("HLT_DiJet35_MJJ650_AllJets_DEta3p5_VBF_v"),
+      StoreOnlyIfFired = cms.untracked.bool(False)
+      )
+  process.icDiJet35MJJ700VBFAllJetsObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsDiJet35MJJ700VBFAllJetsFired"),
+      hltPath = cms.untracked.string("HLT_DiJet35_MJJ700_AllJets_DEta3p5_VBF_v"),
+      StoreOnlyIfFired = cms.untracked.bool(False) 
+      )
+  process.icDiJet35MJJ750VBFAllJetsObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsDiJet35MJJ750VBFAllJetsFired"),
+      hltPath = cms.untracked.string("HLT_DiJet35_MJJ750_AllJets_DEta3p5_VBF_v"),
+      StoreOnlyIfFired = cms.untracked.bool(False) 
+      )
+  
+  #Run D only, may not be present in MC AOD
+  process.icDiJet20MJJ650VBFAllJetsHT120ObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsDiJet20MJJ650VBFAllJetsHT120Fired"),
+      hltPath = cms.untracked.string("HLT_DiJet20_MJJ650_AllJets_DEta3p5_HT120_VBF_v"),
+      StoreOnlyIfFired = cms.untracked.bool(False) 
+      )
+  process.icDiJet30MJJ700VBFAllJetsObjectFiredProducer = cms.EDProducer('ICTriggerObjectProducer',
+      branchName = cms.untracked.string("triggerObjectsDiJet30MJJ700VBFAllJetsFired"),
+      hltPath = cms.untracked.string("HLT_DiJet30_MJJ700_AllJets_DEta3p5_VBF_v"),
+      StoreOnlyIfFired = cms.untracked.bool(False) 
+      )
   
   process.icTriggerSequence += ( 
     process.icDiJet35MJJ650VBFAllJetsObjectProducer
@@ -1106,6 +1168,13 @@ if ((release == '53X' or release =='62X') and (not isData)):
     #RUN D ONLY
     +process.icDiJet20MJJ650VBFAllJetsHT120ObjectProducer
     +process.icDiJet30MJJ700VBFAllJetsObjectProducer
+
+    process.icDiJet35MJJ650VBFAllJetsObjectFiredProducer
+    +process.icDiJet35MJJ700VBFAllJetsObjectFiredProducer
+    +process.icDiJet35MJJ750VBFAllJetsObjectFiredProducer
+    #RUN D ONLY
+    +process.icDiJet20MJJ650VBFAllJetsHT120ObjectFiredProducer
+    +process.icDiJet30MJJ700VBFAllJetsObjectFiredProducer
   )
   
 process.icSequence += process.icTriggerSequence
