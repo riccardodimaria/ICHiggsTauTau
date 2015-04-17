@@ -440,9 +440,9 @@ process.icElectronSequence += cms.Sequence(
 ################################################################
 process.icMuonSequence = cms.Sequence()
 
-process.muonIdMedium = cms.EDFilter("RecoMuonIdProducer",
+process.muonIdMedium = cms.EDFilter("MuonIdProducer",
     verbose=cms.untracked.bool(False),
-    muonTag=cms.InputTag('muons')
+    muonTag=cms.InputTag('selectedPatMuons')
 #    muonTag=cms.InputTag('selectedPatMuonsSecond')
    )
 
@@ -452,11 +452,11 @@ process.muonIdMedium = cms.EDFilter("RecoMuonIdProducer",
 
 
 process.load("CommonTools.ParticleFlow.Isolation.pfMuonIsolation_cff")
-process.muPFIsoValueCharged03PFIso    = process.muPFIsoValueCharged03.clone()
-process.muPFIsoValueChargedAll03PFIso = process.muPFIsoValueChargedAll03.clone()
-process.muPFIsoValueGamma03PFIso      = process.muPFIsoValueGamma03.clone()
-process.muPFIsoValueNeutral03PFIso    = process.muPFIsoValueNeutral03.clone()
-process.muPFIsoValuePU03PFIso         = process.muPFIsoValuePU03.clone()
+process.muPFIsoDepositChargedTwo      = process.muPFIsoDepositCharged.clone()
+process.muPFIsoDepositChargedAllTwo   = process.muPFIsoDepositChargedAll.clone()
+process.muPFIsoDepositGammaTwo        = process.muPFIsoDepositGamma.clone()
+process.muPFIsoDepositNeutralTwo      = process.muPFIsoDepositNeutral.clone()
+process.muPFIsoDepositPUTwo 	      = process.muPFIsoDepositPU.clone()
 
 process.muonPFIsolationValuesSequence = cms.Sequence(
     process.muPFIsoValueCharged03+
@@ -468,38 +468,106 @@ process.muonPFIsolationValuesSequence = cms.Sequence(
     process.muPFIsoValueChargedAll04+
     process.muPFIsoValueGamma04+
     process.muPFIsoValueNeutral04+
-    process.muPFIsoValuePU04+
+    process.muPFIsoValuePU04
+    )
+
+process.selectedPatMuons.cut = cms.string("pt > 3.0 & abs(eta) < 2.6")
+
+if release in ['72X']: muons = cms.InputTag("selectedPatMuons")
+#if release in ['72XMINIAOD']: muons = cms.InputTag("slimmedMuons")
+process.muPFIsoDepositChargedTwo.src     = muons
+process.muPFIsoDepositChargedAllTwo.src  = muons
+process.muPFIsoDepositNeutralTwo.src     = muons
+process.muPFIsoDepositGammaTwo.src       = muons
+process.muPFIsoDepositPUTwo.src          = muons
+process.muPFIsoValueCharged03PFIso = cms.EDProducer("CandIsolatorFromDeposits",
+   deposits =cms.VPSet(
+         cms.PSet(
+         src=cms.InputTag("muPFIsoDepositChargedTwo"),
+         deltaR = cms.double(0.3), 
+         weight = cms.string('1'),
+         vetos = cms.vstring('0.0001','Threshold(0.0)'),
+         skipDefaultVeto = cms.bool(True),
+         mode = cms.string('sum')
+         )
+    )
+)
+process.muPFIsoValueChargedAll03PFIso = cms.EDProducer("CandIsolatorFromDeposits",
+   deposits =cms.VPSet(
+         cms.PSet(
+         src=cms.InputTag("muPFIsoDepositChargedAllTwo"),
+         deltaR = cms.double(0.3), 
+         weight = cms.string('1'),
+         vetos = cms.vstring('0.0001','Threshold(0.0)'),
+         skipDefaultVeto = cms.bool(True),
+         mode = cms.string('sum')
+         )
+    )
+)
+
+process.muPFIsoValueNeutral03PFIso = cms.EDProducer("CandIsolatorFromDeposits",
+   deposits =cms.VPSet(
+         cms.PSet(
+         src=cms.InputTag("muPFIsoDepositNeutralTwo"),
+         deltaR = cms.double(0.3), 
+         weight = cms.string('1'),
+         vetos = cms.vstring('0.0001','Threshold(0.0)'),
+         skipDefaultVeto = cms.bool(True),
+         mode = cms.string('sum')
+         )
+    )
+)
+process.muPFIsoValueGamma03PFIso = cms.EDProducer("CandIsolatorFromDeposits",
+   deposits =cms.VPSet(
+         cms.PSet(
+         src=cms.InputTag("muPFIsoDepositGammaTwo"),
+         deltaR = cms.double(0.3), 
+         weight = cms.string('1'),
+         vetos = cms.vstring('0.0001','Threshold(0.0)'),
+         skipDefaultVeto = cms.bool(True),
+         mode = cms.string('sum')
+         )
+    )
+)
+
+process.muPFIsoValuePU03PFIso = cms.EDProducer("CandIsolatorFromDeposits",
+   deposits =cms.VPSet(
+         cms.PSet(
+         src=cms.InputTag("muPFIsoDepositPUTwo"),
+         deltaR = cms.double(0.3), 
+         weight = cms.string('1'),
+         vetos = cms.vstring('0.0001','Threshold(0.0)'),
+         skipDefaultVeto = cms.bool(True),
+         mode = cms.string('sum')
+         )
+    )
+)
+
+
+process.icMuonSequence += cms.Sequence(
+    process.muonPFIsolationDepositsSequence+
+    process.muonPFIsolationValuesSequence+
+      # process.muonIdMedium
+    process.muonMatch+
+    process.patMuons+
+    process.selectedPatMuons+
+     process.muPFIsoDepositChargedTwo+
+    process.muPFIsoDepositChargedAllTwo+
+    process.muPFIsoDepositNeutralTwo+
+    process.muPFIsoDepositGammaTwo+
+    process.muPFIsoDepositPUTwo+
     process.muPFIsoValueCharged03PFIso+
     process.muPFIsoValueChargedAll03PFIso+
     process.muPFIsoValueGamma03PFIso+
     process.muPFIsoValueNeutral03PFIso+
-    process.muPFIsoValuePU03PFIso
-    )
-process.selectedPatMuonsSecond = cms.EDFilter("PATMuonRefSelector",
-  src = cms.InputTag("patMuons"),
-  cut = cms.string("pt > 3.0 & abs(eta) < 2.6")
-)
-
-if release in ['72X']: muons = cms.InputTag("muons")
-#if release in ['72XMINIAOD']: muons = cms.InputTag("slimmedMuons")
-process.muPFIsoDepositCharged.src     = muons
-process.muPFIsoDepositChargedAll.src  = muons
-process.muPFIsoDepositNeutral.src     = muons
-process.muPFIsoDepositGamma.src       = muons
-process.muPFIsoDepositPU.src          = muons
-process.icMuonSequence += cms.Sequence(
-    process.muonPFIsolationDepositsSequence+
-    process.muonPFIsolationValuesSequence+
-   # process.muonIdMedium
-    process.muonMatch+
-    process.patMuons+
+    process.muPFIsoValuePU03PFIso+
     process.muonIdMedium
     )
 
 
 process.icMuonProducer = producers.icMuonProducer.clone(
   branch                    = cms.string("muons"),
-  input                     = cms.InputTag("selectedMuons"),
+  input                     = cms.InputTag("selectedPatMuons"),
   isPF                      = cms.bool(False),
   includeVertexIP           = cms.bool(True),
   inputVertices             = cms.InputTag("selectedVertices"),
@@ -1077,56 +1145,56 @@ process.icTriggerSequence += cms.Sequence(
   process.icTriggerPathProducer
 )
 
-process.icEle12Mu23ObjectProducer = cms.EDProducer('ICTriggerObjectProducer',
+process.icEle12Mu23ObjectProducer = producers.icTriggerObjectProducer.clone(
     input   = cms.InputTag("patTriggerEvent"),
     branch = cms.string("triggerObjectsEle12Mu23"),
     hltPath = cms.string("HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v1"),
     storeOnlyIfFired = cms.bool(False)
     )
 
-process.icEle23Mu8ObjectProducer = cms.EDProducer('ICTriggerObjectProducer',
+process.icEle23Mu8ObjectProducer = producers.icTriggerObjectProducer.clone(
     input   = cms.InputTag("patTriggerEvent"),
     branch = cms.string("triggerObjectsEle23Mu8"),
     hltPath = cms.string("HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v1"),
     storeOnlyIfFired = cms.bool(False)
     )
 
-process.icEle22LooseTau20ObjectProducer = cms.EDProducer('ICTriggerObjectProducer',
+process.icEle22LooseTau20ObjectProducer = producers.icTriggerObjectProducer.clone(
     input   = cms.InputTag("patTriggerEvent"),
     branch = cms.string("triggerObjectsEle22LooseTau20"),
     hltPath = cms.string("HLT_Ele22_eta2p1_WP85_Gsf_LooseIsoPFTau20_v1"),
     storeOnlyIfFired = cms.bool(False)
     )
 
-process.icEle27GsfObjectProducer = cms.EDProducer('ICTriggerObjectProducer',
+process.icEle27GsfObjectProducer = producers.icTriggerObjectProducer.clone(
     input   = cms.InputTag("patTriggerEvent"),
     branch = cms.string("triggerObjectsEle27Gsf"),
     hltPath = cms.string("HLT_Ele27_et2p1_WP85_Gsf_v1"),
     storeOnlyIfFired = cms.bool(False)
     )
 
-process.icIsoMu17LooseTau20ObjectProducer = cms.EDProducer('ICTriggerObjectProducer',
+process.icIsoMu17LooseTau20ObjectProducer = producers.icTriggerObjectProducer.clone(
     input   = cms.InputTag("patTriggerEvent"),
     branch = cms.string("triggerObjectsIsoMu17LooseTau20"),
     hltPath = cms.string("HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v1"),
     storeOnlyIfFired = cms.bool(False)
     )
 
-process.icIsoMu24IterTrkObjectProducer = cms.EDProducer('ICTriggerObjectProducer',
+process.icIsoMu24IterTrkObjectProducer = producers.icTriggerObjectProducer.clone(
     input   = cms.InputTag("patTriggerEvent"),
     branch = cms.string("triggerObjectsIsoMu24IterTrk"),
     hltPath = cms.string("HLT_IsoMu24_eta2p1_IterTrk02_v1"),
     storeOnlyIfFired = cms.bool(False)
     )
 
-process.icDoubleMediumTau40ObjectProducer = cms.EDProducer('ICTriggerObjectProducer',
+process.icDoubleMediumTau40ObjectProducer = producers.icTriggerObjectProducer.clone(
     input   = cms.InputTag("patTriggerEvent"),
     branch = cms.string("triggerObjectsDoubleMediumTau40"),
     hltPath = cms.string("HLT_DoubleMediumIsoPFTau40_Trk1_eta2p1_Reg_v1"),
     storeOnlyIfFired = cms.bool(False)
     )
 
-process.icLooseTau50Met120ObjectProducer = cms.EDProducer('ICTriggerObjectProducer',
+process.icLooseTau50Met120ObjectProducer = producers.icTriggerObjectProducer.clone(
     input   = cms.InputTag("patTriggerEvent"),
     branch = cms.string("triggerObjectsLooseTau50Met120"),
     hltPath = cms.string("HLT_LooseIsoPFTau50_Trk30_eta2p1_MET120_v1"),
@@ -1186,7 +1254,7 @@ process.p = cms.Path(
   process.patTriggerEvent+
   process.icPFJetSequence+
   process.icGenSequence+
-   process.icTriggerSequence+
+  process.icTriggerSequence+
   process.icEventInfoSequence+
   process.icEventProducer
 )
