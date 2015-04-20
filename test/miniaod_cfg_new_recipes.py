@@ -7,9 +7,10 @@ import sys
 ################################################################
 import FWCore.ParameterSet.VarParsing as parser
 opts = parser.VarParsing ('analysis')
-opts.register('file', 'root://xrootd.unl.edu//store/mc/Phys14DR/VBF_HToTauTau_M-125_13TeV-powheg-pythia6/MINIAODSIM/PU40bx25_PHYS14_25_V1-v1/00000/36224FE2-0571-E411-9664-00266CFAE30C.root', parser.VarParsing.multiplicity.singleton,
+opts.register('file', 'root://xrootd.unl.edu//store/mc/Phys14DR/GluGluToHToTauTau_M-125_13TeV-powheg-pythia6/MINIAODSIM/PU20bx25_tsg_PHYS14_25_V1-v1/00000/2405749F-8B6F-E411-88EE-848F69FD2910.root', parser.VarParsing.multiplicity.singleton,
+#opts.register('file', 'root://xrootd.unl.edu//store/mc/Phys14DR/VBF_HToTauTau_M-125_13TeV-powheg-pythia6/MINIAODSIM/PU40bx25_PHYS14_25_V1-v1/00000/36224FE2-0571-E411-9664-00266CFAE30C.root', parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.string, "input file")
-opts.register('globalTag', 'START72_V1::All', parser.VarParsing.multiplicity.singleton,
+opts.register('globalTag', 'PHYS14_25_V2::All', parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.string, "global tag")
 opts.register('isData', 0, parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.int, "Process as data?")
@@ -60,6 +61,7 @@ process.options   = cms.untracked.PSet(
   wantSummary = cms.untracked.bool(True)
 )
 
+
 ################################################################
 # Input files and global tags
 ################################################################
@@ -86,18 +88,20 @@ process.icMiniAODSequence = cms.Sequence()
 # if release in ['70XMINIAOD', '72XMINIAOD']:
 #   process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
 #   process.icMiniAODSequence += process.unpackedTracksAndVertices
+#switchOnTrigger(process, outputModule="")
+
 
 ################################################################
 # Need to create kt6PFJets in 42X for L1FastJet correction
 ################################################################
-# if release in ['72X', '72XMINIAOD']:
-#   from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
-#   process.kt6PFJets = kt4PFJets.clone(
-#     rParam = cms.double(0.6),
-#     doAreaFastjet = cms.bool(True),
-#     doRhoFastjet = cms.bool(True)
-#   )
-#   process.ic72XSequence += process.kt6PFJets
+if release in ['72X', '72XMINIAOD']:
+  from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
+  process.kt6PFJets = kt4PFJets.clone(
+    rParam = cms.double(0.6),
+    doAreaFastjet = cms.bool(True),
+    doRhoFastjet = cms.bool(True)
+  )
+  process.ic72XSequence += process.kt6PFJets
 
 
 ################################################################
@@ -279,10 +283,10 @@ process.icGsfTrackProducer = producers.icTrackProducer.clone(
 
 process.icTrackSequence = cms.Sequence()
 process.icTrackSequence += cms.Sequence(
-  # process.selectedTracks+
-  # process.icMergedTracks+
-  # process.icTrackProducer+
-  # process.icGsfTrackProducer
+   process.selectedTracks+
+   process.icMergedTracks+
+   process.icTrackProducer+
+   process.icGsfTrackProducer
 )
 
 ################################################################
@@ -500,11 +504,11 @@ process.icTauSequence = cms.Sequence(
 # ################################################################
 
 if release in ['72XMINIAOD']:
-   from RecoJets.JetProducers.ak5PFJets_cfi import ak5PFJets
-   process.ak5PFJets = ak5PFJets.clone(
-       src = 'packedPFCandidates',
-       doAreaFastjet = True
-       )
+   from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJets
+#   process.ak5PFJets = ak5PFJets.clone(
+#       src = 'packedPFCandidates',
+#       doAreaFastjet = True
+#       )
    from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
    process.kt6PFJets = kt4PFJets.clone(
        src = 'packedPFCandidates',
@@ -613,30 +617,30 @@ process.btaggingSequenceAK5PF = cms.Sequence(
 
  # Pileup ID
  # ---------
-#stdalgos = cms.VPSet()
+stdalgos = cms.VPSet()
 #if release in ['70X', '70XMINIAOD', '72X', '72XMINIAOD']:
-#  from RecoJets.JetProducers.PileupJetIDCutParams_cfi import *
-#  full_5x = cms.PSet(
+#  from RecoJets.JetProducers.PileupJetIDCutParams_cfi import full_5x_wp
+#  full_53x = cms.PSet(
 #      impactParTkThreshold = cms.double(1.) ,
 #      cutBased = cms.bool(False),
-#      #tmvaWeights = cms.string("RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml.gz"),
-#      tmvaWeights = cms.string("RecoJets/JetProducers/data/TMVAClassification_5x_BDT_chsFullPlusRMS.weights.xml.gz"),
-#      #tmvaMethod  = cms.string("JetIDMVAHighPt"),
-#      tmvaMethod  = cms.string("BDT_chsFullPlusRMS"),
+#      tmvaWeights = cms.string("RecoJets/JetProducers/data/TMVAClassificationCategory_JetID_53X_Dec2012.weights.xml.gz"),
+      #tmvaWeights = cms.string("RecoJets/JetProducers/data/TMVAClassification_5x_BDT_chsFullPlusRMS.weights.xml.gz"),
+#      tmvaMethod  = cms.string("JetIDMVAHighPt"),
+      #tmvaMethod  = cms.string("BDT_chsFullPlusRMS"),
 #      version = cms.int32(-1),
 #      tmvaVariables = cms.vstring(
-#         "frac01",
-#         "frac02",
-#         "frac03",
-#         "frac04",
-#         "frac05",
-#         "dr2Mean",
-#         "nvtx",
-#         "nNeutrals",
-#         "beta",
-#         "betaStar",
-#        "dZ",
-#         "nCharged",
+      #   "frac01",
+      #   "frac02",
+      #   "frac03",
+      #   "frac04",
+      #   "frac05",
+      #   "dr2Mean",
+      #   "nvtx",
+      #   "nNeutrals",
+      #   "beta",
+      #   "betaStar",
+      #   "dZ",
+      #   "nCharged",
 #        "nvtx"     ,
 #        "dZ"       ,
 #        "beta"     ,
@@ -656,42 +660,65 @@ process.btaggingSequenceAK5PF = cms.Sequence(
 #        "jetEta",
 #        "jetPhi"
 #        ),
-#      JetIdParams = full_5x_chs_wp,
-#    label = cms.string("full")
+#      JetIdParams = full_5x_wp,
+#     label = cms.string("full")
 #      )
 #  from RecoJets.JetProducers.PileupJetID_cfi import *
-#  stdalgos = cms.VPSet(full_5x)
-#if release in ['53X']:
+from RecoJets.JetProducers.PileupJetIDParams_cfi import *
+stdalgos = cms.VPSet(full_5x_chs,cutbased)
+#if release in ['53X']
 #  from RecoJets.JetProducers.PileupJetID_cfi import *
 #  stdalgos = cms.VPSet(full_53x,cutbased,PhilV1)
 #if release in ['42X']:
 #  from RecoJets.JetProducers.PileupJetID_cfi import *
 #  stdalgos = cms.VPSet(full,cutbased,PhilV1)
 
-#process.puJetMva = cms.EDProducer('PileupJetIdProducer',
-#    produceJetIds = cms.bool(True),
-#    jetids = cms.InputTag(""),
-#    runMvas = cms.bool(True),
-#    jets = cms.InputTag("slimmedJets"),
-#    vertexes = cms.InputTag("offlineSlimmedPrimaryVertices"),
-#    algos = cms.VPSet(stdalgos),
-##    rho     = cms.InputTag("kt6PFJets", "rho"),
-#    rho     = cms.InputTag("fixedGridRhoFastjetAll"),
-#    jec     = cms.string("AK4PFchs"),
-#    applyJec = cms.bool(True),
-#    inputIsCorrected = cms.bool(False),
-#    residualsFromTxt = cms.bool(False),
-#    residualsTxt     = cms.FileInPath("RecoJets/JetProducers/data/dummy.txt"),
-#)
+process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
+process.chs=cms.EDFilter("CandPtrSelector",src=cms.InputTag("packedPFCandidates"),cut=cms.string("fromPV"))
+process.ak4PFJetsCHS = ak4PFJets.clone(src='chs')
+process.ak4JetTracksAssociatorAtVertexPF.jets = cms.InputTag("ak4PFJetsCHS")
+process.ak4JetTracksAssociatorAtVertexPF.tracks = cms.InputTag("unpackedTracksAndVertices")
 
-#if release in ['70X', '70XMINIAOD', '72X', '72XMINIAOD']:
-#  process.puJetMva.residualsTxt = cms.FileInPath("RecoJets/JetProducers/BuildFile.xml")
+from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection
+addJetCollection(
+  process,
+  postfix = "",
+  labelName='AK4PFCHS',
+  jetSource = cms.InputTag('ak4PFJetsCHS'),
+  trackSource = cms.InputTag('unpackedTracksAndVertices'),
+  pvSource = cms.InputTag('unpackedTracksAndVertices'),
+  jetCorrections=('AK4PFchs',cms.vstring(['L1FastJet','L2Relative','L3Absolute']),'Type-2'),
+  btagDiscriminators=['combinedSecondaryVertexBJetTags'],
+  algo='AK', rParam=0.4
+)
+
+
+process.puJetMva = cms.EDProducer('PileupJetIdProducer',
+    produceJetIds = cms.bool(True),
+    jetids = cms.InputTag(""),
+    runMvas = cms.bool(True),
+    #jets = cms.InputTag("slimmedJets"),
+    jets = cms.InputTag("ak5PFJetsCHS"),
+#    vertexes = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    vertexes = cms.InputTag("unpackedTracksAndVertices"),
+    algos = cms.VPSet(stdalgos),
+    rho     = cms.InputTag("kt6PFJets", "rho"),
+#    rho     = cms.InputTag("fixedGridRhoFastjetAll"),
+    jec     = cms.string("AK5PF"),
+    applyJec = cms.bool(True),
+    inputIsCorrected = cms.bool(False),
+    residualsFromTxt = cms.bool(False),
+    residualsTxt     = cms.FileInPath("RecoJets/JetProducers/data/dummy.txt"),
+)
+
+if release in ['70X', '70XMINIAOD', '72X', '72XMINIAOD']:
+  process.puJetMva.residualsTxt = cms.FileInPath("RecoJets/JetProducers/BuildFile.xml")
 
  # Producer
  # --------
 process.icPFJetProducer = producers.icPFJetProducer.clone(
     branch                    = cms.string("pfJetsPFlow"),
-    input                     = cms.InputTag("ak4PFJetsCHS"),
+    input                     = cms.InputTag("selectedPFJets"),
     srcConfig = cms.PSet(
       includeJetFlavour         = cms.bool(True),
       inputJetFlavour           = cms.InputTag("icPFJetFlavourCalculator"),
@@ -710,51 +737,37 @@ process.icPFJetProducer = producers.icPFJetProducer.clone(
     ),
     destConfig = cms.PSet(
       includePileupID       = cms.bool(False),
-#      inputPileupID         = cms.InputTag("puJetMva", "fullDiscriminant"),
-      includeTrackBasedVars = cms.bool(True),
+      inputPileupID         = cms.InputTag("puJetMva", "fullDiscriminant"),
+      includeTrackBasedVars = cms.bool(False),
       inputTracks           = cms.InputTag("generalTracks"),
-      inputVertices         = cms.InputTag("offlinePrimaryVertices"),
+      inputVertices         = cms.InputTag("unpackedTracksAndVertices"),
       requestTracks         = cms.bool(False)
     )
 )
 
 # if isPhys14:
 process.selectedPFJets = cms.EDFilter("PFJetRefSelector",
-    src = cms.InputTag("ak5PFJets"),
+    src = cms.InputTag("ak4PFJetsCHS"),
     cut = cms.string("pt > 15")
     )
-process.icPFJetProducer.input = cms.InputTag("selectedPFJets")
-process.icPFJetProducer.srcConfig.applyJECs = cms.bool(False)
-process.icPFJetProducer.srcConfig.applyCutAfterJECs = cms.bool(False)
 
-process.selectedPFJetsAK4 = cms.EDFilter("PATJetRefSelector",
+process.selectedSlimmedJetsAK4 = cms.EDFilter("PATJetRefSelector",
     src = cms.InputTag("slimmedJets"),
     cut = cms.string("pt > 15")
     )
 
 
 process.icPFJetProducerAK4 = producers.icPFJetFromPatProducer.clone(
-    branch                    = cms.string("ak4PFJets"),
-    input                     = cms.InputTag("selectedPFJetsAK4")
+    branch                    = cms.string("ak4SlimmedJets"),
+    input                     = cms.InputTag("selectedSlimmedJetsAK4")
 )
 
 
 
-if release in ['70XMINIAOD', '72XMINIAOD']:
-  #process.icPFJetProducer.destConfig.includeJetID = cms.bool(True)
-#  process.icPFJetProducerAK4.destConfig.includePileupID = cms.bool(True)
-#  process.icPFJetProducerAK4.destConfig.inputPileupID = cms.InputTag("puJetMva", "fullDiscriminant")
-  process.icPFJetProducerAK4.destConfig.includeTrackBasedVars = cms.bool(False)
 
-# if release in ['72X']:
-#   process.icPFJetProducer.destConfig.includePileupID = cms.bool(False)
 
 process.icPFJetSequence = cms.Sequence()
 
-if release in ['70XMINIAOD', '72XMINIAOD']:
-  process.icPFJetSequence += cms.Sequence(
-    process.ak5PFJets
-  )
 
 # # 72X: error loading mva file
 # if release in ['42X', '53X', '70X']:
@@ -765,10 +778,15 @@ if release in ['70XMINIAOD', '72XMINIAOD']:
 if release in ['72X', '72XMINIAOD']:
   process.icPFJetProducer.srcConfig.BTagDiscriminators = cms.PSet()
   process.icPFJetSequence += cms.Sequence(
+      process.selectedSlimmedJetsAK4+
+      process.chs+
+      process.ak4PFJetsCHS+
       process.selectedPFJets+
-      process.selectedPFJetsAK4+
-#      process.puJetMva+
-      process.icPFJetProducerAK4
+      process.unpackedTracksAndVertices+
+      process.ak4JetTracksAssociatorAtVertexPF+
+    #  process.puJetMva+ #This works for jets built from PackedCandidates from CMSSW740
+      process.icPFJetProducerAK4+
+      process.icPFJetProducer #Not from slimmed jets
       )
   #process.icPFJetSequence += cms.Sequence(
   #    process.jetPartons+
@@ -1020,7 +1038,7 @@ if not isData:
 # ################################################################
 # # Trigger
 # ################################################################
-# from PhysicsTools.PatAlgos.tools.trigTools import *
+from PhysicsTools.PatAlgos.tools.trigTools import *
 
 # if release in ['42X', '53X']:
 #   process.patTriggerSequence = cms.Sequence()
@@ -1029,21 +1047,94 @@ if not isData:
 # if release in ['70X', '72X']:
 #   process.patTriggerPath = cms.Path()
 #   switchOnTrigger(process, path = 'patTriggerPath', outputModule = '')
-# if release in ['70XMINIAOD', '72XMINIAOD']:
-#   process.patTriggerPath = cms.Path()
+if release in ['70XMINIAOD', '72XMINIAOD']:
+  process.patTriggerPath = cms.Path()
+ # switchOnTrigger(process, path = 'patTriggerPath',  outputModule = '')
 
-# process.icTriggerPathProducer = producers.icTriggerPathProducer.clone(
-#   input   = cms.InputTag("patTriggerEvent"),
-#   includeAcceptedOnly = cms.bool(True),
-#   saveStrings = cms.bool(True),
-#   splitVersion = cms.bool(False)
-# )
-# process.icTriggerSequence = cms.Sequence()
-# if isData:
-#   process.icTriggerSequence += cms.Sequence(
-#     process.icTriggerPathProducer
-#  )
+process.icTriggerObjectSequence = cms.Sequence()
+#if isData:
+#process.icTriggerSequence += cms.Sequence(
+#  process.patTrigger+
+#  process.patTriggerEvent
+#)
+process.icEle12Mu23ObjectProducer = producers.icTriggerObjectProducer.clone(
+    input   = cms.InputTag("patTriggerEvent"),
+    branch = cms.string("triggerObjectsEle12Mu23"),
+    hltPath = cms.string("HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v1"),
+    inputIsStandAlone = cms.bool(False),
+    storeOnlyIfFired = cms.bool(False)
+    )
 
+process.icEle23Mu8ObjectProducer = producers.icTriggerObjectProducer.clone(
+    input   = cms.InputTag("patTriggerEvent"),
+    branch = cms.string("triggerObjectsEle23Mu8"),
+    hltPath = cms.string("HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v1"),
+    inputIsStandAlone = cms.bool(False),
+    storeOnlyIfFired = cms.bool(False)
+    )
+
+process.icEle22LooseTau20ObjectProducer = producers.icTriggerObjectProducer.clone(
+    input   = cms.InputTag("patTriggerEvent"),
+    branch = cms.string("triggerObjectsEle22LooseTau20"),
+    hltPath = cms.string("HLT_Ele22_eta2p1_WP85_Gsf_LooseIsoPFTau20_v1"),
+    inputIsStandAlone = cms.bool(False),
+    storeOnlyIfFired = cms.bool(False)
+    )
+
+process.icEle27GsfObjectProducer = producers.icTriggerObjectProducer.clone(
+    input   = cms.InputTag("patTriggerEvent"),
+    branch = cms.string("triggerObjectsEle27Gsf"),
+    hltPath = cms.string("HLT_Ele27_et2p1_WP85_Gsf_v1"),
+    inputIsStandAlone = cms.bool(False),
+    storeOnlyIfFired = cms.bool(False)
+    )
+
+process.icIsoMu17LooseTau20ObjectProducer = producers.icTriggerObjectProducer.clone(
+    input   = cms.InputTag("patTriggerEvent"),
+    branch = cms.string("triggerObjectsIsoMu17LooseTau20"),
+    hltPath = cms.string("HLT_IsoMu17_eta2p1_LooseIsoPFTau20_v1"),
+    inputIsStandAlone = cms.bool(False),
+    storeOnlyIfFired = cms.bool(False)
+    )
+
+process.icIsoMu24IterTrkObjectProducer = producers.icTriggerObjectProducer.clone(
+    input   = cms.InputTag("patTriggerEvent"),
+    branch = cms.string("triggerObjectsIsoMu24IterTrk"),
+    hltPath = cms.string("HLT_IsoMu24_eta2p1_IterTrk02_v1"),
+    inputIsStandAlone = cms.bool(False),
+    storeOnlyIfFired = cms.bool(False)
+    )
+
+process.icDoubleMediumTau40ObjectProducer = producers.icTriggerObjectProducer.clone(
+    input   = cms.InputTag("patTriggerEvent"),
+    branch = cms.string("triggerObjectsDoubleMediumTau40"),
+    hltPath = cms.string("HLT_DoubleMediumIsoPFTau40_Trk1_eta2p1_Reg_v1"),
+    inputIsStandAlone = cms.bool(False),
+    storeOnlyIfFired = cms.bool(False)
+    )
+
+process.icLooseTau50Met120ObjectProducer = producers.icTriggerObjectProducer.clone(
+    input   = cms.InputTag("patTriggerEvent"),
+    branch = cms.string("triggerObjectsLooseTau50Met120"),
+    hltPath = cms.string("HLT_LooseIsoPFTau50_Trk30_eta2p1_MET120_v1"),
+    inputIsStandAlone = cms.bool(False),
+    storeOnlyIfFired = cms.bool(False)
+    )
+
+process.icTriggerObjectSequence += cms.Sequence(
+    process.icEle12Mu23ObjectProducer +
+    process.icEle23Mu8ObjectProducer +
+    process.icEle22LooseTau20ObjectProducer +
+#    process.icEle27GsfObjectProducer +
+    process.icIsoMu17LooseTau20ObjectProducer +
+    process.icIsoMu24IterTrkObjectProducer +
+    process.icDoubleMediumTau40ObjectProducer +
+    process.icLooseTau50Met120ObjectProducer
+    )
+for name in process.icTriggerObjectSequence.moduleNames():
+  mod = getattr(process, name)
+  mod.inputIsStandAlone = cms.bool(True)
+  mod.input = cms.InputTag("selectedPatTrigger")
 
 ################################################################
 # EventInfo
@@ -1059,9 +1150,9 @@ process.icEventInfoProducer = producers.icEventInfoProducer.clone(
   inputCSCFilter      = cms.InputTag("BeamHaloSummary"),
 )
 
-#process.icEventInfoSequence = cms.Sequence(
-#  process.icEventInfoProducer
-#)
+process.icEventInfoSequence = cms.Sequence(
+  process.icEventInfoProducer
+)
 
 
 ################################################################
@@ -1080,13 +1171,13 @@ process.p = cms.Path(
   process.icElectronSequence+
   process.icMuonSequence+
   process.icTauSequence+
-#  process.icTauProducer+
-#  process.icTrackSequence+
+  process.icTauProducer+
+ # process.icTrackSequence+
   # process.icMvaMetSequence+
   process.icPFJetSequence+
   process.icGenSequence+
-  # process.icTriggerSequence+
-#  process.icEventInfoSequence+
+   process.icTriggerObjectSequence+
+  process.icEventInfoSequence+
   process.icEventProducer
 )
 
