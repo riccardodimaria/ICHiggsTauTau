@@ -430,7 +430,9 @@ icTriggerPathProducer = cms.EDProducer('ICTriggerPathProducer',
   input   = cms.InputTag("patTriggerEvent"),
   includeAcceptedOnly = cms.bool(True),
   saveStrings = cms.bool(True),
-  splitVersion = cms.bool(False)
+  splitVersion = cms.bool(False),
+  inputIsStandAlone = cms.bool(False),
+  inputPrescales = cms.InputTag("patTrigger", "", "PAT") # only used when inputIsStandAlone is true
 )
 ## [TriggerPath]
 
@@ -441,7 +443,7 @@ icTriggerObjectProducer = cms.EDProducer('ICTriggerObjectProducer',
   hltPath = cms.string(""),
   storeOnlyIfFired = cms.bool(False),
   inputIsStandAlone = cms.bool(False),
-  inputTriggerResults = cms.InputTag("TriggerResults","","HLT")
+  inputTriggerResults = cms.InputTag("TriggerResults", "", "HLT")
 )
 ## [TriggerObject]
 
