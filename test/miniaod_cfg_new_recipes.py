@@ -505,10 +505,16 @@ process.icTauSequence = cms.Sequence(
 
 if release in ['72XMINIAOD']:
    from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJets
-#   process.ak5PFJets = ak5PFJets.clone(
-#       src = 'packedPFCandidates',
-#       doAreaFastjet = True
-#       )
+   process.ak4PFJets = ak4PFJets.clone(
+       src = 'packedPFCandidates',
+       doAreaFastjet = True
+       )
+   from RecoJets.JetProducers.ak5PFJets_cfi import ak5PFJets
+   process.ak5PFJets = ak5PFJets.clone(
+       src = 'packedPFCandidates',
+       doAreaFastjet = True
+       )
+
    from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
    process.kt6PFJets = kt4PFJets.clone(
        src = 'packedPFCandidates',
@@ -676,8 +682,10 @@ stdalgos = cms.VPSet(full_5x_chs,cutbased)
 process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
 process.chs=cms.EDFilter("CandPtrSelector",src=cms.InputTag("packedPFCandidates"),cut=cms.string("fromPV"))
 process.ak4PFJetsCHS = ak4PFJets.clone(src='chs')
-process.ak4JetTracksAssociatorAtVertexPF.jets = cms.InputTag("ak4PFJetsCHS")
-process.ak4JetTracksAssociatorAtVertexPF.tracks = cms.InputTag("unpackedTracksAndVertices")
+#ak4JetTracksAssociator doesn't exist...)
+process.ak5JetTracksAssociatorAtVertexPF.jets = cms.InputTag("ak4PFJetsCHS")
+process.ak5JetTracksAssociatorAtVertexPF.tracks = cms.InputTag("unpackedTracksAndVertices")
+
 
 from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection
 addJetCollection(
@@ -698,7 +706,7 @@ process.puJetMva = cms.EDProducer('PileupJetIdProducer',
     jetids = cms.InputTag(""),
     runMvas = cms.bool(True),
     #jets = cms.InputTag("slimmedJets"),
-    jets = cms.InputTag("ak5PFJetsCHS"),
+    jets = cms.InputTag("ak5PFJets"),
 #    vertexes = cms.InputTag("offlineSlimmedPrimaryVertices"),
     vertexes = cms.InputTag("unpackedTracksAndVertices"),
     algos = cms.VPSet(stdalgos),
@@ -720,7 +728,7 @@ process.icPFJetProducer = producers.icPFJetProducer.clone(
     branch                    = cms.string("pfJetsPFlow"),
     input                     = cms.InputTag("selectedPFJets"),
     srcConfig = cms.PSet(
-      includeJetFlavour         = cms.bool(True),
+      includeJetFlavour         = cms.bool(False),
       inputJetFlavour           = cms.InputTag("icPFJetFlavourCalculator"),
       applyJECs                 = cms.bool(True),
       includeJECs               = cms.bool(False),
@@ -781,11 +789,13 @@ if release in ['72X', '72XMINIAOD']:
       process.selectedSlimmedJetsAK4+
       process.chs+
       process.ak4PFJetsCHS+
+      process.ak5PFJets+
       process.selectedPFJets+
       process.unpackedTracksAndVertices+
-      process.ak4JetTracksAssociatorAtVertexPF+
-    #  process.puJetMva+ #This works for jets built from PackedCandidates from CMSSW740
+      process.ak5JetTracksAssociatorAtVertexPF+
+    #  process.puJetMva+ #This works for jets built from PackedCandidates in CMSSW74X
       process.icPFJetProducerAK4+
+      process.btaggingSequenceAK5PF+
       process.icPFJetProducer #Not from slimmed jets
       )
   #process.icPFJetSequence += cms.Sequence(
