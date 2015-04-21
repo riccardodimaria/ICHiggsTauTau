@@ -17,52 +17,8 @@
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
-//
-// class declaration
-//
-
-using namespace std;
-using namespace reco;
-class MiniAODElectronIdMVAProducerCSA14 : public edm::EDFilter {
-public:
-    explicit MiniAODElectronIdMVAProducerCSA14(const edm::ParameterSet&);
-    ~MiniAODElectronIdMVAProducerCSA14();
-    
-private:
-    virtual bool filter(edm::Event&, const edm::EventSetup&);
-    
-    // ----------member data ---------------------------
-    bool verbose_;
-  //  edm::EDGetTokenT<reco::VertexCollection> vertexToken_;
-    edm::EDGetTokenT<pat::ElectronCollection> electronToken_;
-   // edm::EDGetTokenT<double> eventrhoToken_;
-    
-    //used tokens
-//    edm::EDGetTokenT<EcalRecHitCollection>  ecalRechitEBToken_;
- //   edm::EDGetTokenT<EcalRecHitCollection>  ecalRechitEEToken_;
-
-    
-    double _Rho;
-    string method_;
-    vector<string> mvaWeightFiles_;
-    bool Trig_;
-    
-    EGammaMvaEleEstimatorCSA14* mvaID_;
-    
-};
-
-//
-// constants, enums and typedefs
-//
-
-//
-// static data member definitions
-//
-
-//
-// constructors and destructor
-//
-MiniAODElectronIdMVAProducerCSA14::MiniAODElectronIdMVAProducerCSA14(const edm::ParameterSet& iConfig) {
+#include "UserCode/ICHiggsTauTau/plugins/ICElectronIDMVAProducerMiniAOD.hh"
+ICElectronIDMVAProducerMiniAOD::ICElectronIDMVAProducerMiniAOD(const edm::ParameterSet& iConfig) {
     verbose_ = iConfig.getUntrackedParameter<bool>("verbose", false);
   //  vertexToken_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexTag"));
 	electronToken_ = consumes<pat::ElectronCollection>(iConfig.getParameter<edm::InputTag>("electronTag"));
@@ -97,7 +53,7 @@ MiniAODElectronIdMVAProducerCSA14::MiniAODElectronIdMVAProducerCSA14(const edm::
 }
 
 
-MiniAODElectronIdMVAProducerCSA14::~MiniAODElectronIdMVAProducerCSA14()
+ICElectronIDMVAProducerMiniAOD::~ICElectronIDMVAProducerMiniAOD()
 {
     
     // do anything here that needs to be done at desctruction time
@@ -111,7 +67,7 @@ MiniAODElectronIdMVAProducerCSA14::~MiniAODElectronIdMVAProducerCSA14()
 //
 
 // ------------ method called on each new Event  ------------
-bool MiniAODElectronIdMVAProducerCSA14::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+bool ICElectronIDMVAProducerMiniAOD::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	using namespace edm;
     std::auto_ptr<edm::ValueMap<float> > out(new edm::ValueMap<float>() );
     
@@ -146,4 +102,4 @@ bool MiniAODElectronIdMVAProducerCSA14::filter(edm::Event& iEvent, const edm::Ev
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(MiniAODElectronIdMVAProducerCSA14);
+DEFINE_FWK_MODULE(ICElectronIDMVAProducerMiniAOD);

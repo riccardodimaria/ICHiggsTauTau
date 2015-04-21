@@ -141,7 +141,7 @@ process.selectedPFCandidates = cms.EDFilter("PFCandidateRefSelector",
   cut = cms.string("pt > 5.0")
 )
 
-process.selectedElectrons = cms.EDFilter("GsfElectronRefSelector",
+process.selectedElectrons = cms.EDFilter("GsfElectronSelector",
   src = cms.InputTag("gedGsfElectrons"),
   cut = cms.string("pt > 9.5 & abs(eta) < 2.6")
 )
@@ -315,7 +315,7 @@ process.icTrackSequence += cms.Sequence(
 # Electrons
 ################################################################
 
-electronLabel = cms.InputTag("gedGsfElectrons")
+electronLabel = cms.InputTag("selectedElectrons")
 if release in ['72XMINIAOD']: electronLabel = cms.InputTag("slimmedElectrons")
 
 process.icElectronSequence = cms.Sequence()
@@ -348,7 +348,7 @@ process.load("EgammaAnalysis.ElectronTools.electronIdMVAProducer_CSA14_cfi")
 #                               ),
 #   Trig=cms.bool(False),
 #   )
-
+process.mvaNonTrigV025nsPHYS14.electronTag = cms.InputTag("selectedElectrons")
 process.icElectronSequence+=cms.Sequence(
 #   process.mvaTrigV050nsCSA14+
 #   process.mvaTrigV025nsCSA14+
@@ -440,7 +440,7 @@ process.icElectronSequence += cms.Sequence(
 ################################################################
 process.icMuonSequence = cms.Sequence()
 
-process.muonIdMedium = cms.EDFilter("MuonIdProducer",
+process.muonIdMedium = cms.EDFilter("ICMuonIDProducer",
     verbose=cms.untracked.bool(False),
     muonTag=cms.InputTag('selectedPatMuons')
 #    muonTag=cms.InputTag('selectedPatMuonsSecond')
@@ -1132,13 +1132,20 @@ if release in ['70XMINIAOD', '72XMINIAOD', '72X']:
   process.patTriggerPath = cms.Path()
   switchOnTrigger(process, path = 'patTriggerPath',  outputModule = '')
 
-process.icTriggerPathProducer = cms.EDProducer('ICTriggerPathProducer',
-  input   = cms.InputTag("patTriggerEvent"),
-  branch = cms.string("triggerPaths"),
-  includeAcceptedOnly = cms.bool(True),
-  saveStrings = cms.bool(True),
-  splitVersion = cms.bool(False)
+process.icTriggerPathProducer = producers.icTriggerPathProducer.clone(
+ branch = cms.string("triggerPaths"),
+ input  = cms.InputTag("patTriggerEvent")
 )
+
+#process.icTriggerPathProducer = cms.EDProducer('ICTriggerPathProducer',
+#  input   = cms.InputTag("patTriggerEvent"),
+#  branch = cms.string("triggerPaths"),
+#  includeAcceptedOnly = cms.bool(True),
+#  inputIsStandAlone = cms.bool(False),
+#  inputPrescales = cms.bool(F
+#  saveStrings = cms.bool(True),
+#  splitVersion = cms.bool(False)
+#)
 process.icTriggerSequence = cms.Sequence()
 #if isData:
 process.icTriggerSequence += cms.Sequence(

@@ -1,4 +1,3 @@
-// system include files
 #include <memory>
 
 // user include files
@@ -15,25 +14,7 @@
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
-//
-// class declaration
-//
-
-using namespace std;
-using namespace reco;
-class MuonIdProducer : public edm::EDFilter {
-public:
-    explicit MuonIdProducer(const edm::ParameterSet&);
-    ~MuonIdProducer();
-    
-private:
-    virtual bool filter(edm::Event&, const edm::EventSetup&);
-    
-    // ----------member data ---------------------------
-    bool verbose_;
-    edm::EDGetTokenT<pat::MuonCollection> muonToken_;
-    
-};
+#include "UserCode/ICHiggsTauTau/plugins/ICMuonIDProducer.hh"
 
 //
 // constants, enums and typedefs
@@ -46,15 +27,15 @@ private:
 //
 // constructors and destructor
 //
-MuonIdProducer::MuonIdProducer(const edm::ParameterSet& iConfig) {
-	muonToken_ = consumes<pat::MuonCollection>(iConfig.getParameter<edm::InputTag>("muonTag"));
+ICMuonIDProducer::ICMuonIDProducer(const edm::ParameterSet& config) {
+	muonToken_ = consumes<pat::MuonCollection>(config.getParameter<edm::InputTag>("muonTag"));
     
     produces<edm::ValueMap<float> >("");
     
 }
 
 
-MuonIdProducer::~MuonIdProducer()
+ICMuonIDProducer::~ICMuonIDProducer()
 {
     
     // do anything here that needs to be done at desctruction time
@@ -68,12 +49,12 @@ MuonIdProducer::~MuonIdProducer()
 //
 
 // ------------ method called on each new Event  ------------
-bool MuonIdProducer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+bool ICMuonIDProducer::filter(edm::Event& event, const edm::EventSetup& iSetup) {
 	using namespace edm;
     std::auto_ptr<edm::ValueMap<float> > out(new edm::ValueMap<float>() );
     
 	Handle<pat::MuonCollection> muCollection;
-	iEvent.getByToken(muonToken_,muCollection);
+	event.getByToken(muonToken_,muCollection);
     const pat::MuonCollection muCandidates = (*muCollection.product());
     
     std::vector<float> values;
@@ -93,10 +74,10 @@ bool MuonIdProducer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     filler.insert(muCollection, values.begin(), values.end() );
 	filler.fill();
     
-	iEvent.put(out);
+	event.put(out);
     
 	return true;
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(MuonIdProducer);
+DEFINE_FWK_MODULE(ICMuonIDProducer);
