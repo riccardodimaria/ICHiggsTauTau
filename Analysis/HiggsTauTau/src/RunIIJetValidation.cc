@@ -87,8 +87,8 @@ int RunIIJetValidation::PreAnalysis() {
                    jetpdg_ = jets.at(ielec)->parton_flavour(); 
                    btagsimplehigh_ = jets.at(ielec)->GetBDiscriminator("simpleSecondaryVertexHighEffBJetTags");
                    btagsimplepur_ = jets.at(ielec)->GetBDiscriminator("simpleSecondaryVertexHighPurBJetTags");
-                   btagcombined_ = jets.at(ielec)->GetBDiscriminator("combinedSecondaryVertexBJetTags");
-                   //btagcombined_ = jets.at(ielec)->GetBDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags");
+                   //btagcombined_ = jets.at(ielec)->GetBDiscriminator("combinedSecondaryVertexBJetTags");
+                   btagcombined_ = jets.at(ielec)->GetBDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags");
                outtree_->Fill();
              }
          }

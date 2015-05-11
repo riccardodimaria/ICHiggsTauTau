@@ -46,10 +46,6 @@ int RunIIGenJetValidation::PreAnalysis() {
          outtree_->Branch("genjetphi", &genjetphi_);
          outtree_->Branch("genjetconstituents_", &genjetconstituents_);
 
-         outtree_->Branch("slimmedgenjetpt", &slimmedgenjetpt_);
-         outtree_->Branch("slimmedgenjeteta", &slimmedgenjeteta_);
-         outtree_->Branch("slimmedgenjetphi", &slimmedgenjetphi_);
-         outtree_->Branch("slimmedgenjetconstituents", &slimmedgenjetconstituents_);
 
          				//etc etc for whatever is important
 			}
@@ -67,10 +63,6 @@ int RunIIGenJetValidation::PreAnalysis() {
 		// Get the objects we need from the event
 		EventInfo const* eventInfo = event->GetPtr<EventInfo>("eventInfo");
 		std::vector<GenJet*> jets = event->GetPtrVec<GenJet>("genJets");
-                std::vector<GenJet*> reclusteredjets;
-                if(from_miniaod_){
-                  reclusteredjets = event->GetPtrVec<GenJet>("genJetsReclustered");
-                }
 //                std::vector<Tau*> taus = event->GetPtrVec<Electron>("taus");
                // std::vector<Muon*> muons = event->GetPtrVec<Muon>("muons");
 		//std::vector<Tau*> taus = event->GetPtrVec<Tau>("taus");
@@ -84,84 +76,16 @@ int RunIIGenJetValidation::PreAnalysis() {
 
 
 		if(write_tree_){
-             if(!from_miniaod_){
    for(UInt_t ielec=0;ielec<jets.size();++ielec){
                    genjetpt_ = jets.at(ielec)->pt();
                    genjeteta_ = jets.at(ielec)->eta();
                    genjetphi_ = jets.at(ielec)->phi();
                    genjetconstituents_ = jets.at(ielec)->n_constituents();
-               slimmedgenjetpt_=-999;
-              slimmedgenjeteta_=-999;
-              slimmedgenjetphi_=-999;
-              slimmedgenjetconstituents_=-999;
-            outtree_->Fill();
+               outtree_->Fill();
              }
          }
 
 
- 
-                  if(from_miniaod_){
-                    if(jets.size()==reclusteredjets.size()){
-
-                  //taus:
-                  for(UInt_t ielec=0;ielec<jets.size();++ielec){
-                   genjetpt_ = jets.at(ielec)->pt();
-                   genjeteta_ = jets.at(ielec)->eta();
-                   genjetphi_ = jets.at(ielec)->phi();
-                   genjetconstituents_=jets.at(ielec)->n_constituents();
-
-                   slimmedgenjetpt_ = reclusteredjets.at(ielec)->pt();
-                   slimmedgenjeteta_ = reclusteredjets.at(ielec)->eta();
-                   slimmedgenjetphi_ = reclusteredjets.at(ielec)->phi();
-                   slimmedgenjetconstituents_ = reclusteredjets.at(ielec)->n_constituents();
-             outtree_->Fill();
-             }
-            } else if (jets.size()>reclusteredjets.size()){
-                  for(UInt_t ielec=0;ielec<jets.size();++ielec){
-
-                   genjetpt_ = jets.at(ielec)->pt();
-                   genjeteta_ = jets.at(ielec)->eta();
-                   genjetphi_ = jets.at(ielec)->phi();
-                   genjetconstituents_ = jets.at(ielec)->n_constituents();
-                   if(ielec<reclusteredjets.size()){
-
-                   slimmedgenjetpt_ = reclusteredjets.at(ielec)->pt();
-                   slimmedgenjeteta_ = reclusteredjets.at(ielec)->eta();
-                   slimmedgenjetphi_ = reclusteredjets.at(ielec)->phi();
-                   slimmedgenjetconstituents_ = reclusteredjets.at(ielec)->n_constituents();
-                  } else {
-                 slimmedgenjetpt_=-999;
-                 slimmedgenjeteta_=-999;
-                 slimmedgenjetphi_=-999;
-                 slimmedgenjetconstituents_=-999;
-                 }
-             outtree_->Fill();
-             }
-             } else if (jets.size()<reclusteredjets.size()){
-                  for(UInt_t ielec=0;ielec<reclusteredjets.size();++ielec){
-                   slimmedgenjetpt_ = reclusteredjets.at(ielec)->pt();
-                   slimmedgenjeteta_ = reclusteredjets.at(ielec)->eta();
-                   slimmedgenjetphi_ = reclusteredjets.at(ielec)->phi();
-                   slimmedgenjetconstituents_ = reclusteredjets.at(ielec)->n_constituents();
-                   if(ielec<jets.size()){
-
-                   genjetpt_ = jets.at(ielec)->pt();
-                   genjeteta_ = jets.at(ielec)->eta();
-                   genjetphi_ = jets.at(ielec)->phi();
-                   genjetconstituents_ = jets.at(ielec)->n_constituents();
-                  } else {
-                 genjetpt_=-999;
-                 genjeteta_=-999;
-                 genjetphi_=-999;
-                 genjetconstituents_=-999;
-                 }
-             outtree_->Fill();
-           }
-         }
-        } 
-               
-
-		}
 		return 0;
 	}
 
