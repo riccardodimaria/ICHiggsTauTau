@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
   
   
   std::cout << "-------------------------------------" << std::endl;
-  std::cout << "JetTauFakeRateStudy" << std::endl;
+  std::cout << "RunIIValidationStudy" << std::endl;
   std::cout << "-------------------------------------" << std::endl;      string param_fmt = "%-25s %-40s\n";
   
  
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]){
  //Defining an analysis using this class removes all the need for any for loops through the events. An "analysis" loops through all the events up to max_events and runs the modules which you define at the end of this script using analysis.AddModule
   
   ic::AnalysisBase analysis(
-    "RunIIValidationStudyStudy",// Analysis name
+    "RunIIValidationStudy",// Analysis name
     files,                // Input files
     "icEventProducer/EventTree", // TTree name
     max_events);          // Max. events to process (-1 = all)
@@ -89,8 +89,6 @@ int main(int argc, char* argv[]){
   analysis.StopOnFileFailure(true);
   analysis.RetryFileAfterFailure(7, 3);
 
-  //For now, read in all the jets and taus within the pt and eta range of interest. Using Andrew's modules makes it much easier to 
-  //add other things later, if we need a certain type of ID (or flavour selection) applied to the jets/taus
   
 
  RunIIElectronValidation runIIElectronValidation = RunIIElectronValidation("runIIElectronValidation")
@@ -129,33 +127,6 @@ RunIIReclusteredGenJetValidation runIIReclusteredGenJetValidation = RunIIReclust
   .set_fs(fs);
 
 
-/*JetTauFakeRateExtras jetTauFakeRateExtraPlots = JetTauFakeRateExtras("jetTauFakeRateExtraPlots")
-  .set_write_plots(true)
-	.set_write_tree(false)
-	.set_wjets_mode(wjets_mode)
-	.set_fs(fs2);
-	*/
-	
-/* JetTauFakeRateOtherIsos jetTauFakeRateOtherIsos = JetTauFakeRateOtherIsos("jetTauFakeRateOtherIsos")
-  .set_write_plots(true)
-  .set_write_tree(false)
-	.set_by_decay_mode(by_decay_mode)
-	.set_by_jet_type(by_jet_type)
-	.set_wjets_mode(wjets_mode)
-	.set_fs(fs);
-	*/
-	
-	
-
-/*JetTauFakeRateExtrasOtherIsos jetTauFakeRateExtraPlotsOtherIsos = JetTauFakeRateExtrasOtherIsos("jetTauFakeRateExtraPlotsOtherIsos")
-  .set_write_plots(true)
-	.set_write_tree(false)
-	.set_wjets_mode(wjets_mode)
-	.set_fs(fs2);
-	*/
-
-
- //Add module here which reads in the filtered taus and jets and makes the plots/performs the fake rate study
  analysis.AddModule(&runIIElectronValidation);
  analysis.AddModule(&runIIMuonValidation);
  analysis.AddModule(&runIITauValidation);
