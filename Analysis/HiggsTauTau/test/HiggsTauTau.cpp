@@ -1056,7 +1056,7 @@ int main(int argc, char* argv[]){
     .set_dilepton_label("emtauCandidates")
     .set_met_label(met_label)
     .set_fullpath(svfit_folder)
-    .set_MC(true);
+    .set_MC(false);
 
   BTagCheck btagCheck("BTagCheck");
   btagCheck.set_fs(fs);

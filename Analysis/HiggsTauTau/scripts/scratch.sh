@@ -863,3 +863,12 @@ htt_em.inputs-sm-8TeV.root
  --title_left="muTau_0jet_high, 8 TeV" \
  --outname="0jet_shapes.pdf"
 
+  ./bin/PlotCompare  \
+ -p "reweighted:HRes Weighted:GluGluToHToTauTau_M-125_mt_2012.root:/higgs_pt:reweighted:-1:0:4" \
+ -p "nominal:Nominal Powheg:GluGluToHToTauTau_M-125_mt_2012.root:/higgs_pt:nominal:-1:0:1" \
+ --ratios='reweighted/nominal/1' --ratio_axis_label="Weighted / Nominal" --ratio_y_min=0.0 --ratio_y_max=1.4 \
+ --x_axis_title="Higgs p_{T} [GeV]" --norm_mode=0  --big_label=" " \
+ --log_y=true --rebin=5 --norm_bins=false \
+ --title_left="CMS Internal" --title_right "H#rightarrow#tau#tau" \
+ --outname="htt_higgs_pt.pdf"
+

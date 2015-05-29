@@ -103,13 +103,13 @@ namespace ic {
          || ggh_mass_ == "130"  || ggh_mass_ == "135" ) ggh_mass_ = "125";
       if (  ggh_mass_ == "140"  || ggh_mass_ == "145" || ggh_mass_ == "150"
          || ggh_mass_ == "155"  || ggh_mass_ == "160" ) ggh_mass_ = "150";
-      std::string file = "data/ggh_weights/HRes_weight_pTH_mH"+ggh_mass_+"_8TeV.root";
+      std::string file = "data/ggh_weights/htt_higgs_pt_atlas_bins.root";
       std::cout << boost::format(param_fmt()) % "higgs_pt_weights" % file;
       ggh_weights_ = new TFile(file.c_str());
       ggh_weights_->cd();
-      ggh_hist_ = (TH1F*)gDirectory->Get("Nominal");
-      ggh_hist_up_ = (TH1F*)gDirectory->Get("Up");
-      ggh_hist_down_ = (TH1F*)gDirectory->Get("Down");
+      ggh_hist_ = (TH1F*)gDirectory->Get("atlas_over_cms");
+      ggh_hist_up_ = (TH1F*)gDirectory->Get("atlas_over_cms");
+      ggh_hist_down_ = (TH1F*)gDirectory->Get("atlas_over_cms");
     }
 
     if (do_emu_e_fakerates_ || do_emu_m_fakerates_) {
