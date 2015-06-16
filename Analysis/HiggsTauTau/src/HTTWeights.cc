@@ -12,6 +12,7 @@
 #include "TSystem.h"
 #include "TFile.h"
 #include "boost/format.hpp"
+#include <algorithm>
 
 namespace ic {
 
@@ -103,13 +104,16 @@ namespace ic {
          || ggh_mass_ == "130"  || ggh_mass_ == "135" ) ggh_mass_ = "125";
       if (  ggh_mass_ == "140"  || ggh_mass_ == "145" || ggh_mass_ == "150"
          || ggh_mass_ == "155"  || ggh_mass_ == "160" ) ggh_mass_ = "150";
-      std::string file = "data/ggh_weights/htt_higgs_pt_atlas_bins.root";
+      std::string file = "data/ggh_weights/HRes_weight_pTH_mH"+ggh_mass_+"_8TeV.root";
       std::cout << boost::format(param_fmt()) % "higgs_pt_weights" % file;
       ggh_weights_ = new TFile(file.c_str());
       ggh_weights_->cd();
-      ggh_hist_ = (TH1F*)gDirectory->Get("atlas_over_cms");
-      ggh_hist_up_ = (TH1F*)gDirectory->Get("atlas_over_cms");
-      ggh_hist_down_ = (TH1F*)gDirectory->Get("atlas_over_cms");
+      ggh_hist_ = (TH1F*)gDirectory->Get("Nominal");
+      ggh_hist_up_ = (TH1F*)gDirectory->Get("Up");
+      ggh_hist_down_ = (TH1F*)gDirectory->Get("Down");
+      TFile *file2d = new TFile("data/ggh_weights/weights_June11.root");
+      file2d->cd();
+      ggh_hist_2d_ = (TH2D*)gDirectory->Get("h_weight");
     }
 
     if (do_emu_e_fakerates_ || do_emu_m_fakerates_) {
@@ -177,17 +181,31 @@ namespace ic {
 
     if (ggh_mass_ != "") {
       std::vector<GenParticle *> const& parts = event->GetPtrVec<GenParticle>("genParticles");
+      std::vector<GenParticle *> taus;
       GenParticle const* higgs = NULL;
       for (unsigned i = 0; i < parts.size(); ++i) {
-        if (parts[i]->status() == 3 && parts[i]->pdgid() == 25) {
+        if (parts[i]->status() == 3 && parts[i]->pdgid() == 25 && !higgs) {
           higgs = parts[i];
-          break;
         }
+        if (parts[i]->status() == 3 && std::abs(parts[i]->pdgid()) == 15) {
+          taus.push_back(parts[i]);
+        }
+      }
+      if (taus.size() != 2) {
+        std::cout << "Have " << taus.size() << " gen taus\n";
+        return 0;
       }
       if (!higgs) {
         std::cout << "Higgs not found!" << std::endl;
         throw;
       }
+
+      auto gen_jets = event->GetPtrVec<GenJet>("genJets");
+      ic::erase_if(gen_jets, [&](GenJet *g) {
+          return !(MinPtMaxEta(g, 25., 5.) && ic::MinDRToCollection(g, taus, 0.5));
+        });
+      unsigned n_jets = std::min<unsigned>(gen_jets.size(), 2);
+
       double h_pt = higgs->pt();
       double pt_weight = 1.0;
       int fbin = ggh_hist_->FindBin(h_pt);
@@ -195,6 +213,9 @@ namespace ic {
         pt_weight =  ggh_hist_->GetBinContent(fbin);
         //std::cout << "pt: " << h_pt << "\tweight: " <<  pt_weight << std::endl;
       }
+      // double x_max = ggh_hist_2d_->GetXaxis()->GetXmax() * 0.999;
+      // int fbin = ggh_hist_2d_->FindBin(std::min<double>(h_pt, x_max), n_jets);
+      // pt_weight = ggh_hist_2d_->GetBinContent(fbin);
       eventInfo->set_weight("ggh", pt_weight);
       if (mc_ == mc::summer12_53X || mc_ == mc::fall11_42X) {
         double weight_up   = ggh_hist_up_->GetBinContent(fbin)   / pt_weight;
