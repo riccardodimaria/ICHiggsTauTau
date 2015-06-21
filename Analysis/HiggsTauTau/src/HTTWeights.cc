@@ -94,6 +94,9 @@ namespace ic {
       ggh_hist_ = (TH1F*)gDirectory->Get("Nominal");
       ggh_hist_up_ = (TH1F*)gDirectory->Get("Up");
       ggh_hist_down_ = (TH1F*)gDirectory->Get("Down");
+      TFile *file2d = new TFile("data/ggh_weights/weights_June18_7TeV.root");
+      file2d->cd();
+      ggh_hist_2d_ = (TH2D*)gDirectory->Get("h_weight");
       // gDirectory->cd("powheg_weight");
       // ggh_hist_ = (TH1F*)gDirectory->Get(("weight_hqt_fehipro_fit_"+ggh_mass_).c_str());
     }
@@ -208,14 +211,14 @@ namespace ic {
 
       double h_pt = higgs->pt();
       double pt_weight = 1.0;
-      int fbin = ggh_hist_->FindBin(h_pt);
-      if (fbin > 0 && fbin <= ggh_hist_->GetNbinsX()) {
-        pt_weight =  ggh_hist_->GetBinContent(fbin);
-        //std::cout << "pt: " << h_pt << "\tweight: " <<  pt_weight << std::endl;
-      }
-      // double x_max = ggh_hist_2d_->GetXaxis()->GetXmax() * 0.999;
-      // int fbin = ggh_hist_2d_->FindBin(std::min<double>(h_pt, x_max), n_jets);
-      // pt_weight = ggh_hist_2d_->GetBinContent(fbin);
+      // int fbin = ggh_hist_->FindBin(h_pt);
+      // if (fbin > 0 && fbin <= ggh_hist_->GetNbinsX()) {
+      //   pt_weight =  ggh_hist_->GetBinContent(fbin);
+      //   //std::cout << "pt: " << h_pt << "\tweight: " <<  pt_weight << std::endl;
+      // }
+      double x_max = ggh_hist_2d_->GetXaxis()->GetXmax() * 0.999;
+      int fbin = ggh_hist_2d_->FindBin(std::min<double>(h_pt, x_max), n_jets);
+      pt_weight = ggh_hist_2d_->GetBinContent(fbin);
       eventInfo->set_weight("ggh", pt_weight);
       if (mc_ == mc::summer12_53X || mc_ == mc::fall11_42X) {
         double weight_up   = ggh_hist_up_->GetBinContent(fbin)   / pt_weight;
