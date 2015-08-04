@@ -79,7 +79,7 @@ ToyTauStudy::MainPlots::MainPlots(TFileDirectory dir) {
 
 void ToyTauStudy::Fill(MainPlots & plots, Candidate const* gen_th_vis, Tau const* rec_th) {
   bool pass_rec        = bool(rec_th);
-  bool pass_rec_dm     = pass_rec && rec_th->GetTauID("decayModeFindingOldDMs") > 0.5;
+  bool pass_rec_dm     = pass_rec && rec_th->GetTauID("decayModeFindingNewDMs") > 0.5;
   bool pass_rec_dm_acc = pass_rec_dm && MinPtMaxEta(rec_th, th_pt_acc_, th_eta_acc_);
 
   float ch_iso = pass_rec ? rec_th->GetTauID("chargedIsoPtSum") : 0.;

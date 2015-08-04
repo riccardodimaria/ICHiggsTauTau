@@ -77,10 +77,12 @@ JSON='
 {
   "output" : "",
   //"x_axis_title" : "Gen. #tau_{h} p_{T} (GeV)",
-  "x_axis_title" : "Reco. jet p_{T} (GeV)",  //"y_axis_title" : "Efficiency",
+  "x_axis_title" : "Reco. jet p_{T} (GeV)",
+  //"y_axis_title" : "Efficiency",
   "y_axis_title" : "Fake-rate",
   "y_axis_min" : 1E-5,
   "y_axis_max" : 1E-0,
+  //"y_axis_max" : 1.3,
   "log_y" : true,
   "legend_height" : 0.27,
   "legend_width" : 0.40,

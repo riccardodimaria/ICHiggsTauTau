@@ -488,8 +488,8 @@ plot = MultiGraphPlot(
       style = partial(StyleGraph, lineColor=38), legend = ' + I_{nh} < 2 GeV'
     ),
   ],
-  legend = partial(PositionedLegend, 0.35, 0.25, 1, 0.02),
-  logy = False
+  legend = partial(PositionedLegend, 0.35, 0.25, 4, 0.02),
+  logy = True
 )
 for d in plot.draw: d.drawOpts = 'LX'
 plot.Create()
