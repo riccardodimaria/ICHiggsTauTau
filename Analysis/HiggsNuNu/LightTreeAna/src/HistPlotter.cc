@@ -23,115 +23,6 @@
 
 namespace ic{
 
-    void DrawCMSLogoTest(TPad* pad, TString cmsText, TString extraText, int iPosX,
-		   float relPosX, float relPosY, float relExtraDY) {
-    TVirtualPad *pad_backup = gPad;
-    pad->cd();
-    float cmsTextFont = 61;  // default is helvetic-bold
-
-    bool writeExtraText = extraText.Length() > 0;
-    float extraTextFont = 52;  // default is helvetica-italics
-
-    // text sizes and text offsets with respect to the top frame
-    // in unit of the top margin size
-    TString lumiText;
-    float lumiTextOffset = 0.2;
-    float cmsTextSize = 0.8;
-    float lumiTextSize = 0.6;
-    // float cmsTextOffset    = 0.1;  // only used in outOfFrame version
-
-    // ratio of "CMS" and extra text size
-    float extraOverCmsTextSize = 0.76;
-
-    //!!MAKE CHOICE CONFIGURABLE
-    TString lumi_13TeV = "20.1 fb^{-1}";
-    TString lumi_8TeV = "19.2 fb^{-1}";
-    TString lumi_7TeV = "5.1 fb^{-1}";
-
-    lumiText +=lumi_8TeV;
-    lumiText +=" (8 TeV)";
-
-
-    bool outOfFrame = false;
-    if (iPosX / 10 == 0) {
-      outOfFrame = true;
-    }
-    int alignY_ = 3;
-    int alignX_ = 2;
-    if (iPosX / 10 == 0) alignX_ = 1;
-    if (iPosX == 0) alignX_ = 1;
-    if (iPosX == 0) alignY_ = 1;
-    if (iPosX / 10 == 1) alignX_ = 1;
-    if (iPosX / 10 == 2) alignX_ = 2;
-    if (iPosX / 10 == 3) alignX_ = 3;
-    if (iPosX == 0) relPosX = 0.14;
-    int align_ = 10 * alignX_ + alignY_;
-
-    float l = pad->GetLeftMargin();
-    float t = pad->GetTopMargin();
-    float r = pad->GetRightMargin();
-    float b = pad->GetBottomMargin();
-
-    TLatex latex;
-    latex.SetNDC();
-    latex.SetTextAngle(0);
-    latex.SetTextColor(kBlack);
-
-    float extraTextSize = extraOverCmsTextSize * cmsTextSize;
-    float pad_ratio = (static_cast<float>(pad->GetWh()) * pad->GetAbsHNDC()) /
-      (static_cast<float>(pad->GetWw()) * pad->GetAbsWNDC());
-    if (pad_ratio < 1.) pad_ratio = 1.;
-
-    latex.SetTextFont(42);
-    latex.SetTextAlign(31); 
-    latex.SetTextSize(lumiTextSize*t*pad_ratio);    
-    latex.DrawLatex(1-r,1-t+lumiTextOffset*t,lumiText);
-
-    if (outOfFrame) {
-      latex.SetTextFont(cmsTextFont);
-      latex.SetTextAlign(11);
-      latex.SetTextSize(cmsTextSize * t * pad_ratio);
-      latex.DrawLatex(l, 1 - t + lumiTextOffset * t, cmsText);
-    }
-
-
-    float posX_ = 0;
-    if (iPosX % 10 <= 1) {
-      posX_ = l + relPosX * (1 - l - r);
-    } else if (iPosX % 10 == 2) {
-      posX_ = l + 0.5 * (1 - l - r);
-    } else if (iPosX % 10 == 3) {
-      posX_ = 1 - r - relPosX * (1 - l - r);
-    }
-    float posY_ = 1 - t - relPosY * (1 - t - b);
-    if (!outOfFrame) {
-      latex.SetTextFont(cmsTextFont);
-      latex.SetTextSize(cmsTextSize * t * pad_ratio);
-      latex.SetTextAlign(align_);
-      latex.DrawLatex(posX_, posY_, cmsText);
-      if (writeExtraText) {
-	latex.SetTextFont(extraTextFont);
-	latex.SetTextAlign(align_);
-	latex.SetTextSize(extraTextSize * t * pad_ratio);
-	latex.DrawLatex(posX_, posY_ - relExtraDY * cmsTextSize * t, extraText);
-      }
-    } else if (writeExtraText) {
-      if (iPosX == 0) {
-	posX_ = l + relPosX * (1 - l - r);
-	posY_ = 1 - t + lumiTextOffset * t;
-      }
-      latex.SetTextFont(extraTextFont);
-      latex.SetTextSize(extraTextSize * t * pad_ratio);
-      latex.SetTextAlign(align_);
-      latex.DrawLatex(posX_, posY_, extraText);
-    }
-    pad_backup->cd();
-  }
-
-  void DrawCMSLogoTest(TPad* pad, TString cmsText, TString extraText, int iPosX) {
-    DrawCMSLogoTest(pad, cmsText, extraText, iPosX, 0.045, 0.035, 1.2);
-  }
-  
   void HistPlotter::SetMCStackStyle(ic::LTPlotElement* ele) {
     ele->set_fill_color(ele->color());
     ele->set_fill_style(1001);
@@ -159,6 +50,7 @@ namespace ic{
   void HistPlotter::SetDataStyle(ic::LTPlotElement* ele) {
     ele->set_marker_color(1);
     ele->set_line_color(1);
+    ele->set_line_style(1);
     ele->set_fill_color(1);
     ele->set_fill_style(0);
     ele->set_draw_fill(false);
@@ -465,7 +357,7 @@ namespace ic{
       for(unsigned iElement=0;iElement<elements_.size();iElement++){
 	if(do_debug_)std::cout<<"  "<<elements_[iElement].hist_ptr()->GetName()<<std::endl;
 	if(!(elements_[iElement].in_stack())){
-	  if(!elements_[iElement].is_data()){
+	  if(!(elements_[iElement].is_data()&&!(elements_[iElement].is_trigeff()))){
 	    if(first){
 	      if(!do_ratio_) elements_[iElement].hist_ptr()->SetTitle(shapes_[iShape].histtitle().c_str());
 	      elements_[iElement].hist_ptr()->Draw(elements_[iElement].drawopts().c_str());
@@ -605,7 +497,9 @@ namespace ic{
 	      num=(TH1F*)(elements_[iElement].hist_ptr()->Clone(("num"+shapes_[iShape].name()).c_str()));
 	      firstnum=false;
 	    }
-	    else num->Add(elements_[iElement].hist_ptr());
+	    else{
+	      num->Add(elements_[iElement].hist_ptr());
+	    }
 
 	  }
 	  if(elements_[iElement].is_inratioden()){
@@ -614,7 +508,9 @@ namespace ic{
 	      den=(TH1F*)(elements_[iElement].hist_ptr()->Clone(("den"+shapes_[iShape].name()).c_str()));
 	      firstden=false;
 	    }
-	    else den->Add(elements_[iElement].hist_ptr());
+	    else{
+	      den->Add(elements_[iElement].hist_ptr());
+	    }
 	    //get error on this contribution
 	    double thiselementfracerr;
 	    double thiselementintegral=Integral(elements_[iElement].hist_ptr());

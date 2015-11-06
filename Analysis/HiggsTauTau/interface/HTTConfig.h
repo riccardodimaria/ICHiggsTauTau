@@ -159,6 +159,8 @@ struct channel_def {
 		tt,
 		zee,
 		zmm,
+        tpzee,
+        tpzmm,
         wmnu,
 		mtmet,
 		etmet
@@ -174,6 +176,8 @@ inline std::string Channel2String(channel const& in) {
 		(channel::tt, "tt")
 		(channel::zee, "zee")
 		(channel::zmm, "zmm")
+		(channel::tpzee, "tpzee")
+		(channel::tpzmm, "tpzmm")
 		(channel::wmnu, "wmnu")
 		(channel::etmet, "etmet")
 		(channel::mtmet, "mtmet");
@@ -193,6 +197,8 @@ inline channel String2Channel(std::string const& in) {
 	("tt", channel::tt)
 	("zee", channel::zee)
 	("zmm", channel::zmm)
+	("tpzee", channel::tpzee)
+	("tpzmm", channel::tpzmm)
 	("wmnu", channel::wmnu)
 	("etmet", channel::etmet)
 	("mtmet", channel::mtmet);
@@ -204,6 +210,59 @@ inline channel String2Channel(std::string const& in) {
 		throw;
 	}
 }
+
+struct mcorigin_def{
+  enum type {
+     promptE,
+     promptMu,
+     tauE,
+     tauMu,
+     tauHad,
+     fake,
+     hadE,
+     hadMu
+  };
+};
+
+typedef safe_enum<mcorigin_def> mcorigin;
+
+inline unsigned MCOrigin2UInt(mcorigin const& in) {
+  static std::map<mcorigin, unsigned> conv = boost::assign::map_list_of
+    (mcorigin::promptE, 1)
+    (mcorigin::promptMu, 2)
+    (mcorigin::tauE,3)
+    (mcorigin::tauMu,4)
+    (mcorigin::tauHad,5)
+    (mcorigin::fake,6)
+    (mcorigin::hadE,7)
+    (mcorigin::hadMu,8);
+
+  if (conv.find(in) != conv.end()) {
+    return (conv.find(in)->second);
+  } else {
+    std::cerr << "Enum2UInt error, enum not recognised " <<std::endl;
+    throw;
+  }
+}
+
+inline mcorigin UInt2MCOrigin(unsigned const&in){
+   static std::map<unsigned, mcorigin> conv = boost::assign::map_list_of
+   (1, mcorigin::promptE)
+   (2, mcorigin::promptMu)
+   (3, mcorigin::tauE)
+   (4, mcorigin::tauMu)
+   (5, mcorigin::tauHad)
+   (6, mcorigin::fake)
+   (7, mcorigin::hadE)
+   (8, mcorigin::hadMu);
+
+ if (conv.find(in) != conv.end()){
+   return (conv.find(in)->second);
+ } else {
+   std::cerr << "UInt2Enum Error, unsigned " << in << " not recognised " <<std::endl;
+   throw;
+  }
+} 
 
 }
 

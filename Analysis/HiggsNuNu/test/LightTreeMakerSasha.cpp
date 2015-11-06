@@ -67,6 +67,8 @@ int main(int argc, char* argv[]){
   string wstream;                 // W stream: enu, munu or taunu, or nunu for everything
 
   bool is_data;                   // true = data, false = mc         
+  bool dotkiso;                   // Do Track Muon Isolation
+  bool do_selmuonoverlapveto;     // Do Jet Overlap Checking With Sel not Veto Muons
   bool dojessyst;                 // Do Jet Energy Scale Systematic Run
   bool dodatajessyst;             // Do Alternate Data Jet Energy Scale Method Systematic Run
   bool jesupordown;               // If doing Jet Energy Scale Systematic Run, run with up or down correction (true for up, false for down)
@@ -143,6 +145,8 @@ int main(int argc, char* argv[]){
     ("jetptprecut",         po::value<double>(&jetptprecut)->default_value(15.))
     ("doMetFilters",        po::value<bool>(&doMetFilters)->default_value(false))
     ("filters",             po::value<string> (&filters)->default_value("HBHENoiseFilter,EcalDeadCellTriggerPrimitiveFilter,eeBadScFilter,trackingFailureFilter,manystripclus53X,toomanystripclus53X,logErrorTooManyClusters,CSCTightHaloFilter"))
+    ("do_selmuonoverlapveto",po::value<bool>(&do_selmuonoverlapveto)->default_value(false))
+    ("dotkiso",             po::value<bool>(&dotkiso)->default_value(false))
     ("dojessyst",           po::value<bool>(&dojessyst)->default_value(false))
     ("dodatajessyst",       po::value<bool>(&dodatajessyst)->default_value(false))
     ("jesupordown",         po::value<bool>(&jesupordown)->default_value(true))
@@ -200,6 +204,7 @@ int main(int argc, char* argv[]){
   if (dojessyst) std::cout << boost::format(param_fmt) % "jesupordown" % jesupordown;
   std::cout << boost::format(param_fmt) % "dojersyst" % dojersyst;
   if (dojessyst) std::cout << boost::format(param_fmt) % "jerbettorworse" % jerbetterorworse;
+  std::cout << boost::format(param_fmt) % "turnoffpuid" % turnoffpuid;
   std::cout << boost::format(param_fmt) % "era" % era_str;
   std::cout << boost::format(param_fmt) % "mc" % mc_str;
   std::cout << boost::format(param_fmt) % "prod" % prod;
@@ -436,8 +441,9 @@ int main(int argc, char* argv[]){
   CopyCollection<Muon> vetoMuonCopyCollection("CopyToVetoMuons","muonsPFlow","vetoMuons");
 
   SimpleFilter<Muon> vetoMuonFilter = SimpleFilter<Muon>
-    ("VetoMuonPtEtaFilter")
-    .set_input_label("vetoMuons").set_predicate(bind(MinPtMaxEta, _1, veto_muon_pt, veto_muon_eta) &&
+    ("VetoMuonPtEtaFilter");
+  if(!dotkiso){
+    vetoMuonFilter.set_input_label("vetoMuons").set_predicate(bind(MinPtMaxEta, _1, veto_muon_pt, veto_muon_eta) &&
 						(bind(&Muon::is_global, _1) || bind(&Muon::is_tracker, _1))
 						&& bind(PF04Isolation<Muon>, _1, 0.5, 0.2)
 						//&& bind(fabs, bind(&Muon::dxy_vertex, _1)) < veto_muon_dxy 
@@ -445,6 +451,17 @@ int main(int argc, char* argv[]){
 						)
     .set_min(0)
     .set_max(999);
+  }
+  else{
+    vetoMuonFilter.set_input_label("vetoMuons").set_predicate(bind(MinPtMaxEta, _1, veto_muon_pt, veto_muon_eta) &&
+						(bind(&Muon::is_global, _1) || bind(&Muon::is_tracker, _1))
+						&& bind(MuonTkIso, _1)
+						//&& bind(fabs, bind(&Muon::dxy_vertex, _1)) < veto_muon_dxy 
+						//&& bind(fabs, bind(&Muon::dz_vertex, _1)) < veto_muon_dz
+						)
+    .set_min(0)
+    .set_max(999);
+  }
 
   CopyCollection<Muon> vetoMuonNoIsoCopyCollection("CopyToVetoMuonsNoIso","muonsPFlow","vetoMuonsNoIso");
   SimpleFilter<Muon> vetoMuonNoIsoFilter = SimpleFilter<Muon>
@@ -462,15 +479,28 @@ int main(int argc, char* argv[]){
   CopyCollection<Muon> selMuonCopyCollection("CopyToSelMuons","muonsPFlow","selMuons");
   SimpleFilter<Muon> selMuonFilter = SimpleFilter<Muon>
     ("SelMuonPtEtaFilter")
-    .set_input_label("selMuons").set_predicate(bind(MinPtMaxEta, _1, muon_pt, muon_eta) &&
+    .set_min(0)
+    .set_max(999);
+  
+  if(!dotkiso){
+    selMuonFilter.set_input_label("selMuons").set_predicate(bind(MinPtMaxEta, _1, muon_pt, muon_eta) &&
 					       bind(&Muon::is_global, _1) &&
 					       bind(MuonTight, _1) && 
 					       bind(PF04Isolation<Muon>, _1, 0.5, 0.12) &&
 					       bind(fabs, bind(&Muon::dxy_vertex, _1)) < muon_dxy && 
 					       bind(fabs, bind(&Muon::dz_vertex, _1)) < muon_dz
-					       )
-    .set_min(0)
-    .set_max(999);
+							    );
+  }
+  else{
+    selMuonFilter.set_input_label("selMuons").set_predicate(bind(MinPtMaxEta, _1, muon_pt, muon_eta) &&
+					       bind(&Muon::is_global, _1) &&
+					       bind(MuonTight, _1) && 
+					       bind(MuonTkIso, _1) &&
+					       bind(fabs, bind(&Muon::dxy_vertex, _1)) < muon_dxy && 
+					       bind(fabs, bind(&Muon::dz_vertex, _1)) < muon_dz
+							    );
+  }
+
 
 
   OneCollCompositeProducer<Muon> mumuLeadingPairProducer = OneCollCompositeProducer<Muon>
@@ -582,7 +612,7 @@ int main(int argc, char* argv[]){
     ("JetIDFilter")
     .set_input_label("pfJetsPFlow");
     if(!turnoffpuid){
-      jetIDFilter.set_predicate((bind(PFJetID, _1)) && bind(&PFJet::pu_id_mva_loose, _1));
+      jetIDFilter.set_predicate((bind(PFJetID, _1)) && bind(PileupJetID, _1,2));
     }
     else{
       jetIDFilter.set_predicate(bind(PFJetID, _1));
@@ -611,8 +641,11 @@ int main(int argc, char* argv[]){
 
   OverlapFilter<PFJet, Muon> jetMuonOverlapFilter = OverlapFilter<PFJet, Muon>("jetMuonOverlapFilter")
     .set_input_label("pfJetsPFlow")
-    .set_reference_label("vetoMuons") //NoIso")
     .set_min_dr(0.5);
+  if(!do_selmuonoverlapveto)jetMuonOverlapFilter.set_reference_label("vetoMuons"); //NoIso")
+  else jetMuonOverlapFilter.set_reference_label("selMuons"); //NoIso")
+  
+
 
   OverlapFilter<PFJet, Tau> jetTauOverlapFilter = OverlapFilter<PFJet, Tau>("jetTauOverlapFilter")
     .set_input_label("pfJetsPFlow")
@@ -749,7 +782,7 @@ int main(int argc, char* argv[]){
     .set_is_data(is_data)
     .set_do_noskim(donoskim)
     .set_do_sashaskim(dosashaskim)
-    .set_trigger_path("HLT_DiPFJet40_PFMETnoMu65_MJJ800VBF_AllJets_v")
+    .set_trigger_path("HLT_Mu24_v")
     .set_trig_obj_label("triggerObjectsDiPFJet40PFMETnoMu65MJJ800VBFAllJets");
 
   // ------------------------------------------------------------------------------------

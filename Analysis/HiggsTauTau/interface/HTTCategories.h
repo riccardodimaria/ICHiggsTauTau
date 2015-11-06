@@ -29,6 +29,7 @@ class HTTCategories : public ModuleBase {
   CLASS_MEMBER(HTTCategories, bool, systematic_shift)
   CLASS_MEMBER(HTTCategories, bool, add_Hhh_variables)
   CLASS_MEMBER(HTTCategories, std::string, sync_output_name)
+  CLASS_MEMBER(HTTCategories, bool, iso_study)
   CLASS_MEMBER(HTTCategories, int, kinfit_mode )
   CLASS_MEMBER(HTTCategories, fwlite::TFileService*, fs)
  
@@ -83,6 +84,12 @@ class HTTCategories : public ModuleBase {
   bool extramuon_veto_;
   bool lepton_veto_;
   unsigned n_vtx_;
+  bool good_vtx_;
+/*  branch_var trigger_object_pt_1;
+  branch_var trigger_object_eta_1;
+  branch_var trigger_object_pt_2;
+  branch_var trigger_object_eta_2;
+*/
   unsigned n_pu_;
   branch_var m_sv_;
   branch_var m_vis_;
@@ -109,12 +116,22 @@ class HTTCategories : public ModuleBase {
   branch_var pt_2_;
   branch_var eta_1_;
   branch_var eta_2_;
-  float phi_1_;
-  float phi_2_;
+  branch_var phi_1_;
+  branch_var phi_2_;
+  double E_1_;
+  double E_2_;
   int q_1_;
   int q_2_;
   branch_var iso_1_;
   branch_var iso_2_;
+  double iso_1_db03_;
+  double iso_1_db03allch_;
+  double iso_1_db04allch_; 
+  double iso_1_ea03_;
+  double iso_2_db03_;
+  double iso_2_db03allch_;
+  double iso_2_db04allch_; 
+  double iso_2_ea03_;
   bool antiele_1_;
   bool antimu_1_;
   bool antiele_2_;
@@ -122,8 +139,8 @@ class HTTCategories : public ModuleBase {
   double z_2_;
   float m_1_;
   branch_var m_2_;
-  float mva_1_;
-  float mva_2_;
+  branch_var mva_1_;
+  branch_var mva_2_;
   branch_var mvamet_;
   branch_var mvamet_phi_;
   float pfmet_;
@@ -255,6 +272,10 @@ class HTTCategories : public ModuleBase {
   int convergence_bb_; //Defined if n_jets >= 2
   branch_var jdeta_;     // Defined if n_jets >= 2
   float jdphi_;
+  unsigned gen_match_1_;
+  unsigned gen_match_2_;
+  //double leading_lepton_match_pt_;
+  //double subleading_lepton_match_pt_;
 
   double jet_csv_mjj_;       // Defined if n_jets >= 2
   double jet_csv_deta_;     // Defined if n_jets >= 2

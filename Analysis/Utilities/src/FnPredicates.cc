@@ -34,6 +34,19 @@ namespace ic {
     return false;
   }
 
+ std::pair<bool,unsigned> IsFilterMatchedWithIndex(Candidate const* cand, std::vector<TriggerObject*> const& objs, std::string const& filter, double const& max_dr){
+    std::size_t hash = CityHash64(filter);
+    for (unsigned i = 0; i < objs.size(); ++i) {
+      std::vector<std::size_t> const& labels = objs[i]->filters();
+      if (std::find(labels.begin(),labels.end(), hash) == labels.end()) continue;
+      if (DR(cand, objs[i]) < max_dr){
+         const unsigned index_val = i;
+         return std::make_pair(true,index_val);
+      }
+    }
+    return std::make_pair(false,0);
+  }
+
   bool VertexDz(Tau const* cand, double const& vertexZ) {
     return ( fabs(cand->vz() - vertexZ)==0) ; 
   }
@@ -122,20 +135,23 @@ namespace ic {
     bool result = false;
 
     double neutralFrac = jet->neutral_had_energy() / jet->uncorrected_energy();
+//    int n_pf = jet->charged_multiplicity() + jet->neutral_multiplicity() + jet->HF_had_multiplicity() + jet->HF_em_multiplicity();
 
-    if (eta < 2.4) {
+    if (eta <= 2.4) {
       result = neutralFrac   < 0.99
       && jet->neutral_em_energy_frac()    < 0.99
             && jet->charged_multiplicity()+jet->neutral_multiplicity() > 1
-            && jet->muon_energy_frac() < 0.8
             && jet->charged_had_energy_frac()   > 0.0
             && jet->charged_multiplicity()      > 0
             && jet->charged_em_energy_frac()    < 0.99;
-    } else {
+    } else if(eta<=3.0){
       result = neutralFrac   < 0.99
             && jet->neutral_em_energy_frac()    < 0.99
-            && jet->charged_multiplicity()+jet->neutral_multiplicity() > 1
-            && jet->muon_energy_frac() < 0.8;
+            && jet->charged_multiplicity()+jet->neutral_multiplicity() > 1;
+    }
+    else{
+      result = jet->neutral_em_energy_frac()    < 0.90
+	    && jet->neutral_multiplicity()>10;
     }
     return result;
   }
@@ -555,12 +571,48 @@ namespace ic {
       )
        );
   }
+
+  bool TightElectronIDSpring15(Electron const* elec) {//function for spring15 ID 25ns !! needs updating
+    bool in_barrel = true;
+    if (fabs(elec->sc_eta()) > 1.479) in_barrel = false;
+    
+    double ooemoop = fabs((1.0/elec->ecal_energy() - elec->sc_e_over_p()/elec->ecal_energy()));
+//    double dbiso = elec->dr03_pfiso_charged() + std::max(0., elec->dr03_pfiso_neutral()+elec->dr03_pfiso_gamma() - 0.5*elec->dr03_pfiso_pu());
+    
+    return(
+       !elec->has_matched_conversion()
+        && ( (in_barrel       
+	&& elec->full5x5_sigma_IetaIeta()   <0.0101
+        && fabs(elec->deta_sc_tk_at_vtx())  <0.00926
+        && fabs(elec->dphi_sc_tk_at_vtx())  <0.0336
+        && elec->hadronic_over_em()         <0.0597
+        && ooemoop                          <0.012
+        && elec->gsf_tk_nhits()             <=2
+     //   && fabs(elec->dxy_vertex())         <0.060279
+	      //  && fabs(elec->dz_vertex())          <0.800538
+	      //  && dbiso/elec->pt()                 <0.164369
+        ) ||
+        (!in_barrel       
+        && elec->full5x5_sigma_IetaIeta()   <0.0279
+        && fabs(elec->deta_sc_tk_at_vtx())  <0.00724
+        && fabs(elec->dphi_sc_tk_at_vtx())  <0.0918
+        && elec->hadronic_over_em()         <0.0615
+        && ooemoop                          <0.00999
+        && elec->gsf_tk_nhits()             <=1
+    //    && fabs(elec->dxy_vertex())         <0.273097
+     //   && fabs(elec->dz_vertex())          <0.885860
+   //     && dbiso/elec->pt()                 <0.212604
+        ) )
+        );
+
+  }
+
   bool VetoElectronIDPhys14(Electron const* elec){
     bool in_barrel = true;
     if (fabs(elec->sc_eta()) > 1.479) in_barrel = false;
     
     double ooemoop = fabs((1.0/elec->ecal_energy() - elec->sc_e_over_p()/elec->ecal_energy()));
-    double dbiso = elec->dr03_pfiso_charged() + std::max(0., elec->dr03_pfiso_neutral()+elec->dr03_pfiso_gamma() - 0.5*elec->dr03_pfiso_pu());
+    //double dbiso = elec->dr03_pfiso_charged() + std::max(0., elec->dr03_pfiso_neutral()+elec->dr03_pfiso_gamma() - 0.5*elec->dr03_pfiso_pu());
     
     return(
        !elec->has_matched_conversion()
@@ -581,6 +633,42 @@ namespace ic {
         && fabs(elec->dphi_sc_tk_at_vtx())  <0.255450
         && elec->hadronic_over_em()         <0.223870
         && ooemoop                          <0.155501
+        && elec->gsf_tk_nhits()             <=3
+    //    && fabs(elec->dxy_vertex())         <0.273097
+     //   && fabs(elec->dz_vertex())          <0.885860
+   //     && dbiso/elec->pt()                 <0.212604
+        ) )
+        );
+
+   } 
+
+  
+  bool VetoElectronIDSpring15(Electron const* elec){//function for spring15 veto 25ns
+    bool in_barrel = true;
+    if (fabs(elec->sc_eta()) > 1.479) in_barrel = false;
+    
+    double ooemoop = fabs((1.0/elec->ecal_energy() - elec->sc_e_over_p()/elec->ecal_energy()));
+//    double dbiso = elec->dr03_pfiso_charged() + std::max(0., elec->dr03_pfiso_neutral()+elec->dr03_pfiso_gamma() - 0.5*elec->dr03_pfiso_pu());
+    
+    return(
+       !elec->has_matched_conversion()
+        && ( (in_barrel       
+	&& elec->full5x5_sigma_IetaIeta()   <0.0114
+        && fabs(elec->deta_sc_tk_at_vtx())  <0.0152
+        && fabs(elec->dphi_sc_tk_at_vtx())  <0.216
+        && elec->hadronic_over_em()         <0.181
+        && ooemoop                          <0.207
+        && elec->gsf_tk_nhits()             <=2
+     //   && fabs(elec->dxy_vertex())         <0.060279
+	      //  && fabs(elec->dz_vertex())          <0.800538
+	      //  && dbiso/elec->pt()                 <0.164369
+        ) ||
+        (!in_barrel       
+        && elec->full5x5_sigma_IetaIeta()   <0.0352
+        && fabs(elec->deta_sc_tk_at_vtx())  <0.0113
+        && fabs(elec->dphi_sc_tk_at_vtx())  <0.237
+        && elec->hadronic_over_em()         <0.116
+        && ooemoop                          <0.174
         && elec->gsf_tk_nhits()             <=3
     //    && fabs(elec->dxy_vertex())         <0.273097
      //   && fabs(elec->dz_vertex())          <0.885860
@@ -747,20 +835,20 @@ namespace ic {
     double pt = fabs(elec->pt());
     double idmva = elec->GetIdIso("mvaNonTrigSpring15");
     if (!loose_wp) {
-      if (eta <= 0.8 && pt <= 10                  && idmva > -0.253) pass_mva = true;
-      if (eta >  0.8 && eta <= 1.479 && pt <=10   && idmva > 0.081) pass_mva = true;
-      if (eta >  1.479 && pt <= 10                && idmva > -0.081) pass_mva = true;
-      if (eta <= 0.8 && pt > 10                   && idmva > 0.965) pass_mva = true;
-      if (eta >  0.8 && eta <= 1.479 && pt > 10   && idmva > 0.917) pass_mva = true;
-      if (eta >  1.479 && pt > 10                 && idmva > 0.683) pass_mva = true;
+      if (eta <= 0.8 && pt <= 10                  && idmva > 0.287435) pass_mva = true;
+      if (eta >  0.8 && eta <= 1.479 && pt <=10   && idmva > 0.221846) pass_mva = true;
+      if (eta >  1.479 && pt <= 10                && idmva > -0.303263) pass_mva = true;
+      if (eta <= 0.8 && pt > 10                   && idmva > 0.967083) pass_mva = true;
+      if (eta >  0.8 && eta <= 1.479 && pt > 10   && idmva > 0.929117) pass_mva = true;
+      if (eta >  1.479 && pt > 10                 && idmva > 0.726311) pass_mva = true;
 
     } else {
-      if (eta <= 0.8 && pt <= 10                  && idmva > -0.483) pass_mva = true;
-      if (eta >  0.8 && eta <= 1.479 && pt <=10   && idmva > -0.267) pass_mva = true;
-      if (eta >  1.479 && pt <= 10                && idmva > -0.323) pass_mva = true;
-      if (eta <= 0.8 && pt > 10                   && idmva > 0.933) pass_mva = true;
-      if (eta >  0.8 && eta <= 1.479 && pt > 10   && idmva > 0.825) pass_mva = true;
-      if (eta >  1.479 && pt > 10                 && idmva > 0.337) pass_mva = true;
+      if (eta <= 0.8 && pt <= 10                  && idmva > -0.083313) pass_mva = true;
+      if (eta >  0.8 && eta <= 1.479 && pt <=10   && idmva > -0.235222) pass_mva = true;
+      if (eta >  1.479 && pt <= 10                && idmva > -0.67099) pass_mva = true;
+      if (eta <= 0.8 && pt > 10                   && idmva > 0.913286) pass_mva = true;
+      if (eta >  0.8 && eta <= 1.479 && pt > 10   && idmva > 0.805013) pass_mva = true;
+      if (eta >  1.479 && pt > 10                 && idmva > 0.358969) pass_mva = true;
     }
     return pass_mva;
   }
@@ -820,6 +908,7 @@ namespace ic {
    return pass_id && !(ElectronHTTId(elec, true) && PF04IsolationEB(elec, 0.5, 0.15, 0.1) && fabs(elec->dxy_vertex()) < 0.02 && fabs(elec->dz_vertex()) < 0.1 ); // !(usual MVA ID && pf isolation < 0.15(0.1) barrel(endcap))
   }
 
+  
 
   bool PF04IsolationEBElec(Electron const* cand, double const& dbeta, double const& cut_barrel, double const& cut_endcap) {
     double iso =  PF04IsolationVal(cand, dbeta);
@@ -864,6 +953,114 @@ namespace ic {
     if (pt >  20.0 && eta >  1.0 && eta <= 1.5    && idmva > 0.947) pass_mva = true;
     if (pt >  20.0 && eta >  1.5                  && idmva > 0.878) pass_mva = true;
     return pass_mva;
+  }
+
+  //Photon IDs taken from https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonIdentificationRun2
+  bool TightPhotonIDSpring15(Photon const* photon,double const& rho) {//function for spring15 ID
+    double eta = fabs(photon->eta());
+
+    bool in_barrel = true;
+    if (eta > 1.479) in_barrel = false;
+    bool in_endcap = true;
+    if (eta < 1.479) in_endcap = false;
+
+    double photon_area, neutral_area, charged_area;
+    if (eta < 1.0)                  { charged_area=0.0158; neutral_area=0.0143; photon_area=0.0725; }
+    if (eta >= 1.0 && eta < 1.479)  { charged_area=0.0143; neutral_area=0.0210; photon_area=0.0604; }
+    if (eta >= 1.479 && eta < 2.0)  { charged_area=0.0115; neutral_area=0.0147; photon_area=0.0320; }
+    if (eta >= 2.0 && eta < 2.2)    { charged_area=0.0094; neutral_area=0.0082; photon_area=0.0512; }
+    if (eta >= 2.2 && eta < 2.3)    { charged_area=0.0095; neutral_area=0.0124; photon_area=0.0766; }
+    if (eta >= 2.3 && eta < 2.4)    { charged_area=0.0068; neutral_area=0.0186; photon_area=0.0949; }
+    if (eta >= 2.4)                 { charged_area=0.0053; neutral_area=0.0320; photon_area=0.1160; }
+
+    return(
+	( (in_barrel       
+	   && photon->had_tower_over_em()<0.05
+	   && photon->sigma_IetaIeta()<0.01
+	   && std::max(photon->dr03_pfiso_charged()-rho*charged_area,0.)<0.91
+	   && std::max(photon->dr03_pfiso_neutral()-rho*neutral_area,0.)<(0.33+exp(0.0044*photon->pt()+0.5809))
+           && std::max(photon->dr03_pfiso_gamma()-rho*photon_area,0.)<(0.61+0.0043*photon->pt())
+	   ) ||
+	  (in_endcap       
+	   && photon->had_tower_over_em()<0.05
+	   && photon->sigma_IetaIeta()<0.0267
+	   && std::max(photon->dr03_pfiso_charged()-rho*charged_area,0.)<0.65
+	   && std::max(photon->dr03_pfiso_neutral()-rho*neutral_area,0.)<(0.93+exp(0.004*photon->pt()+0.9402))
+	   && std::max(photon->dr03_pfiso_gamma()-rho*photon_area,0.)<(0.54+0.0041*photon->pt())
+	   ) )
+        );
+
+  }
+
+  bool MediumPhotonIDSpring15(Photon const* photon,double const& rho) {//function for spring15 ID
+    double eta = fabs(photon->eta());
+    bool in_barrel = true;
+    if (eta > 1.479) in_barrel = false;
+    bool in_endcap = true;
+    if (eta < 1.479) in_endcap = false;
+
+    double photon_area, neutral_area, charged_area;
+    if (eta < 1.0)                  { charged_area=0.0158; neutral_area=0.0143; photon_area=0.0725; }
+    if (eta >= 1.0 && eta < 1.479)  { charged_area=0.0143; neutral_area=0.0210; photon_area=0.0604; }
+    if (eta >= 1.479 && eta < 2.0)  { charged_area=0.0115; neutral_area=0.0147; photon_area=0.0320; }
+    if (eta >= 2.0 && eta < 2.2)    { charged_area=0.0094; neutral_area=0.0082; photon_area=0.0512; }
+    if (eta >= 2.2 && eta < 2.3)    { charged_area=0.0095; neutral_area=0.0124; photon_area=0.0766; }
+    if (eta >= 2.3 && eta < 2.4)    { charged_area=0.0068; neutral_area=0.0186; photon_area=0.0949; }
+    if (eta >= 2.4)                 { charged_area=0.0053; neutral_area=0.0320; photon_area=0.1160; }
+    
+    return(
+	( (in_barrel       
+	   && photon->had_tower_over_em()<0.05
+	   && photon->sigma_IetaIeta()<0.01
+	   && std::max(photon->dr03_pfiso_charged()-rho*charged_area,0.)<1.31
+	   && std::max(photon->dr03_pfiso_neutral()-rho*neutral_area,0.)<(0.6+exp(0.0044*photon->pt()+0.5809))
+           && std::max(photon->dr03_pfiso_gamma()-rho*photon_area,0.)<(1.33+0.0043*photon->pt())
+	   ) ||
+	  (in_endcap       
+	   && photon->had_tower_over_em()<0.05
+	   && photon->sigma_IetaIeta()<0.0267
+	   && std::max(photon->dr03_pfiso_charged()-rho*charged_area,0.)<1.25
+	   && std::max(photon->dr03_pfiso_neutral()-rho*neutral_area,0.)<(1.65+exp(0.004*photon->pt()+0.9402))
+	   && std::max(photon->dr03_pfiso_gamma()-rho*photon_area,0.)<(1.02+0.0041*photon->pt())
+	   ) )
+	   );
+    
+  }
+  
+
+  bool LoosePhotonIDSpring15(Photon const* photon,double const& rho) {//function for spring15 ID
+    double eta = fabs(photon->eta());
+    bool in_barrel = true;
+    if (eta > 1.479) in_barrel = false;
+    bool in_endcap = true;
+    if (eta < 1.479) in_endcap = false;
+    
+    double photon_area, neutral_area, charged_area;
+    if (eta < 1.0)                  { charged_area=0.0158; neutral_area=0.0143; photon_area=0.0725; }
+    if (eta >= 1.0 && eta < 1.479)  { charged_area=0.0143; neutral_area=0.0210; photon_area=0.0604; }
+    if (eta >= 1.479 && eta < 2.0)  { charged_area=0.0115; neutral_area=0.0147; photon_area=0.0320; }
+    if (eta >= 2.0 && eta < 2.2)    { charged_area=0.0094; neutral_area=0.0082; photon_area=0.0512; }
+    if (eta >= 2.2 && eta < 2.3)    { charged_area=0.0095; neutral_area=0.0124; photon_area=0.0766; }
+    if (eta >= 2.3 && eta < 2.4)    { charged_area=0.0068; neutral_area=0.0186; photon_area=0.0949; }
+    if (eta >= 2.4)                 { charged_area=0.0053; neutral_area=0.0320; photon_area=0.1160; }
+
+    return(
+	( (in_barrel       
+	   && photon->had_tower_over_em()<0.05
+	   && photon->sigma_IetaIeta()<0.0103
+	   && std::max(photon->dr03_pfiso_charged()-rho*charged_area,0.)<2.44
+	   && std::max(photon->dr03_pfiso_neutral()-rho*neutral_area,0.)<(2.57+exp(0.0044*photon->pt()+0.5809))
+           && std::max(photon->dr03_pfiso_gamma()-rho*photon_area,0.)<(1.92+0.0043*photon->pt())
+	      ) ||
+        (in_endcap       
+	 && photon->had_tower_over_em()<0.05
+	 && photon->sigma_IetaIeta()<0.0277
+	 && std::max(photon->dr03_pfiso_charged()-rho*charged_area,0.)<1.84
+	 && std::max(photon->dr03_pfiso_neutral()-rho*neutral_area,0.)<(4+exp(0.004*photon->pt()+0.9402))
+	 && std::max(photon->dr03_pfiso_gamma()-rho*photon_area,0.)<(2.15+0.0041*photon->pt())
+        ) )
+        );
+
   }
 
 
@@ -982,6 +1179,13 @@ namespace ic {
     return isMedium;
   }
 
+  bool MuonLoose(Muon const* muon) {
+    bool isLoose = 
+      muon->is_pf() &&
+      (muon->is_global()||muon->is_tracker());
+    return isLoose;
+  }
+
   bool HttEMuFakeMuon(Muon const* muon) {
     bool pass_iso = false;
     if ( muon->pt() > 20. &&
@@ -1027,7 +1231,12 @@ namespace ic {
         ((muon->dr03_tk_sum_pt() + 
           muon->dr03_ecal_rechit_sum_et() + 
           muon->dr03_hcal_tower_sum_et()) 
-        / muon->pt()) < 0.15);
+	 / muon->pt()) < 0.15);
+    return isoCut;
+  }
+
+  bool MuonTkIso(Muon const* muon) {
+    bool isoCut = (((muon->dr03_tk_sum_pt())/muon->pt())<0.1); 
     return isoCut;
   }
   

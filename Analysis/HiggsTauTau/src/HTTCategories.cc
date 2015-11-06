@@ -27,6 +27,7 @@ namespace ic {
       bjet_regression_ = false;
       make_sync_ntuple_ = false;
       sync_output_name_ = "SYNC.root";
+      iso_study_=false;
       is_embedded_=false;
       is_data_=false;
       kinfit_mode_ = 0; //0 = don't run, 1 = run simple 125,125 default fit, 2 = run extra masses default fit, 3 = run m_bb only fit
@@ -56,6 +57,7 @@ namespace ic {
 
     if (fs_ && write_tree_) {
       outtree_ = fs_->make<TTree>("ntuple","ntuple");
+      outtree_->Branch("event",             &event_);
       outtree_->Branch("wt",                &wt_.var_double);
       outtree_->Branch("os",                &os_);
       outtree_->Branch("m_sv",              &m_sv_.var_double);
@@ -71,6 +73,9 @@ namespace ic {
       outtree_->Branch("antiele_2",         &antiele_2_);
       outtree_->Branch("antimu_2",          &antimu_2_);
       outtree_->Branch("leptonveto",        &lepton_veto_);
+      outtree_->Branch("dilepton_veto",     &dilepton_veto_);
+      outtree_->Branch("extraelec_veto",    &extraelec_veto_);
+      outtree_->Branch("extramuon_veto",    &extramuon_veto_);
       outtree_->Branch("met",               &mvamet_.var_double);
       outtree_->Branch("n_jets",            &n_jets_);
       outtree_->Branch("n_bjets",           &n_bjets_);
@@ -81,6 +86,10 @@ namespace ic {
       outtree_->Branch("n_jetsingap_lowpt", &n_jetsingap_lowpt_);
       outtree_->Branch("pt_2",              &pt_2_.var_double);
       outtree_->Branch("mjj_lowpt",         &mjj_lowpt_);
+      outtree_->Branch("gen_match_1", &gen_match_1_);
+      outtree_->Branch("gen_match_2", &gen_match_2_);
+//      outtree_->Branch("leading_lepton_match_pt", &leading_lepton_match_pt_);
+//      outtree_->Branch("subleading_lepton_match_pt",&subleading_lepton_match_pt_);
       outtree_->Branch("jdeta_lowpt",       &jdeta_lowpt_);
       if (channel_ == channel::em) {
         outtree_->Branch("em_gf_mva",         &em_gf_mva_);
@@ -96,6 +105,22 @@ namespace ic {
         outtree_->Branch("jet_csvbcsv_1",     &jet_csvbcsv_1_);
         outtree_->Branch("jet_csvbcsv_2",     &jet_csvbcsv_2_);
       }
+      if(iso_study_){
+        //Add different isolation variables for if studying isolation
+        outtree_->Branch("iso_1_db03", &iso_1_db03_);
+        outtree_->Branch("iso_1_db03allch", &iso_1_db03allch_);
+        outtree_->Branch("iso_1_db04allch", &iso_1_db04allch_);
+        outtree_->Branch("iso_1_ea03", &iso_1_ea03_);
+        outtree_->Branch("iso_2_db03", &iso_2_db03_);
+        outtree_->Branch("iso_2_db03allch", &iso_2_db03allch_);
+        outtree_->Branch("iso_2_db04allch", &iso_2_db04allch_);
+        outtree_->Branch("iso_2_ea03", &iso_2_ea03_);
+      }
+      if(channel_ == channel::tpzmm || channel_ == channel::tpzee){
+        //Extra variables needed for tag and probe
+        outtree_->Branch("id_1", &mva_1_.var_double);
+        outtree_->Branch("id_2", &mva_2_.var_double);
+      }
       //Variables needed for control plots need only be generated for central systematics
       if(!systematic_shift_) {
         //outtree_->Branch("wt_ggh_pt_up",      &wt_ggh_pt_up_);
@@ -107,9 +132,14 @@ namespace ic {
         //outtree_->Branch("wt_tau_id_up",      &wt_tau_id_up_);
         //outtree_->Branch("wt_tau_id_down",    &wt_tau_id_down_);
         outtree_->Branch("n_vtx",             &n_vtx_);
+        outtree_->Branch("good_vtx",          &good_vtx_);
         outtree_->Branch("pt_1",              &pt_1_.var_double);
         outtree_->Branch("eta_1",             &eta_1_.var_double);
         outtree_->Branch("eta_2",             &eta_2_.var_double);
+        outtree_->Branch("phi_1",             &phi_1_.var_double);
+        outtree_->Branch("phi_2",             &phi_2_.var_double);
+        outtree_->Branch("E_1",               &E_1_);
+        outtree_->Branch("E_2",               &E_2_);
         outtree_->Branch("z_2",               &z_2_);
         outtree_->Branch("m_2",               &m_2_.var_double);
         outtree_->Branch("met_phi",           &mvamet_phi_.var_double);
@@ -124,6 +154,11 @@ namespace ic {
         outtree_->Branch("bpt_1",             &bpt_1_.var_double);
         outtree_->Branch("beta_1",            &beta_1_.var_double);
         outtree_->Branch("bcsv_1",            &bcsv_1_.var_double);
+/*        outtree_->Branch("trigger_object_pt_1",&trigger_object_pt_1.var_double);
+        outtree_->Branch("trigger_object_eta_1",&trigger_object_eta_1.var_double);
+        outtree_->Branch("trigger_object_pt_2",&trigger_object_pt_2.var_double);
+        outtree_->Branch("trigger_object_eta_2",&trigger_object_eta_2.var_double);
+*/
         if (channel_ == channel::em) {
           outtree_->Branch("pzetavis",          &pzetavis_.var_double);
           outtree_->Branch("pzetamiss",         &pzetamiss_.var_double);
@@ -250,7 +285,7 @@ namespace ic {
       // pt (including effect of any energy scale corrections)
       synctree_->Branch("pt_1", &pt_1_.var_float, "pt_1/F");
       // phi
-      synctree_->Branch("phi_1", &phi_1_, "phi_1/F");
+      synctree_->Branch("phi_1", &phi_1_.var_float, "phi_1/F");
       // eta
       synctree_->Branch("eta_1", &eta_1_.var_float, "eta_1/F");
       // mass
@@ -263,7 +298,7 @@ namespace ic {
       // reasons
       synctree_->Branch("iso_1", &iso_1_.var_float, "iso_1/F");
       // If an electron, the output of the ID MVA, zero otherwise
-      synctree_->Branch("mva_1", &mva_1_, "mva_1/F");
+      synctree_->Branch("mva_1", &mva_1_.var_float, "mva_1/F");
       // Transverse (x-y) impact parameter w.r.t to the primary vertex
       synctree_->Branch("d0_1", &d0_1_, "d0_1/F");
       // Longitudinal (z) impact parameter w.r.t to the primary vertex
@@ -276,12 +311,18 @@ namespace ic {
       synctree_->Branch("mt_1", &mt_1_.var_float, "mt_1/F");
       // Non-triggering electron ID MVA score
       synctree_->Branch("id_e_mva_nt_loose_1", &id_e_mva_nt_loose_1_, "id_e_mva_nt_loose_1/F");
+      /*synctree_->Branch("trigger_object_pt_1",&trigger_object_pt_1.var_float,"trigger_object_pt_1/F");
+      synctree_->Branch("trigger_object_eta_1",&trigger_object_eta_1.var_float,"trigger_object_eta_1/F");
+      synctree_->Branch("trigger_object_pt_2",&trigger_object_pt_2.var_float,"trigger_object_pt_2/F");
+      synctree_->Branch("trigger_object_eta_2",&trigger_object_eta_2.var_float,"trigger_object_eta_2/F");
+*/
+
 
       // Lepton 2 properties
       // pt (including effect of any energy scale corrections)
       synctree_->Branch("pt_2", &pt_2_.var_float, "pt_2/F");
       // phi
-      synctree_->Branch("phi_2", &phi_2_, "phi_2/F");
+      synctree_->Branch("phi_2", &phi_2_.var_float, "phi_2/F");
       // eta
       synctree_->Branch("eta_2", &eta_2_.var_float, "eta_2/F");
       // mass
@@ -298,7 +339,7 @@ namespace ic {
       // Longitudinal (z) impact parameter w.r.t to the primary vertex
       synctree_->Branch("dZ_2", &dz_2_, "dz_2/F");
       // If an electron, the output of the ID MVA, zero otherwise
-      synctree_->Branch("mva_2", &mva_2_, "mva_2/F");
+      synctree_->Branch("mva_2", &mva_2_.var_float, "mva_2/F");
       // Whether lepton passes ID selection (always true in IC ntuples)
 //      synctree_->Branch("passid_2", &lPassId2, "lPassId2/B");
       // Whether lepton passes iso selection (always true in IC ntuples)
@@ -312,6 +353,8 @@ namespace ic {
       synctree_->Branch("dilepton_veto", &dilepton_veto_, "dilepton_veto/O");
       synctree_->Branch("extraelec_veto", &extraelec_veto_, "extraelec_veto/O");
       synctree_->Branch("extramuon_veto", &extramuon_veto_, "extramuon_veto/O");
+      synctree_->Branch("gen_match_1", &gen_match_1_, "gen_match_1/i");
+      synctree_->Branch("gen_match_2", &gen_match_2_,"gen_match_2/i");
 
       // Variables defined when lepton 2 is a tau
       // raw value of the 3hits delta-beta isolation
@@ -506,7 +549,7 @@ namespace ic {
 
     // Get the objects we need from the event
     EventInfo const* eventInfo = event->GetPtr<EventInfo>("eventInfo");
-
+    
     wt_ = {eventInfo->total_weight(), static_cast<float>(eventInfo->total_weight())};
     run_ = eventInfo->run();
     event_ = (unsigned long long) eventInfo->event();
@@ -514,7 +557,7 @@ namespace ic {
     std::vector<PileupInfo *> puInfo;
     float true_int = -1;
 
-    if (event->Exists("pileupInfo") || strategy_ == strategy::phys14 || (strategy_==strategy::spring15&&!is_data_) ) {
+    if (event->Exists("pileupInfo") || strategy_ == strategy::phys14 || (strategy_==strategy::spring15 && !is_data_) ) {
      puInfo = event->GetPtrVec<PileupInfo>("pileupInfo");
       for (unsigned i = 0; i < puInfo.size(); ++i) {
         if (puInfo[i]->bunch_crossing() == 0)
@@ -523,6 +566,10 @@ namespace ic {
     }
     n_pu_ = true_int;
     rho_ = eventInfo->jet_rho();
+    if(event->Exists("gen_match_1")) gen_match_1_ = MCOrigin2UInt(event->Get<ic::mcorigin>("gen_match_1"));
+    if(event->Exists("gen_match_2")) gen_match_2_ = MCOrigin2UInt(event->Get<ic::mcorigin>("gen_match_2"));
+//    if(event->Exists("leading_lepton_match_pt")) leading_lepton_match_pt_ = event->Get<double>("leading_lepton_match_pt");
+//    if(event->Exists("subleading_lepton_match_pt")) subleading_lepton_match_pt_ = event->Get<double>("subleading_lepton_match_pt");
     
     wt_ggh_pt_up_ = 1.0;
     wt_ggh_pt_down_ = 1.0;
@@ -577,8 +624,15 @@ namespace ic {
     Candidate const* lep2 = ditau->GetCandidate("lepton2");
 //    std::vector <Met const* mets = event->GetPtrVec<Met>(met_label_);
    // std::vector<Met*> met_vec = event->GetPtrVec<Met>(met_label_);
-    std::vector<Met*> met_vec = event->GetPtrVec<Met>("pfMet");
-    Met const* mets = met_vec.at(0);  
+    
+    //slightly different met format for new ntuples
+    Met const* mets;
+//    if(strategy_ == strategy::paper2013){
+      mets = event->GetPtr<Met>(met_label_);
+ //   } else {
+  //    std::vector<Met*> met_vec = event->GetPtrVec<Met>("pfMet");
+   //   mets = met_vec.at(0);  
+    //}
 
     std::vector<PFJet*> jets = event->GetPtrVec<PFJet>(jets_label_);
     std::vector<PFJet*> corrected_jets;
@@ -596,7 +650,8 @@ namespace ic {
     if(strategy_ == strategy::phys14) btag_label = "combinedInclusiveSecondaryVertexV2BJetTags";
     if(strategy_ == strategy::phys14) btag_wp = 0.814 ;
     if(strategy_ == strategy::spring15) btag_label = "pfCombinedInclusiveSecondaryVertexV2BJetTags";
-    if(strategy_ == strategy::spring15) btag_wp = 0.814 ;
+    if(strategy_ == strategy::spring15) btag_wp = 0.89 ;
+
     ic::erase_if(loose_bjets, boost::bind(&PFJet::GetBDiscriminator, _1, btag_label) < 0.244);
     //Extra set of jets which are CSV ordered is required for the H->hh analysis
     std::vector<PFJet*> jets_csv = prebjets;
@@ -650,6 +705,16 @@ namespace ic {
 
 
     n_vtx_ = eventInfo->good_vertices();
+    /*trigger_object_pt_1 = 0;
+    trigger_object_pt_2 = 0;
+    trigger_object_eta_1 = 0;
+    trigger_object_eta_2 = 0;
+    if(event->Exists("good_first_vertex")) good_vtx_ = event->Get<bool>("good_first_vertex");
+    if(event->Exists("leg1_trigger_obj_pt")) trigger_object_pt_1 = event->Get<double>("leg1_trigger_obj_pt");
+    if(event->Exists("leg1_trigger_obj_eta")) trigger_object_eta_1 = event->Get<double>("leg1_trigger_obj_eta");
+    if(event->Exists("leg2_trigger_obj_pt")) trigger_object_pt_2 = event->Get<double>("leg2_trigger_obj_pt");
+    if(event->Exists("leg2_trigger_obj_eta")) trigger_object_eta_2 = event->Get<double>("leg2_trigger_obj_eta");
+*/
 
     if (event->Exists("svfitMass")) {
       m_sv_ = event->Get<double>("svfitMass");
@@ -669,7 +734,7 @@ namespace ic {
     }
 
     Met const* pfmet = NULL;
-    //slightly different pfMET format for new ntuples
+    //slightly different met format for new ntuples
     if(strategy_ == strategy::paper2013) pfmet = event->GetPtr<Met>("pfMet");
     if(strategy_ == strategy::phys14 || strategy_ == strategy::spring15) {
       std::vector<Met*> pfMet_vec = event->GetPtrVec<Met>("pfMet");
@@ -696,20 +761,21 @@ namespace ic {
       m_vis_ = m_vis_* event->Get<double>("mass_scale");
     }
 
-/*    mt_1_ = MT(lep1, mets);
-    mt_2_ = MT(lep2, mets);
-    mt_ll_ = MT(ditau, mets);
-    pzeta_ = PZeta(ditau, mets, 0.85);
-    pzetavis_ = PZetaVis(ditau);
-    pzetamiss_ = PZeta(ditau, mets, 0.0);
-*/
-
-    mt_1_ = MT(lep1, pfmet);
-    mt_2_ = MT(lep2, pfmet);
-    mt_ll_ = MT(ditau, pfmet);
-    pzeta_ = PZeta(ditau, pfmet, 0.85);
-    pzetavis_ = PZetaVis(ditau);
-    pzetamiss_ = PZeta(ditau, pfmet, 0.0);
+    if(strategy_ == strategy::paper2013) {
+      mt_1_ = MT(lep1, mets);
+      mt_2_ = MT(lep2, mets);
+      mt_ll_ = MT(ditau, mets);
+      pzeta_ = PZeta(ditau, mets, 0.85);
+      pzetavis_ = PZetaVis(ditau);
+      pzetamiss_ = PZeta(ditau, mets, 0.0);
+    } else {
+      mt_1_ = MT(lep1, pfmet);
+      mt_2_ = MT(lep2, pfmet);
+      mt_ll_ = MT(ditau, pfmet);
+      pzeta_ = PZeta(ditau, pfmet, 0.85);
+      pzetavis_ = PZetaVis(ditau);
+      pzetamiss_ = PZeta(ditau, pfmet, 0.0);
+    }
 
     if(channel_ == channel::em || channel_ == channel::et){
       Electron const* elec = dynamic_cast<Electron const*>(lep1);
@@ -724,6 +790,8 @@ namespace ic {
     eta_2_ = lep2->eta();
     phi_1_ = lep1->phi();
     phi_2_ = lep2->phi();
+    E_1_ = lep1->energy();
+    E_2_ = lep2->energy();
     m_1_ = lep1->M();
     m_2_ = lep2->M();
     q_1_ = lep1->charge();
@@ -789,6 +857,16 @@ namespace ic {
       }
       if(strategy_ == strategy::spring15) {
         iso_1_ = PF03IsolationVal(elec, 0.5, 0);
+        if(iso_study_){
+          iso_1_db03_ = PF03IsolationVal(elec, 0.5, 0);
+          iso_1_ea03_ = PF03EAIsolationVal(elec, eventInfo);
+          iso_1_db03allch_ = PF03IsolationVal(elec, 0.5, 1);
+          iso_1_db04allch_ = PF04IsolationVal(elec, 0.5, 1);
+          iso_2_db03_ = 0;
+          iso_2_ea03_ = 0;
+          iso_2_db03allch_ = 0;
+          iso_2_db04allch_ = 0;
+        }
         mva_1_ = elec->GetIdIso("mvaNonTrigSpring15");
         iso_2_ = tau->GetTauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
         mva_2_ = tau->GetTauID("againstElectronMVA5raw");
@@ -834,6 +912,16 @@ namespace ic {
       }
       if(strategy_ == strategy::phys14 || strategy_ == strategy::spring15) {
         iso_1_ = PF03IsolationVal(muon, 0.5, 0);
+        if(iso_study_){
+          iso_1_db03_ = PF03IsolationVal(muon, 0.5, 0);
+          iso_1_ea03_ = PF03EAIsolationVal(muon, eventInfo);
+          iso_1_db03allch_ = PF03IsolationVal(muon, 0.5, 1);
+          iso_1_db04allch_ = PF04IsolationVal(muon, 0.5, 1);
+          iso_2_db03_ = 0;
+          iso_2_ea03_ = 0;
+          iso_2_db03allch_ = 0;
+          iso_2_db04allch_ = 0;
+        }
         mva_1_ = 0.0;
         iso_2_ = tau->GetTauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
         mva_2_ = tau->GetTauID("againstElectronMVA5raw");
@@ -873,6 +961,16 @@ namespace ic {
       if(strategy_ == strategy::spring15) {
         iso_1_ = PF03IsolationVal(elec, 0.5, 0);
         iso_2_ = PF03IsolationVal(muon, 0.5, 0);
+        if(iso_study_){
+          iso_1_db03_ = PF03IsolationVal(elec, 0.5, 0);
+          iso_1_ea03_ = PF03EAIsolationVal(elec, eventInfo);
+          iso_1_db03allch_ = PF03IsolationVal(elec, 0.5, 1);
+          iso_1_db04allch_ = PF04IsolationVal(elec, 0.5, 1);
+          iso_2_db03_ = PF03IsolationVal(muon, 0.5, 0);
+          iso_2_ea03_ = PF03EAIsolationVal(muon, eventInfo);
+          iso_2_db03allch_ = PF03IsolationVal(muon, 0.5, 1);
+          iso_2_db04allch_ = PF04IsolationVal(muon, 0.5, 1);
+        }
         mva_1_ = elec->GetIdIso("mvaNonTrigSpring15");
       }
 
@@ -942,33 +1040,33 @@ namespace ic {
 
       }
     }
-    if (channel_ == channel::zee) {
+    if (channel_ == channel::zee || channel_ == channel::tpzee) {
       Electron const* elec1 = dynamic_cast<Electron const*>(lep1);
       Electron const* elec2 = dynamic_cast<Electron const*>(lep2);
       if(strategy_ == strategy::spring15) {
         iso_1_ = PF03IsolationVal(elec1, 0.5, 0);
         iso_2_ = PF03IsolationVal(elec2, 0.5, 0);
-        mva_1_ = elec1->GetIdIso("mvaNonTrigSpring15");
-        mva_2_ = elec2->GetIdIso("mvaNonTrigSpring15");
+        mva_1_ = ElectronHTTIdSpring15(elec1, false);
+        mva_2_ = ElectronHTTIdSpring15(elec2, false);
       }
       d0_1_ = elec1->dxy_vertex();
       dz_1_ = elec1->dz_vertex();
-      d0_2_ = elec1->dxy_vertex();
-      dz_2_ = elec1->dz_vertex();
+      d0_2_ = elec2->dxy_vertex();
+      dz_2_ = elec2->dz_vertex();
     }
-    if (channel_ == channel::zmm) {
+    if (channel_ == channel::zmm || channel_ == channel::tpzmm) {
       Muon const* muon1 = dynamic_cast<Muon const*>(lep1);
       Muon const* muon2 = dynamic_cast<Muon const*>(lep2);
       if(strategy_ == strategy::spring15) {
         iso_1_ = PF03IsolationVal(muon1, 0.5, 0);
         iso_2_ = PF03IsolationVal(muon2, 0.5, 0);
-        mva_1_ = 0.0;
-        mva_2_ = 0.0;
+        mva_1_ = MuonMedium(muon1);
+        mva_2_ = MuonMedium(muon2);
       }
       d0_1_ = muon1->dxy_vertex();
       dz_1_ = muon1->dz_vertex();
-      d0_2_ = muon1->dxy_vertex();
-      dz_2_ = muon1->dz_vertex();
+      d0_2_ = muon2->dxy_vertex();
+      dz_2_ = muon2->dz_vertex();
     }
 
 

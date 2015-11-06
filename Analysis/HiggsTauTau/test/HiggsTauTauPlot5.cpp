@@ -22,6 +22,7 @@ int main(int argc, char* argv[]){
 	string var;																		// Use background methods for chosen category
 	string cat;																		// Use background methods for chosen category
 	unsigned verbosity;														// Verbose output, useful for diagnostic purposes
+  unsigned use_status_flags;                    // Use status flag based gen info for sample splitting?
 	bool do_ss;                            		    // Tweaking some things for the paper
 	string datacard;             									// Channel, e.g. et
 	vector<string> set_alias;											// A string like alias1:value1,alias2:value2 etc
@@ -73,6 +74,7 @@ int main(int argc, char* argv[]){
 	  ("var",              		    po::value<string>(&var)->required())
 	  ("cat",             		    po::value<string>(&cat)->default_value(""))
 	  ("verbosity",               po::value<unsigned>(&verbosity)->default_value(0))
+    ("use_status_flags",        po::value<unsigned>(&use_status_flags)->default_value(1))
 	  ("do_ss", 	                po::value<bool>(&do_ss)->default_value(false))
 	  ("interpolate", 	          po::value<bool>(&interpolate)->default_value(false))
 	  ("datacard",                po::value<string>(&datacard)->default_value(""))
@@ -164,7 +166,7 @@ int main(int argc, char* argv[]){
 	// ************************************************************************
 	// Setup HTTRun2Analysis 
 	// ************************************************************************
-	HTTRun2Analysis ana(String2Channel(channel_str), "2015", verbosity);
+	HTTRun2Analysis ana(String2Channel(channel_str), "2015", use_status_flags, verbosity);
     ana.SetQCDRatio(qcd_os_ss_factor);
     if (do_ss) ana.SetQCDRatio(1.0);
 	for (auto const& a : alias_vec) ana.SetAlias(a.first, a.second);
@@ -196,7 +198,10 @@ int main(int argc, char* argv[]){
   if (signal_bins != "") sig_var = reduced_var+signal_bins;
 
 	ana.FillHistoMap(hmap, method, var, sel, cat, "wt", "");
-	//ana.FillSMSignal(hmap, sm_masses, sig_var, sel, cat, "wt", "", "", signal_xs);
+  
+
+   
+ ana.FillSMSignal(hmap, sm_masses, sig_var, sel, cat, "wt", "", "", signal_xs);
 	if (add_sm_background != "") {
 		ana.FillSMSignal(hmap, {add_sm_background}, var, sel, cat, "wt", "_SM", "");
 	}
@@ -320,7 +325,7 @@ int main(int argc, char* argv[]){
 	for (auto const& syst : systematics) {
 		std::cout << "-----------------------------------------------------------------------------------" << std::endl;
 		std::cout << "[HiggsTauTauPlot5] Doing systematic templates for \"" << syst.second << "\"..." << std::endl;
-		HTTRun2Analysis ana_syst(String2Channel(channel_str), "2015", verbosity);
+		HTTRun2Analysis ana_syst(String2Channel(channel_str), "2015", use_status_flags, verbosity);
         ana_syst.SetQCDRatio(qcd_os_ss_factor);
 		for (auto const& a : alias_vec) ana_syst.SetAlias(a.first, a.second);
 		ana_syst.AddSMSignalSamples(sm_masses);
@@ -347,8 +352,8 @@ int main(int argc, char* argv[]){
 	// Reduce top yield to account for contamination in embedded
 	// ************************************************************************
 	if (sub_ztt_top_frac > 0.) {
-		std::string top_label = (channel_str == "em") ? "ttbar" : "TT";
-		std::string ztt_label = (channel_str == "em") ? "Ztt" : "ZTT";
+		std::string top_label =  "TT";
+		std::string ztt_label =  "ZTT";
 		std::cout << "[HiggsTauTauPlot5] Subtracting " << top_label 
 			<< " contamination in " << ztt_label << ": " << sub_ztt_top_frac << std::endl;
 		HTTRun2Analysis::Value ztt_rate = hmap[ztt_label].second;
@@ -385,8 +390,8 @@ int main(int argc, char* argv[]){
     std::cout << "Uncorrected Eff:  " << uncorr_eff << std::endl;
     std::cout << "Corrected Eff:    " << corr_eff << std::endl;
     std::cout << "Ratio:            " << corr_eff/uncorr_eff << std::endl;
-		std::string top_label = (channel_str == "em") ? "ttbar" : "TT";
-		std::string ztt_label = (channel_str == "em") ? "Ztt" : "ZTT";
+		std::string top_label = "TT";
+		std::string ztt_label = "ZTT";
     HTTRun2Analysis::Value scaled_embedded = hmap[ztt_label].second;
     double norm_sf = scaled_embedded.first / embedded_data.first;
     double embedded_ttbar_norm = embedded_ttbar.first * norm_sf;
@@ -402,8 +407,8 @@ int main(int argc, char* argv[]){
   if (sub_ztt_top_shape) {
 	std::cout << "-----------------------------------------------------------------------------------" << std::endl;
 	std::cout << "[HiggsHTohhPlot] Subtracting TOP contamination from ZTT embedded using TT embedded shape..." << std::endl;	
-    std::string top_label = (channel_str == "em") ? "ttbar" : "TT";
-	std::string ztt_label = (channel_str == "em") ? "Ztt" : "ZTT";
+    std::string top_label = "TT";
+	std::string ztt_label = "ZTT";
     
     HTTRun2Analysis::Value embedded_ttbar = ana.GetLumiScaledRate("Embedded-TTJets_FullLeptMGDecays", sel, cat, "wt");
     TH1F embedded_ttbar_shape = ana.GetLumiScaledShape(var,"Embedded-TTJets_FullLeptMGDecays", sel, cat, "wt");
@@ -490,7 +495,7 @@ int main(int argc, char* argv[]){
 	// Apply special e-mu OS/SS fakes correction 
 	// ************************************************************************
 	if (syst_fakes_os_ss_shape != "") {
-		  std::string qcd_label = (channel_str == "em") ? "Fakes" : "QCD";
+		  std::string qcd_label =  "QCD";
       for (unsigned j = 0; j < vars.size(); ++j) {
         TH1F weights = ic::GetFromTFile<TH1F>("input/scale_factors/OS_SS_weights.root","/","OSoverSS_msv_nobtag_ratio");
         TH1F h1 = hmap[qcd_label+vars_postfix[j]].first;
@@ -600,7 +605,7 @@ int main(int argc, char* argv[]){
 	// ************************************************************************
   if (scan_bins) {
     vector<string> bkgs = {"ZTT","ZL","ZJ","W","QCD","TT","VV"};
-    if (channel_str == "em") bkgs = {"Ztt","Fakes","EWK","ttbar"}; 
+    if (channel_str == "em") bkgs = {"ZTT","QCD","VV","TT"}; 
     if (channel_str == "tt") bkgs = {"QCD","W","VV","TT"};
     vector<string> sm_procs = {"ggH","qqH","VH"};
     vector<string> mssm_procs = {"ggH","bbH"};
@@ -687,10 +692,10 @@ int main(int argc, char* argv[]){
 	// ************************************************************************
 	if (datacard != "") {
 		std::string dc_mode_label;
-		if (channel_str == "et") 			dc_mode_label = "eleTau";
-		if (channel_str == "mt") 			dc_mode_label = "muTau";
-		if (channel_str == "mtmet") 	dc_mode_label = "muTau_soft";
-		if (channel_str == "em") 			dc_mode_label = "emu";
+    if (channel_str == "et") 			dc_mode_label = "eleTau";
+    if (channel_str == "mt") 			dc_mode_label = "muTau";
+    if (channel_str == "tt")      dc_mode_label = "tauTau";
+    if (channel_str == "em") 			dc_mode_label = "emu";
 		std::string tfile_name = "datacard_"+reduced_var+"_"+datacard+"_"+channel_str+("_2015")+".root";
 		TFile dc_file(tfile_name.c_str(),"RECREATE");
 		dc_file.cd();
@@ -711,6 +716,12 @@ int main(int argc, char* argv[]){
 	// ************************************************************************
 	ana.FillSMSignal(hmap, sm_masses, var, sel, cat, "wt", "", "");
 	ana.FillMSSMSignal(hmap, mssm_masses, var, sel, cat, "wt", "", "");
+		for (auto m : sm_masses) {
+     HTTAnalysis::PrintValue("ggH"+m, hmap["ggH"+m].second);
+		 //HTTAnalysis::PrintValue("qqH"+m, hmap["qqH"+m].second);
+		 //HTTAnalysis::PrintValue("VH"+m, hmap["VH"+m].second);
+    }
+
 	
     // ************************************************************************
 	// Shift backgrounds
@@ -741,7 +752,7 @@ int main(int argc, char* argv[]){
 	// Shift tau energy scale
 	// ************************************************************************
 	if (shift_tscale != 0.0) {
-		std::string ztt_label = (channel_str == "em") ? "Ztt" : "ZTT";
+		std::string ztt_label = "ZTT";
 		std::cout << "[HiggsTauTauPlot5] Shifting energy scale by pull: " << shift_tscale << std::endl;
 		TH1F ztt_central = hmap[ztt_label].first;
 		TH1F ztt_down = hmap[ztt_label+"_"+syst_tau_scale+"Down"].first;
@@ -776,6 +787,40 @@ int main(int argc, char* argv[]){
     plot.AddTextElement(text);
     //plot.AddTextElement(text2);
 	}
+
+   
+   /*if(n_vtx){
+    TH1F * data = &hmap["data_obs"].first;
+    TH1F *data_test = (TH1F*)data->Clone("data_test");
+    TH1F * nvtx_weights = new TH1F("nvtx_weights","nvtx_weights",101,-0.5,100.5);
+    data_test->Scale(1./data_test->Integral(1,data_test->GetNbinsX()));
+    std::cout<<data_test->Integral()<<std::endl;
+    vector<string>bkgs = {"ZTT","ZL","ZJ","W","TT","VV"};
+    if (channel_str == "em") bkgs = {"ZTT","VV","TT"}; 
+    if (channel_str == "tt") bkgs = {"W","VV","TT"};
+
+    double bckg_yield=0;
+    for (int i = 1; i<= data_test->GetNbinsX(); ++i){
+      for (auto bkg : bkgs) bckg_yield += hmap[bkg].first.GetBinContent(i);
+    }
+    std::cout <<bckg_yield<<std::endl;
+    for (int i = 1; i <= data_test->GetNbinsX(); ++i){
+      double bkg_tot = 0;
+      for (auto bkg : bkgs) bkg_tot += hmap[bkg].first.GetBinContent(i);
+      bkg_tot = (double)bkg_tot/bckg_yield;
+    if(bkg_tot !=0){
+      nvtx_weights->SetBinContent(nvtx_weights->FindBin(data_test->GetBinCenter(i)),(data_test->GetBinContent(i)/bkg_tot)); 
+   }
+
+   }
+   std::string weightfilename = "VertexWeightDistribution_"+channel_str+".root";
+   TFile *fileout = new TFile(weightfilename.c_str(),"RECREATE");
+     nvtx_weights->Write();
+   fileout->Close();
+  }*/
+
+   //data->Divide(bkg_hist);
+
 	plot.GeneratePlot(hmap);
 
   return 0;
