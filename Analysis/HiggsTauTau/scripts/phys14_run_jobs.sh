@@ -10,17 +10,22 @@ SAMPLES=(
   # 'MC_72X_PU40bx25_VBF_HToTauTau_M-125'
   # 'MC_70XMINI_VBF_HToTauTau_M-125_PU20bx25'
   # 'MC_72XMINI_VBF_HToTauTau_M-125_PU20bx25'
+  #'DYJetsToLL_M-50_inital'
+  #'DYJetsToLL_M-50_from_raw'
+  'DYJetsToLL_M-50_from_raw_patched'
 )
 
-# for i in "${SAMPLES[@]}"
-# do
-# ./bin/Phys14 --cfg scripts/${PROD}.json --json '{ "job": {
-#       "filelist"    : "filelists/'${PROD}'_'${i}'.dat",
-#       "output_name" : "'$i'.root"},
-#     "do_XToTauTau" : true,
-#     "do_QCDFakes" : false
-#   }'
-# done
+ for i in "${SAMPLES[@]}"
+ do
+ ./bin/Phys14 --cfg scripts/${PROD}.json --json '{ "job": {
+       "filelist"    : "'${i}'.dat",
+       "output_name" : "'$i'.root"},
+     "do_XToTauTau" : true,
+     "do_QCDFakes" : false,
+     "is_pythia8"    : true,
+     "jets_label" : "ak4PFJetsCHS"
+   }'
+ done
 
 
 # SAMPLES=(
@@ -76,37 +81,37 @@ SAMPLES=(
 #   }
 #   '
 
-  ./bin/Phys14 '
-  { "job": {
-      "file_prefix"     : "",
-      "output_folder"   : "./",
-      "max_events"      : -1,
-      "timings"         : false,
-      "apply_JEC"       : false,
-      "filelist"        : "filelist_toytau_zprime.dat",
-      "output_name"     : "output/toytau_test.root"
-    },
-    "do_XToTauTau"  : true,
-    "do_QCDFakes"   : false,
-    "do_ToyTaus"    : true,
-    "is_pythia8"    : true
-  }
-  't
-
-
-  ./bin/Phys14 '
-  { "job": {
-      "file_prefix"     : "",
-      "output_folder"   : "./",
-      "max_events"      : -1,
-      "timings"         : false,
-      "apply_JEC"       : false,
-      "filelist"        : "filelist_toytau_qcd.dat",
-      "output_name"     : "output/toytau_qcd.root"
-    },
-    "do_XToTauTau"  : false,
-    "do_QCDFakes"   : true,
-    "do_ToyTaus"    : true,
-    "is_pythia8"    : true
-  }
-  '
+#  ./bin/Phys14 '
+#  { "job": {
+#      "file_prefix"     : "",
+#      "output_folder"   : "./",
+#      "max_events"      : -1,
+#      "timings"         : false,
+#      "apply_JEC"       : false,
+#      "filelist"        : "filelist_toytau_zprime.dat",
+#      "output_name"     : "output/toytau_test.root"
+#    },
+#    "do_XToTauTau"  : true,
+#    "do_QCDFakes"   : false,
+#    "do_ToyTaus"    : true,
+#    "is_pythia8"    : true
+#  }
+#  't
+#
+#
+#  ./bin/Phys14 '
+#  { "job": {
+#      "file_prefix"     : "",
+#      "output_folder"   : "./",
+#      "max_events"      : -1,
+#      "timings"         : false,
+#      "apply_JEC"       : false,
+#      "filelist"        : "filelist_toytau_qcd.dat",
+#      "output_name"     : "output/toytau_qcd.root"
+#    },
+#    "do_XToTauTau"  : false,
+#    "do_QCDFakes"   : true,
+#    "do_ToyTaus"    : true,
+#    "is_pythia8"    : true
+#  }
+#  '

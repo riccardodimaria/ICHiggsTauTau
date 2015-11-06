@@ -380,9 +380,13 @@ void Phys14Plots::DoRealThStudies(TreeEvent *event) {
           if (type == PFType::gamma) {
             trk_plots_ph_matched.Fill(trk, 1.);
             trk_plots_ph_matched.FillWithPF(trk, pf_dr, 1.);
-             std::cout << "------------------------------\n";
-             std::cout << "Has track: " << trk->id() << "\t" << trk->momentum() << "\t" << trk->algorithm() << "\n";
-             //Track *gsf = nullptr;
+            std::cout << "--------------------------------------------\n";
+            event_info->Print();
+            gen_th->vis_jet->Print();
+            std::cout << event_info->run() << ":" << event_info->lumi_block() << ":" << event_info->event() << "\n";
+            std::cout << "Has track: " << trk->id() << "\t" << trk->momentum() << "\t" << trk->algorithm() << "\n";
+            Track *gsf = nullptr;
+            
             if (pf->constituent_gsf_tracks().size() > 0) {
               auto gsf_id = pf->constituent_gsf_tracks()[0];
               std::cout << "Has gsf track with id: " << gsf_id << "\n";
@@ -407,6 +411,7 @@ void Phys14Plots::DoRealThStudies(TreeEvent *event) {
             if (pfconv_match.second) {
               std::cout << "PFCONV VTX ntracks: " << pfconv_match.second->tracks().size() << "\n";
             }
+            
           } else {
             trk_plots_matched.Fill(trk, 1.);
             trk_plots_matched.FillWithPF(trk, pf_dr, 1.);
