@@ -17,8 +17,8 @@ opts.register('release', '', parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.string, "Release label")
 
 opts.parseArguments()
-infile      = opts.file
-if not infile: infile = "file:/tmp/file.root"
+infile      = opts.file.split(',')
+if not infile: infile = ["file:/tmp/file.root"]
 tag         = opts.globalTag
 isData      = opts.isData
 release     = opts.release
@@ -59,7 +59,7 @@ process.options   = cms.untracked.PSet(
 ################################################################
 # Input files and global tags
 ################################################################
-process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(infile))
+process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring(*infile))
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, tag, '')
 

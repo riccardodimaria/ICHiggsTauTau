@@ -1,6 +1,6 @@
 #include "../interface/Tau.hh"
 #include "../interface/city.h"
-// #include "boost/format.hpp"
+#include "boost/format.hpp"
 
 namespace ic {
 
@@ -15,7 +15,11 @@ Tau::Tau()
 
 Tau::~Tau() {}
 
-void Tau::Print() const { Candidate::Print(); }
+void Tau::Print() const { 
+  std::cout << boost::format("%-17s | ")   % "p4";
+  Candidate::Print();
+  std::cout << boost::format("%-17s | %10i\n")   % "decay_mode" % decay_mode_;
+}
 
 void Tau::SetTauID(std::string const& name, float const& value) {
   tau_ids_[CityHash64(name)] = value;

@@ -16,7 +16,7 @@ Track::Track()
 Track::~Track() {}
 
 void Track::Print() const {
-  std::cout << momentum_ << std::endl;
+  std::cout << momentum_ << ", e = " << this->energy() << std::endl;
   std::cout << ref_point_ << std::endl;
 }
 }
