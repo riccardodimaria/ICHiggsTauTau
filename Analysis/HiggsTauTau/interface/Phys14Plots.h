@@ -274,6 +274,7 @@ class Phys14Plots : public ModuleBase {
   EfficiencyPlot1D jet_th_fake_dm_vs_pt;
   EfficiencyPlot1D jet_th_fake_dm_vs_eta;
 
+  unsigned n_photon_matches_;
 
   CLASS_MEMBER(Phys14Plots, fwlite::TFileService*, fs)
 

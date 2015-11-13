@@ -122,7 +122,7 @@ namespace ic {
 
   template<class T>
   double PF04IsolationVal(T const* cand, double const& dbeta, bool allcharged) {
-	  double charged_iso = allcharged ? cand->dr04_pfiso_charged_all() : cand->dr04_pfiso_charged();
+    double charged_iso = allcharged ? cand->dr04_pfiso_charged_all() : cand->dr04_pfiso_charged();
     double iso =  charged_iso
                   + std::max(cand->dr04_pfiso_neutral() + cand->dr04_pfiso_gamma() - dbeta * cand->dr04_pfiso_pu(), 0.0);
     iso = iso / cand->pt();
@@ -174,31 +174,43 @@ namespace ic {
   double GetEffectiveArea(T const* cand){
     return 0;
   }
-  
-  inline double GetEffectiveArea(Electron const* cand){
-    double cand_eta = cand->eta();
-//From   https://github.com/ikrav/cmssw/blob/egm_id_747_v2/RecoEgamma/ElectronIdentification/data/Spring15/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_25ns.txt
-    if(abs(cand_eta)<1.) return 0.1752;
-    else if(abs(cand_eta)<1.479) return 0.1862;
-    else if(abs(cand_eta)<2.) return 0.1411;
-    else if(abs(cand_eta)<2.2) return 0.1534;
-    else if(abs(cand_eta)<2.3) return 0.1903;
-    else if(abs(cand_eta)<2.4) return 0.2243;
-    else if(abs(cand_eta)<5.) return 0.2687;
-    return 0;
 
+  inline double GetEffectiveArea(Electron const* cand) {
+    double cand_eta = cand->eta();
+    // From
+    // https://github.com/ikrav/cmssw/blob/egm_id_747_v2/RecoEgamma/ElectronIdentification/data/Spring15/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_25ns.txt
+    if (std::fabs(cand_eta) < 1.)
+      return 0.1752;
+    else if (std::fabs(cand_eta) < 1.479)
+      return 0.1862;
+    else if (std::fabs(cand_eta) < 2.)
+      return 0.1411;
+    else if (std::fabs(cand_eta) < 2.2)
+      return 0.1534;
+    else if (std::fabs(cand_eta) < 2.3)
+      return 0.1903;
+    else if (std::fabs(cand_eta) < 2.4)
+      return 0.2243;
+    else if (std::fabs(cand_eta) < 5.)
+      return 0.2687;
+    return 0;
   }
 
-  inline double GetEffectiveArea(Muon const* cand){
-     double cand_eta = cand->eta();
-    //From https://indico.cern.ch/event/451110/contribution/1/attachments/1165046/1679258/miniIsoEffectiveAreas_muonPOG_051015.pdf
-    if(abs(cand_eta)<0.8) return 0.0735;
-    else if(abs(cand_eta)<1.3) return 0.0619;
-    else if(abs(cand_eta)<2.) return 0.0465;
-    else if(abs(cand_eta)<2.2) return 0.0443;
-    else if(abs(cand_eta)<2.5) return 0.0577;
+  inline double GetEffectiveArea(Muon const* cand) {
+    double cand_eta = cand->eta();
+    // From
+    // https://indico.cern.ch/event/451110/contribution/1/attachments/1165046/1679258/miniIsoEffectiveAreas_muonPOG_051015.pdf
+    if (std::fabs(cand_eta) < 0.8)
+      return 0.0735;
+    else if (std::fabs(cand_eta) < 1.3)
+      return 0.0619;
+    else if (std::fabs(cand_eta) < 2.)
+      return 0.0465;
+    else if (std::fabs(cand_eta) < 2.2)
+      return 0.0443;
+    else if (std::fabs(cand_eta) < 2.5)
+      return 0.0577;
     return 0;
- 
   }
 
   template<class T>

@@ -94,7 +94,6 @@ int main(int argc, char* argv[]) {
     graph.SetMarkerColor(ele.get("color", def["color"]).asUInt());
     graph.SetMarkerStyle(ele.get("marker", def["marker"]).asUInt());
   }
-
   TCanvas canv(js["output"].asCString(), js["output"].asCString());
   canv.cd();
 
@@ -107,17 +106,18 @@ int main(int argc, char* argv[]) {
   pads[0]->SetLogy(js["log_y"].asBool());
   axis->GetXaxis()->SetTitle(js["x_axis_title"].asCString());
   axis->GetYaxis()->SetTitle(js["y_axis_title"].asCString());
-
-  TLegend *legend = PositionedLegend(js["legend_width"].asDouble(), js["legend_height"].asDouble(), js["legend_pos"].asInt(), 0.03);
+  std::cout << "here4\n";
+  TLegend* legend = PositionedLegend(js["legend_width"].asDouble(),
+                                     js["legend_height"].asDouble(),
+                                     js["legend_pos"].asInt(), 0.03);
   for (unsigned g = 0; g < graphs.size(); ++g) {
     graphs[g].Draw("PSAME");
     legend->AddEntry(&(graphs[g]), js["elements"][g]["legend"].asCString());
   }
   pads[0]->SetGridx(true);
   pads[0]->SetGridy(true);
-  DrawCMSLogo(pads[0], "CMS", "Simulation", 0);
+  // DrawCMSLogo(pads[0], "CMS", "Simulation", 0);
   DrawTitle(pads[0], js["title_right"].asString(), 3);
-
 
   legend->Draw();
 

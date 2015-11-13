@@ -12,6 +12,7 @@ Phys14Plots::Phys14Plots(std::string const& name) : ModuleBase(name) {
   do_real_th_studies_ = true;
   do_fake_th_studies_ = false;
   jets_label_ = "pfJetsPFlow";
+  n_photon_matches_ = 0;
 }
 
 Phys14Plots::~Phys14Plots() { ; }
@@ -131,7 +132,7 @@ int Phys14Plots::PreAnalysis() {
   return 0;
 }
 
-void Phys14Plots::DoRealThStudies(TreeEvent *event) {
+void Phys14Plots::DoRealThStudies(TreeEvent *event) {  
   auto const* event_info = event->GetPtr<EventInfo>("eventInfo");
   unsigned n_vtx = event_info->good_vertices();
   h_n_vtx->Fill(n_vtx);
@@ -378,6 +379,30 @@ void Phys14Plots::DoRealThStudies(TreeEvent *event) {
         th_pf_match_eta.Fill(trk->eta(), type);
         if (pf) {
           if (type == PFType::gamma) {
+            if (gen_th->vis_jet->pt() > th_pt_acc &&
+                std::fabs(gen_th->vis_jet->eta()) < th_eta_acc) {
+                  Tau const* rec_th = nullptr;
+                if (gen_rec_th_map.count(gen_th->vis_jet))
+                  rec_th = gen_rec_th_map[gen_th->vis_jet];
+                bool pass_dm = false;
+                if (rec_th && rec_th->decay_mode() >= 0. &&
+                    MinPtMaxEta(rec_th, th_pt_acc, th_eta_acc))
+                  pass_dm = true;
+                if (!pass_dm) ++n_photon_matches_;
+                if (pass_dm) {
+                  std::cout << "Gen tau: ";
+                  gen_th->vis_jet->Print();
+                  std::cout << " - true mode: " << gen_th->hadronic_mode << "\n";
+                  for (auto x : gen_th->pi_charged) x->Print();
+                  for (auto x : gen_th->pi_neutral) x->Print();
+                  std::cout << "Reco track: ";
+                  trk->Print();
+                  std::cout << "PF photon: ";
+                  pf->Print();
+                  std::cout << "Reco tau: ";
+                  rec_th->Print();
+                }
+            }
             trk_plots_ph_matched.Fill(trk, 1.);
             trk_plots_ph_matched.FillWithPF(trk, pf_dr, 1.);
             std::cout << "--------------------------------------------\n";
@@ -514,7 +539,10 @@ std::pair<ic::Track*,ic::Vertex*> Phys14Plots::FindMatchingConversion(ic::Track 
  return std::make_pair(nullptr, nullptr);
 }
 
-int Phys14Plots::PostAnalysis() { return 0; }
+int Phys14Plots::PostAnalysis() { 
+  std::cout << "n_photon_matches: " << n_photon_matches_ << "\n";
+  return 0;
+}
 
 void Phys14Plots::PrintInfo() { ; }
 }

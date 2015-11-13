@@ -5,7 +5,7 @@
 
 void plotDMTable(TString file, TString hist, TString output, TString title) {
   ModTDRStyle();
-  gStyle->SetPaintTextFormat(".2f");
+  gStyle->SetPaintTextFormat(".3f");
   // TFile f("output/phys14/Dec7/MC_53X_VBF_HToTauTau_M-125.root");
   TFile f(file);
 
@@ -47,7 +47,7 @@ void plotDMTable(TString file, TString hist, TString output, TString title) {
   pads[0]->SetBottomMargin(0.17);
   pads[0]->SetLeftMargin(0.17);
 
-  dm_full.SetMarkerSize(1.1);
+  dm_full.SetMarkerSize(0.9);
   dm_full.GetXaxis()->SetLabelSize(0.04);
   dm_full.GetYaxis()->SetLabelSize(0.04);
 
@@ -97,8 +97,8 @@ void plotDMTable(TString file, TString hist, TString output, TString title) {
   dm_full.GetXaxis()->LabelsOption("v");
   dm_full.GetYaxis()->LabelsOption("h");
 
+  float tot = dm_full.Integral(1, dm_full.GetNbinsX(), 1, dm_full.GetNbinsY());
   for (int i = 1; i <= dm_full.GetNbinsX(); ++i) {
-    float tot = dm_full.Integral(i, i, 1, dm_full.GetNbinsY());
     if (tot == 0) tot = 1.;
     for (int j = 1; j <= dm_full.GetNbinsY(); ++j) {
       dm_full.SetBinContent(i, j, dm_full.GetBinContent(i, j) / tot);

@@ -12,7 +12,8 @@ SAMPLES=(
   # 'MC_72XMINI_VBF_HToTauTau_M-125_PU20bx25'
   #'DYJetsToLL_M-50_inital'
   #'DYJetsToLL_M-50_from_raw'
-  'DYJetsToLL_M-50_from_raw_patched'
+  'WithEGammaFilters'
+  'NoEGammaFilters'
 )
 
  for i in "${SAMPLES[@]}"

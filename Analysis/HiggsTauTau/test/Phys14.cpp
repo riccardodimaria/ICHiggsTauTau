@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
     analysis.AddModule(&recTauStudy);
     analysis.AddModule(&toyTauStudy);
   } else {
-    analysis.AddModule(&phys14Plots);    
+    analysis.AddModule(&phys14Plots);
   }
 
   analysis.RunAnalysis();
