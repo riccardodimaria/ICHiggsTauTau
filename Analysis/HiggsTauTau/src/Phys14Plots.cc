@@ -410,7 +410,7 @@ void Phys14Plots::DoRealThStudies(TreeEvent *event) {
             gen_th->vis_jet->Print();
             std::cout << event_info->run() << ":" << event_info->lumi_block() << ":" << event_info->event() << "\n";
             std::cout << "Has track: " << trk->id() << "\t" << trk->momentum() << "\t" << trk->algorithm() << "\n";
-            Track *gsf = nullptr;
+            //Track *gsf = nullptr;
             
             if (pf->constituent_gsf_tracks().size() > 0) {
               auto gsf_id = pf->constituent_gsf_tracks()[0];
