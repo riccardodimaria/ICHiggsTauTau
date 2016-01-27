@@ -261,6 +261,12 @@ namespace ic {
         (boost::lexical_cast<std::string>(signal_scale_)+"#times SUSYGluGluH("+draw_signal_mass_+" GeV)#rightarrow#tau#tau"),
         {"ggH"}, TColor::GetColor(0,18,255), false)
     };
+    sig_schemes_["run2_Hhh"] = {
+      PlotSigComponent("sig",
+        (boost::lexical_cast<std::string>(signal_scale_)+"#times RadionGluGluH("+draw_signal_mass_+" GeV)#rightarrowhh#rightarrowbb#tau#tau"),
+        {"ggH"}, TColor::GetColor(0,18,255), false)
+    };
+
    sig_schemes_["run2_sm"] = {
      PlotSigComponent("sig", 
        (boost::lexical_cast<std::string>(signal_scale_)+"#times GluGluH("+draw_signal_mass_+" GeV)#rightarrow#tau#tau"),
@@ -286,6 +292,22 @@ namespace ic {
       PlotSigComponent("sig",
         (boost::lexical_cast<std::string>(signal_scale_)+"#times #Phi#rightarrow#tau#tau(m_{A}="+draw_signal_mass_+",tan#beta="+draw_signal_tanb_+")"),
         {"ggH","bbH"}, TColor::GetColor(0,18,255), false)
+    };
+    sig_schemes_["mssm_nostack_sigsep"] = {
+      PlotSigComponent("sig",
+        (boost::lexical_cast<std::string>(signal_scale_)+"#times gg#Phi#rightarrow#tau#tau(m_{A}="+draw_signal_mass_+",tan#beta="+draw_signal_tanb_+")"),
+        {"ggH"}, TColor::GetColor(0,18,255), false),
+      PlotSigComponent("sig_bbH",
+        (boost::lexical_cast<std::string>(signal_scale_)+"#times bb#Phi#rightarrow#tau#tau(m_{A}="+draw_signal_mass_+",tan#beta="+draw_signal_tanb_+")"),
+        {"bbH"}, kBlue+3, false)
+    };
+    sig_schemes_["mssm_nostack_1pb"] = {
+      PlotSigComponent("sig",
+        (boost::lexical_cast<std::string>(signal_scale_)+"#times gg#Phi#rightarrow#tau#tau(m_{A}="+draw_signal_mass_+", #sigma*BR = 1pb"+")"),
+        {"ggH"}, TColor::GetColor(0,18,255), false),
+      PlotSigComponent("sig_bbH",
+        (boost::lexical_cast<std::string>(signal_scale_)+"#times bb#Phi#rightarrow#tau#tau(m_{A}="+draw_signal_mass_+", #sigma*BR = 1pb"+")"),
+        {"bbH"}, kBlue+3, false)
     };
     sig_schemes_["mssm_nopars"] = {
       PlotSigComponent("sig",
@@ -377,7 +399,7 @@ namespace ic {
    
     pads[0]->SetLogy(log_y_);
     // Create axes based on data hist and possible user specified axis range
-    std::vector<TH1*> h = CreateAxisHists(2, data_hist, custom_x_axis_range_ ? x_axis_min_ : data_hist->GetXaxis()->GetXmin(), custom_x_axis_range_ ? x_axis_max_ : data_hist->GetXaxis()->GetXmax());
+    std::vector<TH1*> h = CreateAxisHists(2, data_hist, custom_x_axis_range_ ? x_axis_min_ : data_hist->GetXaxis()->GetXmin(), custom_x_axis_range_ ? x_axis_max_-0.01 : data_hist->GetXaxis()->GetXmax()-0.01);
     h[0]->Draw();
     
     //Deal with units in axis label

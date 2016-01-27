@@ -13,6 +13,7 @@
 #include "DataFormats/MuonReco/interface/Muon.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "UserCode/ICHiggsTauTau/interface/Muon.hh"
+#include "UserCode/ICHiggsTauTau/plugins/Consumes.h"
 
 /**
  * @brief See documentation [here](\ref objs-muon)
@@ -37,6 +38,7 @@ class ICMuonProducer : public edm::EDProducer {
   bool is_pf_;
 
   std::vector<std::pair<std::string, edm::InputTag> > input_vmaps_;
+  std::vector<std::pair<std::string, edm::InputTag> > input_double_vmaps_;
   edm::InputTag input_vertices_;
   bool do_vertex_ip_;
   edm::InputTag input_beamspot_;
@@ -48,7 +50,7 @@ class ICMuonProducer : public edm::EDProducer {
     edm::InputTag neutral;
     edm::InputTag gamma;
     edm::InputTag pu;
-    explicit IsoTags(edm::ParameterSet const& pset);
+    explicit IsoTags(edm::ParameterSet const& pset, edm::ConsumesCollector && collector);
   };
 
   IsoTags pf_iso_03_;

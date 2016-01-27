@@ -24,7 +24,7 @@ import FWCore.ParameterSet.VarParsing as parser
 opts = parser.VarParsing ('analysis')
 opts.register('file', 0, parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.string, "input file")
-opts.register('globalTag', 'MCRUN2_74_V9::All', parser.VarParsing.multiplicity.singleton,
+opts.register('globalTag', '74X_mcRun2_asymptotic_v2', parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.string, "global tag")
 opts.register('isData', 0, parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.int, "Process as data?")
@@ -85,7 +85,8 @@ if not isData:
                               #cms.untracked.vstring('root://xrootd.unl.edu//store/mc/RunIISpring15DR74/WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/048FB1EE-33FD-E411-A2BA-0025905A6094.root')
                               #cms.untracked.vstring('root://xrootd.unl.edu//store/mc/RunIISpring15DR74/WW_TuneCUETP8M1_13TeV-pythia8/MINIAODSIM/Asympt50ns_MCRUN2_74_V9A-v1/10000/006ABB57-1207-E511-A99E-0002C94CD150.root')
  #AMM - reminiaod v2 - 13/10/2015
-                              cms.untracked.vstring('file:/afs/cern.ch/work/a/amagnan/CMSSW_7_4_14/src/ttbartest.root')
+                              cms.untracked.vstring('file:/vols/cms04/pjd12/invcmssws/run2ntuple/CMSSW_7_4_6/src/UserCode/ICHiggsTauTau/Analysis/HiggsNuNu/04F50A91-B46F-E511-A2A3-002618943923.root')
+                              #cms.untracked.vstring('file:/afs/cern.ch/work/a/amagnan/CMSSW_7_4_14/src/ttbartest.root')
                               #cms.untracked.vstring('file:/vols/cms04/pjd12/testminiaodfiles/1E0D8712-D722-E511-B7CF-008CFA051614.root')
                               
                               )
@@ -740,7 +741,8 @@ process.icPFJetProducerFromPat = producers.icPFJetFromPatProducer.clone(
   srcConfig = cms.PSet(
     isSlimmed               = cms.bool(True),
     includeJetFlavour       = cms.bool(True),
-    includeJECs             = cms.bool(False),
+    includeJECs             = cms.bool(True),
+    JECs                    = pfchsJECS,
     inputSVInfo             = cms.InputTag(""),
     requestSVInfo           = cms.bool(False)
     ),
@@ -975,7 +977,7 @@ process.icPrunedGenParticles = cms.EDProducer("GenParticlePruner",
   )
 )
 
-process.prunedGenParticlesTaus = cms.EDProducer("ICGenParticlePruner",
+process.prunedGenParticlesTaus = cms.EDProducer("ICGenParticlePruner53X",
   src = cms.InputTag("prunedGenParticles","","PAT"),
   select = cms.vstring(
     "drop  *",

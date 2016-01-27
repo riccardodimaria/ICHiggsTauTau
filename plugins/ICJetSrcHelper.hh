@@ -12,12 +12,17 @@
 #include "DataFormats/JetReco/interface/PFJet.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
+#if CMSSW_MAJOR_VERSION >= 7 && CMSSW_MINOR_VERSION >= 6
+#include "JetMETCorrections/Modules/interface/CorrectedJetProducer.h"
+#else
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
+#endif
 #include "CommonTools/Utils/interface/StringCutObjectSelector.h"
 #include "UserCode/ICHiggsTauTau/interface/JPTJet.hh"
 #include "UserCode/ICHiggsTauTau/interface/PFJet.hh"
 #include "UserCode/ICHiggsTauTau/interface/CaloJet.hh"
 #include "UserCode/ICHiggsTauTau/plugins/PrintConfigTools.h"
+#include "UserCode/ICHiggsTauTau/plugins/Consumes.h"
 
 /**
  * @brief A struct to help with the configuration of the ICJetProducer, in
@@ -40,7 +45,7 @@
  */
 template <class U>
 struct JetSrcHelper {
-  explicit JetSrcHelper(const edm::ParameterSet &config)
+  explicit JetSrcHelper(const edm::ParameterSet &config, edm::ConsumesCollector && collector)
       : input_jet_flavour(
             config.getParameter<edm::InputTag>("inputJetFlavour")),
         include_jet_flavour(config.getParameter<bool>("includeJetFlavour")),
@@ -49,8 +54,10 @@ struct JetSrcHelper {
         cut(config.getParameter<std::string>("cutAfterJECs")),
         cut_string(config.getParameter<std::string>("cutAfterJECs")),
         apply_post_jec_cut(config.getParameter<bool>("applyCutAfterJECs")),
-        input_sv_info(config.getParameter<edm::InputTag>("inputSVInfo")),
+        input_sv_info((config.getParameter<edm::InputTag>("inputSVInfo"))),
         include_sv_info_ids(config.getParameter<bool>("requestSVInfo")) {
+        collector.consumes<edm::ValueMap<std::vector<int>>>(input_jet_flavour);
+        collector.consumes<reco::SecondaryVertexTagInfoCollection>(input_sv_info);
     if (apply_jec_factors || include_jec_factors) {
       edm::ParameterSet pset = config.getParameter<edm::ParameterSet>("JECs");
       std::vector<std::string> vec =
@@ -58,6 +65,11 @@ struct JetSrcHelper {
       for (unsigned i = 0; i < vec.size(); ++i) {
         jecs.push_back(
             std::make_pair(vec[i], pset.getParameter<std::string>(vec[i])));
+#if CMSSW_MAJOR_VERSION >=7 && CMSSW_MINOR_VERSION >= 6
+        collector.consumes<reco::JetCorrector>(jecs[i].second);
+#else
+        collector.consumes<double>(jecs[i].second);
+#endif
       }
     }
     edm::ParameterSet btag_pset =
@@ -67,6 +79,7 @@ struct JetSrcHelper {
     for (unsigned i = 0; i < btag_vec.size(); ++i) {
       input_btags.push_back(std::make_pair(
           btag_vec[i], btag_pset.getParameter<edm::InputTag>(btag_vec[i])));
+      collector.consumes<reco::JetFloatAssociation::Container>(input_btags[i].second);
     }
   }
 
@@ -86,13 +99,22 @@ struct JetSrcHelper {
   void Produce(edm::Handle<edm::View<U> > const &jets_handle,
                std::vector<T> *jets, std::vector<unsigned> *passed,
                edm::Event &event, const edm::EventSetup &setup) {
-    edm::Handle<edm::ValueMap<int> > jet_flavour_handle;
+    edm::Handle<edm::ValueMap<std::vector<int>> > jet_flavour_handle;
     if (include_jet_flavour)
       event.getByLabel(input_jet_flavour, jet_flavour_handle);
-
-    std::vector<JetCorrector const *> correctors(jecs.size(), NULL);
+  #if CMSSW_MAJOR_VERSION >= 7 && CMSSW_MINOR_VERSION >= 6
+    std::vector<reco::JetCorrector const *> correctors(jecs.size(), NULL);
+  #else
+    std::vector<JetCorrector const*> correctors(jecs.size(), NULL);
+  #endif
     for (unsigned i = 0; i < correctors.size(); ++i) {
+  #if CMSSW_MAJOR_VERSION >= 7 && CMSSW_MINOR_VERSION >= 6
+      edm::Handle<reco::JetCorrector> corrector_handle;
+      event.getByLabel(jecs[i].second,corrector_handle);
+      correctors[i] = corrector_handle.product();
+  #else
       correctors[i] = JetCorrector::getJetCorrector(jecs[i].second, setup);
+  #endif
     }
 
     edm::Handle<reco::SecondaryVertexTagInfoCollection> sv_info_handle;
@@ -121,8 +143,12 @@ struct JetSrcHelper {
         // Loop through each correction and apply
         for (unsigned j = 0; j < correctors.size(); ++j) {
           #ifndef CMSSW_4_2_8_patch7
+            #if CMSSW_MAJOR_VERSION >=7 && CMSSW_MINOR_VERSION >= 6
+          double factor = correctors[j]->correction(jet_cpy);
+            #else
           double factor = correctors[j]->correction(jet_cpy, event, setup);
-          #else
+            #endif
+          #else 
           double factor = correctors[j]->correction(jet_cpy,
               edm::RefToBase<reco::Jet>(jets_handle->refAt(i)), event, setup);
           #endif
@@ -150,7 +176,8 @@ struct JetSrcHelper {
       dest.set_charge(src.charge());
       dest.set_jet_area(src.jetArea());
       if (include_jet_flavour) {
-        dest.set_parton_flavour((*jet_flavour_handle)[jets_handle->refAt(i)]);
+        dest.set_parton_flavour((*jet_flavour_handle)[jets_handle->refAt(i)].at(0));
+        dest.set_hadron_flavour((*jet_flavour_handle)[jets_handle->refAt(i)].at(1));
       }
       // Only write correction into the output jet if the user wants it
       if (include_jec_factors) {
@@ -218,12 +245,14 @@ struct JetSrcHelper {
  */
 template <>
 struct JetSrcHelper<pat::Jet> {
-  explicit JetSrcHelper(const edm::ParameterSet &config)
+  explicit JetSrcHelper(const edm::ParameterSet &config, edm::ConsumesCollector && collector)
       : include_jet_flavour(config.getParameter<bool>("includeJetFlavour")),
         include_jec_factors(config.getParameter<bool>("includeJECs")),
-        input_sv_info(config.getParameter<edm::InputTag>("inputSVInfo")),
+        input_sv_info((config.getParameter<edm::InputTag>("inputSVInfo"))),
         include_sv_info_ids(config.getParameter<bool>("requestSVInfo")),
-        is_slimmed(config.getParameter<bool>("isSlimmed")) {}
+        is_slimmed(config.getParameter<bool>("isSlimmed")) {
+         collector.consumes<reco::SecondaryVertexTagInfoCollection>(input_sv_info);
+       }
   void DoSetup(edm::EDProducer * prod) {
     if (include_sv_info_ids) {
       prod->produces<reco::SecondaryVertexTagInfoRefVector>("requestedSVInfo");
@@ -261,6 +290,7 @@ struct JetSrcHelper<pat::Jet> {
       dest.set_jet_area(src.jetArea());
       if (include_jet_flavour) {
         dest.set_parton_flavour(src.partonFlavour());
+        dest.set_hadron_flavour(src.hadronFlavour());
       }
       // Only write correction into the output jet if the user wants it
       if (include_jec_factors && src.availableJECLevels().size() >= 1) {
