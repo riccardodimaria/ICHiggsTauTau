@@ -1,5 +1,7 @@
 import FWCore.ParameterSet.Config as cms
-process = cms.Process("MAIN")
+from Configuration.StandardSequences.Eras import eras
+process = cms.Process('RECO',eras.Run2_25ns)
+# process = cms.Process("MAIN")
 import sys
 
 ################################################################
@@ -23,7 +25,7 @@ tag         = opts.globalTag
 isData      = opts.isData
 release     = opts.release
 
-if not release in ['74X']:
+if not release in ['76X']:
   print 'Release not recognised, exiting!'
   sys.exit(1)
 print 'release     : '+release
@@ -64,7 +66,7 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, tag, '')
 
 # 72XMINIAOD MC: file=root://xrootd.unl.edu//store/mc/Phys14DR/VBF_HToTauTau_M-125_13TeV-powheg-pythia6/MINIAODSIM/PU40bx25_PHYS14_25_V1-v1/00000/36224FE2-0571-E411-9664-00266CFAE30C.root globalTag=START72_V1::All
-# 74X: globalTag=MCRUN2_74_V9A file=/store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/GEN-SIM-RECO/AsymptNoPURawReco_MCRUN2_74_V9A-v4/10000/000BE505-D818-E511-8A12-3417EBE5280A.root
+# 76X: globalTag=MCRUN2_74_V9A file=/store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/GEN-SIM-RECO/AsymptNoPURawReco_MCRUN2_74_V9A-v4/10000/000BE505-D818-E511-8A12-3417EBE5280A.root
 # from RAW: /store/mc/RunIISpring15DR74/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/GEN-SIM-RAW/AsymptNoPURawReco_MCRUN2_74_V9A-v4/10000/0012730E-CC18-E511-8E17-00266CFFBE5C.root
 import UserCode.ICHiggsTauTau.default_producers_cfi as producers
 import UserCode.ICHiggsTauTau.default_selectors_cfi as selectors
@@ -77,23 +79,23 @@ process.load("RecoTauTag/Configuration/RecoPFTauTag_cff")
 
 process.extraPreSequence = cms.Sequence()
 
-if release in ['74X']:
+if release in ['76X']:
   process.load('Configuration.StandardSequences.Services_cff')
   # process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
+  # process.load('FWCore.MessageService.MessageLogger_cfi')
   process.load('Configuration.EventContent.EventContent_cff')
-  process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
   process.load('SimGeneral.MixingModule.mixNoPU_cfi')
+  # process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+  process.load('Configuration.StandardSequences.MagneticField_cff')
   process.load('Configuration.StandardSequences.RawToDigi_cff')
   process.load('Configuration.StandardSequences.L1Reco_cff')
   process.load('Configuration.StandardSequences.Reconstruction_cff')
   process.load('CommonTools.ParticleFlow.EITopPAG_cff')
+  # process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
   process.extraPreSequence += process.RawToDigi
   process.extraPreSequence += process.L1Reco
   process.extraPreSequence += process.reconstruction
   process.extraPreSequence += process.EIsequence
-  from SLHCUpgradeSimulations.Configuration.postLS1Customs import customisePostLS1_50ns 
-  process = customisePostLS1_50ns(process)
-
   # process.extraPreSequence += process.PFTau
   # process.extraPreSequence += process.globalreco
   # process.extraPreSequence += process.highlevelreco
@@ -484,21 +486,21 @@ process.icTauSequence = cms.Sequence(
 
  # Jet energy corrections
  # ----------------------
-process.ak4PFL1FastjetCHS = cms.ESProducer("L1FastjetCorrectionESProducer",
+process.ak4PFL1FastjetCHS = cms.EDProducer("L1FastjetCorrectorProducer",
 #    srcRho = cms.InputTag("kt6PFJets", "rho"),
     srcRho = cms.InputTag("fixedGridRhoFastjetAll"),
     algorithm = cms.string('AK4PFchs'),
     level = cms.string('L1FastJet')
 )
-process.ak4PFL2RelativeCHS = cms.ESProducer("LXXXCorrectionESProducer",
+process.ak4PFL2RelativeCHS = cms.EDProducer("LXXXCorrectorProducer",
     algorithm = cms.string('AK4PFchs'),
     level = cms.string('L2Relative')
 )
-process.ak4PFL3AbsoluteCHS = cms.ESProducer("LXXXCorrectionESProducer",
+process.ak4PFL3AbsoluteCHS = cms.EDProducer("LXXXCorrectorProducer",
     algorithm = cms.string('AK4PFchs'),
     level = cms.string('L3Absolute')
 )
-process.ak4PFResidualCHS = cms.ESProducer("LXXXCorrectionESProducer",
+process.ak4PFResidualCHS = cms.EDProducer("LXXXCorrectorProducer",
     algorithm = cms.string('AK4PFchs'),
     level = cms.string('L2L3Residual')
 )
@@ -545,6 +547,10 @@ process.icPFJetProducer = producers.icPFJetProducer.clone(
 process.icPFJetSequence = cms.Sequence()
 
 process.icPFJetSequence += cms.Sequence(
+  process.ak4PFL1FastjetCHS+
+  process.ak4PFL2RelativeCHS+
+  process.ak4PFL3AbsoluteCHS+
+  process.ak4PFResidualCHS+
   process.icPFJetProducer
 )
 
