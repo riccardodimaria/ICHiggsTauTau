@@ -51,6 +51,7 @@ namespace ic {//namespace
     do_w_soup_          = false;
     do_w_reweighting_   = false;
     do_dy_soup_         = false;
+    do_dy_soup_htbinned_         = false;
     do_dy_reweighting_   = false;
     do_idiso_err_       = false;
     do_idiso_errupordown_ = true;
@@ -65,6 +66,15 @@ namespace ic {//namespace
     Alumi_=-1;
     BClumi_=-1;
     Dlumi_=-1;
+
+    errLabel.push_back("");
+    errLabel.push_back("_v0Up");
+    errLabel.push_back("_v0Down");
+    errLabel.push_back("_v1Up");
+    errLabel.push_back("_v1Down");
+    errLabel.push_back("_v2Up");
+    errLabel.push_back("_v2Down");
+
   }
 
   HinvWeights::~HinvWeights() {
@@ -81,7 +91,7 @@ namespace ic {//namespace
     std::cout << "Do Trg Weights?: \t\t" << do_trg_weights_ << std::endl;
     if(trg_applied_in_mc_) std::cout << "Trg Sel Is Applied In MC make sure you use DataMC scale factors for trigger weightst" << std::endl;
     else std::cout << "Trg Sel Not Applied In MC make sure you use raw Data efficiencies for trigger weightst" << std::endl;
-    std::cout << "Trg Sel Applied?: \t\t" << trg_applied_in_mc_ << std::endl;
+    //std::cout << "Trg Sel Applied?: \t\t" << trg_applied_in_mc_ << std::endl;
     std::cout << "Do ID & iso weights for Tight leptons ?: \t\t" << do_idiso_tight_weights_ << std::endl;
     std::cout << "Do ID & iso weights for veto leptons ?: \t\t" << do_idiso_veto_weights_ << std::endl;
     std::cout << "Do ID & iso weight errors ?: \t\t" << do_idiso_err_ <<std::endl;
@@ -108,7 +118,11 @@ namespace ic {//namespace
 	std::cout<<"Non-standard sample name format not doing lumixs weight"<<std::endl;
       }
       else{
-	sample_name_.erase(found,5);
+	//std::cout << sample_name_ << " " << sample_name_.find("split") <<std::endl;
+	if (sample_name_.find("split")!=sample_name_.npos){
+	  sample_name_.erase(found-8,13);
+	}
+	else sample_name_.erase(found,5);
 	std::cout << "Sample Name: "<<sample_name_<<std::endl;
 
 	//Get lumi xs and events from params file
@@ -144,7 +158,7 @@ namespace ic {//namespace
       std::cout << "f3 = " << f3_ << "\t" << "n3 = " << n3_ << "\t" << "w3 = " << w3_ << std::endl;
       std::cout << "f4 = " << f4_ << "\t" << "n4 = " << n4_ << "\t" << "w4 = " << w4_ << std::endl;
     }
-    if (do_dy_soup_) {
+    if (do_dy_soup_ || do_dy_soup_htbinned_) {
       std::cout << "Making DY Soup:" << std::endl;
       std::cout << "nInc = " << zn_inc_ << std::endl;
       zw1_ = (zn_inc_*zf1_) / ( (zn_inc_*zf1_) + zn1_ );
@@ -218,23 +232,35 @@ namespace ic {//namespace
       else if(do_binnedin2d1dfittedtrg_weights_){
 	std::cout<<"Getting trigger efficiency functions"<<std::endl;
 	for(unsigned iVar1=0;iVar1<(binnedin2d1dfitweightvar1binning_.size()-1);iVar1++){
-	  std::vector<std::vector<TF1*> > thisfuncvectorvector;
+	  std::vector<std::vector<TF1*> > thisfuncvectorvector[7];
 	  for(unsigned iVar2=0;iVar2<(binnedin2d1dfitweightvar2binning_.size()-1);iVar2++){
-	    std::vector<TF1*> thisfuncvector;
-	    std::ostringstream convert;
-	    convert<<iVar1+1<<iVar2+1;
-	    std::string histnumber=convert.str();
-	    if(!do_run2_){
-	      thisfuncvector.push_back((TF1*)gDirectory->Get(("fData_"+binnedin2d1dfitweightvarorder_[2]+"_1D_"+histnumber+"A").c_str()));
-	      thisfuncvector.push_back((TF1*)gDirectory->Get(("fData_"+binnedin2d1dfitweightvarorder_[2]+"_1D_"+histnumber+"BC").c_str()));
-	      thisfuncvector.push_back((TF1*)gDirectory->Get(("fData_"+binnedin2d1dfitweightvarorder_[2]+"_1D_"+histnumber+"D").c_str()));
+	    std::vector<TF1*> thisfuncvector[7];
+	    //HF bins
+	    for(unsigned iVar3=0;iVar3<(do_run2_?2:1);iVar3++){
+	      std::ostringstream convert;
+	      convert<<iVar1+1<<iVar2+1;
+	      if (do_run2_) convert<<iVar3+1;
+	      std::string histnumber=convert.str();
+	      if(!do_run2_){
+		thisfuncvector[0].push_back((TF1*)gDirectory->Get(("fData_"+binnedin2d1dfitweightvarorder_[2]+"_1D_"+histnumber+"A").c_str()));
+		thisfuncvector[0].push_back((TF1*)gDirectory->Get(("fData_"+binnedin2d1dfitweightvarorder_[2]+"_1D_"+histnumber+"BC").c_str()));
+		thisfuncvector[0].push_back((TF1*)gDirectory->Get(("fData_"+binnedin2d1dfitweightvarorder_[2]+"_1D_"+histnumber+"D").c_str()));
+	      }
+	      else{
+		for (unsigned iErr(0); iErr<7;++iErr){
+		  thisfuncvector[iErr].push_back((TF1*)gDirectory->Get(("fdata_"+binnedin2d1dfitweightvarorder_[2]+"_1d_"+histnumber+"Deff"+errLabel[iErr]).c_str()));
+		}
+	      }
 	    }
-	    else{
-	      thisfuncvector.push_back((TF1*)gDirectory->Get(("fData_"+binnedin2d1dfitweightvarorder_[2]+"_1D_"+histnumber+"D").c_str()));
+	    if(!do_run2_) thisfuncvectorvector[0].push_back(thisfuncvector[0]);
+	    for (unsigned iErr(0); iErr<7;++iErr){
+	      thisfuncvectorvector[iErr].push_back(thisfuncvector[iErr]);
 	    }
-	    thisfuncvectorvector.push_back(thisfuncvector);
 	  }
-	  func_trigSF_binnedin2d.push_back(thisfuncvectorvector);
+	  if (!do_run2_) func_trigSF_binnedin2d[0].push_back(thisfuncvectorvector[0]);
+	  for (unsigned iErr(0); iErr<7;++iErr){
+	    func_trigSF_binnedin2d[iErr].push_back(thisfuncvectorvector[iErr]);
+	  }
 	}
 	std::cout<<"  done."<<std::endl;
       }
@@ -438,7 +464,8 @@ namespace ic {//namespace
       double mjj=0.;
       double jet1pt=0.;
       double jet2pt=0.;
-      
+      bool hasJetsInHF = false;
+
       //get 2 leading jets
       std::vector<CompositeCandidate *> const& dijet_vec = event->GetPtrVec<CompositeCandidate>("jjLeadingCandidates");
       if (dijet_vec.size() > 0) {
@@ -451,10 +478,14 @@ namespace ic {//namespace
 	mjj = dijet->M();
 	jet1pt = jet1->pt();
 	jet2pt = jet2->pt();
+	hasJetsInHF = fabs(jet1->eta())>=3 || fabs(jet2->eta())>=3 ;
 	//std::cout<<"mjj "<<mjj<<" j2pt "<<jet2pt<<" metl1 "<<l1met<<" hltmet "<<hltmet<<std::endl;
+	unsigned nruns;
+	if(!do_run2_) nruns=3;
+	else nruns=2;
+
 	if(do_3dtrg_weights_){
 	  //GET THE 3 3D TRIG WEIGHTS
-	  unsigned nruns=3;
 	  double trgweights[nruns];
 	  unsigned naxes=3;
 	  unsigned bins[nruns][naxes];
@@ -496,9 +527,8 @@ namespace ic {//namespace
 	  if (do_trg_weights_) eventInfo->set_weight("trig_3d",trgweight3d);
 	  else eventInfo->set_weight("!trig_3d",trgweight3d);
 	  
-	}
+	}//3D weights
 	else if(do_1dparkedtrg_weights_){
-	  unsigned nruns=3;
 	  double trgweights[nruns];
 	  unsigned nvars=4;
 	  if(!do_fitted1dparkedtrg_weights_){
@@ -536,7 +566,7 @@ namespace ic {//namespace
 	    
 	    //std::cout << " Bin Jet2pt"<<irun<<" " << bins[irun][0] << " Bin metHLT"<<irun<<" " << bins[irun][1] << " BinMjj"<<irun<<" " << bins[irun][2] << std::endl;
 	  }
-	}
+	  }//1D parked
 	else{
 	  //!!GET FITTED 1D WEIGHTS AND PUT IN TRGWEIGHTS[nruns]
 	  for(unsigned irun=0;irun<nruns;irun++){
@@ -583,7 +613,7 @@ namespace ic {//namespace
 	  return 1;
 	}
 	double vars[3];
-	bool found[3]={false};
+	bool found[3]={false,false,false};
 	//Get the 3 variables
 	for(unsigned iVar=0;iVar<binnedin2d1dfitweightvarorder_.size();iVar++){
 	  if(binnedin2d1dfitweightvarorder_[iVar]=="MET"){
@@ -616,7 +646,7 @@ namespace ic {//namespace
 	  }	
 	  if(var1bin==-10)var1bin=binnedin2d1dfitweightvar1binning_.size()-1;
 	}
-	if(vars[1]<binnedin2d1dfitweightvar1binning_[0])var2bin=-1;
+	if(vars[1]<binnedin2d1dfitweightvar2binning_[0])var2bin=-1;
 	else{
 	  for(unsigned iBin=0;iBin<(binnedin2d1dfitweightvar2binning_.size()-1);iBin++){
 	    if(vars[1]<binnedin2d1dfitweightvar2binning_[iBin+1]){
@@ -626,50 +656,58 @@ namespace ic {//namespace
 	  }
 	  if(var2bin==-10)var2bin=binnedin2d1dfitweightvar2binning_.size()-1;
 	}
-	double trgweights[3];
-	int nRuns;
-	if(!do_run2_) nRuns=3;
-	else nRuns=1;
-	if((var1bin!=-1)&&(var2bin!=-1)){
-	  //!!READ OUT WEIGHT FOR EACH RUN
+
+	for (unsigned iErr(0); iErr<7;++iErr){
+	  double trgweights[3]={0,0,0};
 	  double xmin,xmax;
-	  TF1* funcs[3];
-	  for(int iRun=0;iRun<nRuns;iRun++){
-	    funcs[iRun]=func_trigSF_binnedin2d[var1bin-1][var2bin-1][iRun];
-	  }
-	  
-	  funcs[0]->GetRange(xmin,xmax);
-	  
-	  //Get weight                                                                                                                                     
-	  for(int iRun=0;iRun<nRuns;iRun++){
-	    
-	    if(vars[2]<=xmax){
-	      if(vars[2]>=xmin){
-		trgweights[iRun]=funcs[iRun]->Eval(vars[2]);
-	      }
-	      else trgweights[iRun]=0;
+	  if((var1bin!=-1)&&(var2bin!=-1)){
+	    //!!READ OUT WEIGHT FOR EACH RUN
+	    TF1* funcs[3]={0,0,0};
+	    for(unsigned iRun=0;iRun<nruns;iRun++){
+	      funcs[iRun]=func_trigSF_binnedin2d[iErr][var1bin-1][var2bin-1][iRun];
 	    }
-	    else trgweights[iRun]=funcs[iRun]->Eval(xmax);
+	    
+	    if (!hasJetsInHF) funcs[0]->GetRange(xmin,xmax);
+	    else funcs[1]->GetRange(xmin,xmax);
+	    
+	    //Get weight                                                                                                                                     
+	    for(unsigned iRun=0;iRun<nruns;iRun++){
+	      
+	      if(vars[2]<=xmax){
+		if(vars[2]>=xmin){
+		  trgweights[iRun]=funcs[iRun]->Eval(vars[2]);
+		}
+		else trgweights[iRun]=0;
+	      }
+	      else trgweights[iRun]=funcs[iRun]->Eval(xmax);
+	    }
 	  }
-	}
-	else{
-	  for(int iRun=0;iRun<nRuns;iRun++){
-	    trgweights[iRun]=0;
+	  else{
+	    for(unsigned iRun=0;iRun<nruns;iRun++){
+	      trgweights[iRun]=0;
+	    }
 	  }
-	}
-	double trgweight;
-	if(!do_run2_){
-	  //LUMI WEIGHTED AVERAGE OVER RUNS                                                                                                      
-	  trgweight=(trgweights[0]*Alumi_+trgweights[1]*BClumi_+trgweights[2]*Dlumi_)/(Alumi_+BClumi_+Dlumi_);
-	}
-	else{
-	  trgweight=trgweights[0];
-	}
-	//std::cout<<" Total Weight "<<trgweight<<std::endl;                                                                                            
-	//SET TRIGGER WEIGHT                                                                                                                             
-	if (do_trg_weights_) eventInfo->set_weight("trig_2dbinned1d",trgweight);
-	else eventInfo->set_weight("!trig_2dbinned1d",trgweight);
-      }
+	  double trgweight;
+	  if(!do_run2_){
+	    //LUMI WEIGHTED AVERAGE OVER RUNS                                                                                                      
+	    trgweight=(trgweights[0]*Alumi_+trgweights[1]*BClumi_+trgweights[2]*Dlumi_)/(Alumi_+BClumi_+Dlumi_);
+	  }
+	  else{
+	    if (!hasJetsInHF) trgweight=trgweights[0];
+	    else trgweight=trgweights[1];
+	  }
+	  /*if (var1bin>0&&var2bin>0) 
+	    std::cout<<" Total Weight "<<trgweight
+	    <<" vars[0]=" << vars[0] << "(" << var1bin << ")"
+	    <<" vars[1]=" << vars[1] << "(" << var2bin << ")"
+	    <<" vars[2]=" << vars[2] << "(" << xmin << "," << xmax << ")"
+	    <<" hasJetsInHF=" << hasJetsInHF
+	    <<std::endl;   */                                                                                         
+	  //SET TRIGGER WEIGHT                                                                                                                             
+	  if (do_trg_weights_) eventInfo->set_weight(("trig_2dbinned1d"+errLabel[iErr]).c_str(),trgweight);
+	  else eventInfo->set_weight(("!trig_2dbinned1d"+errLabel[iErr]).c_str(),trgweight);
+	}//loop on errors
+      }//2D-1D
       else{
 	double lMax = hist_trigSF_MjjHLT->GetXaxis()->GetBinCenter(hist_trigSF_MjjHLT->GetNbinsX());
 	double lMin = hist_trigSF_MjjHLT->GetXaxis()->GetBinCenter(1);
@@ -706,8 +744,9 @@ namespace ic {//namespace
 	//event->Add("trigweight_1", ele_trg);
 	//event->Add("trigweight_2", tau_trg);
       }
-    }
-    }
+      }//dijet pair
+    
+    }//do trig weights
     //else {
     //std::cout << " skipping trigger stuff" << std::endl;
     //}
@@ -748,7 +787,7 @@ namespace ic {//namespace
 	else { genWeight=pow(0.6741/(2./3.),2); }
 	eventInfo->set_weight("madgraph_ttbarbr_weight",genWeight);
       }
-    }
+    }//do top
     //else {
     //std::cout << " skipping top stuff" << std::endl;
     //}
@@ -853,34 +892,30 @@ namespace ic {//namespace
     //std::cout << " IDISO veto done." << std::endl;
 
    
-    }
+    }//save weights
 
 
     bool zeroParton = false;
 
     if (do_w_soup_) {
-      std::vector<GenParticle*> const& parts = event->GetPtrVec<GenParticle>("genParticles");
-      bool count_jets = false;
-      unsigned partons = 0;
-      for (unsigned i = 0; i < parts.size(); ++i) {
-        if (parts[i]->status() != 3) continue;
-        unsigned id = abs(parts[i]->pdgid());
-        if (count_jets) { 
-          if (id == 1 || id == 2 || id == 3 || id == 4 || id == 5 || id == 6 || id == 21) partons++;
-        }
-        if (id == 24) count_jets = true; 
+      if (mc_ == mc::fall15_76X){
+	double gen_ht = eventInfo->gen_ht() ;
+	if (100 <= gen_ht&&gen_ht <200) eventInfo->set_weight("wsoup", w1_);
+	else if (200 <= gen_ht&&gen_ht <400) eventInfo->set_weight("wsoup", w2_);
+	else if (400 <= gen_ht &&gen_ht<600) eventInfo->set_weight("wsoup", w3_);
+	else if (gen_ht >= 600) eventInfo->set_weight("wsoup", w4_);
       }
-      if (partons > 4) {
-        std::cerr << "Error making soup, event has " << partons << " partons!" << std::endl;
-        throw;
+      else {
+	std::vector<GenParticle*> const& parts = event->GetPtrVec<GenParticle>("genParticles");
+	unsigned partons = getPartonNumber(parts);//,24);
+	
+	if (partons == 1) eventInfo->set_weight("wsoup", w1_);
+	if (partons == 2) eventInfo->set_weight("wsoup", w2_);
+	if (partons == 3) eventInfo->set_weight("wsoup", w3_);
+	if (partons >= 4) eventInfo->set_weight("wsoup", w4_);
+	
+	if (partons == 0) zeroParton = true;
       }
-      if (partons == 1) eventInfo->set_weight("wsoup", w1_);
-      if (partons == 2) eventInfo->set_weight("wsoup", w2_);
-      if (partons == 3) eventInfo->set_weight("wsoup", w3_);
-      if (partons == 4) eventInfo->set_weight("wsoup", w4_);
-
-      if (partons == 0) zeroParton = true;
-
     }
 
     if (do_w_reweighting_ || do_dy_reweighting_) {
@@ -910,21 +945,8 @@ namespace ic {//namespace
 
     if (do_dy_soup_) {
       std::vector<GenParticle*> const& parts = event->GetPtrVec<GenParticle>("genParticles");
-      bool count_jets = false;
-      unsigned partons = 0;
-      for (unsigned i = 0; i < parts.size(); ++i) {
-        // std::cout << i << "\t" << parts[i]->status() << "\t" << parts[i]->pdgid() << "\t" << parts[i]->vector() << std::endl;
-        if (parts[i]->status() != 3) continue;
-        unsigned id = abs(parts[i]->pdgid());
-        if (count_jets) { 
-          if (id == 1 || id == 2 || id == 3 || id == 4 || id == 5 || id == 6 || id == 21) partons++;
-        }
-        if (id == 23) count_jets = true; 
-      }
-      if (partons > 4) {
-        std::cerr << "Error making soup, event has " << partons << " partons!" << std::endl;
-        throw;
-      }
+      unsigned partons = getPartonNumber(parts);//,23);
+
       if (partons == 1) eventInfo->set_weight("dysoup", zw1_);
       if (partons == 2) eventInfo->set_weight("dysoup", zw2_);
       if (partons == 3) eventInfo->set_weight("dysoup", zw3_);
@@ -932,10 +954,19 @@ namespace ic {//namespace
       if (partons == 0) zeroParton = true;
     }
 
+    if (do_dy_soup_htbinned_){
+      double gen_ht = eventInfo->gen_ht() ;
+      if (100 <= gen_ht&&gen_ht <200) eventInfo->set_weight("dysoup", zw1_);
+      if (200 <= gen_ht&&gen_ht <400) eventInfo->set_weight("dysoup", zw2_);
+      if (400 <= gen_ht &&gen_ht<600) eventInfo->set_weight("dysoup", zw3_);
+      if (gen_ht >= 600) eventInfo->set_weight("dysoup", zw4_);
+    }
+
     if (!save_weights_) event->Add("NoParton",zeroParton);
     //std::cout<<"Final weight: "<<eventInfo->total_weight()<<std::endl;
     return 0;
-  }
+
+  }//execute method
 
   int HinvWeights::PostAnalysis() {
     if (save_weights_) {
@@ -990,6 +1021,28 @@ namespace ic {//namespace
     zn2_ = zn2;
     zn3_ = zn3;
     zn4_ = zn4;
+  }
+
+  unsigned HinvWeights::getPartonNumber(std::vector<GenParticle*> const& parts){
+    
+    //bool count_jets = false;
+    unsigned partons = 0;
+    for (unsigned i = 0; i < parts.size(); ++i) {
+      unsigned id = abs(parts[i]->pdgid());
+      std::vector<bool> flags=parts[i]->statusFlags();
+      if (!(flags[GenStatusBits::IsHardProcess] && 
+	    flags[GenStatusBits::FromHardProcess] &&
+	    flags[GenStatusBits::IsFirstCopy]) ) continue;
+      //if (count_jets) { 
+	if (id == 1 || id == 2 || id == 3 || id == 4 || id == 5 || id == 6 || id == 21) partons++;
+	//}
+	//if (id == bosonid) count_jets = true; 
+    }
+    if (partons > 4) {
+      std::cerr << "Error making soup, event has " << partons << " partons!" << std::endl;
+    //throw;
+    }
+    return partons;
   }
 
   double HinvWeights::Efficiency(double m, double m0, double sigma, double alpha,

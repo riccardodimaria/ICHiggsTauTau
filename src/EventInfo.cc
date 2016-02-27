@@ -11,6 +11,8 @@ EventInfo::EventInfo()
       jet_rho_(0.),
       lepton_rho_(0.),
       gen_ht_(0.),
+      n_outgoing_partons_(0),
+      gen_mll_(0.),
       good_vertices_(0) {}
 
 EventInfo::~EventInfo() {}

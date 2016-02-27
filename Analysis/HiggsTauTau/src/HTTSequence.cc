@@ -33,7 +33,6 @@
 #include "HiggsTauTau/interface/SVFitTest.h"
 #include "HiggsTauTau/interface/HTTRecoilCorrector.h"
 #include "HiggsTauTau/interface/HhhBJetRegression.h"
-#include "HiggsTauTau/interface/HTTSyncTemp.h"
 #include "HiggsTauTau/interface/HTTSync.h"
 #include "HiggsTauTau/interface/HTTEMuMVA.h"
 #include "HiggsTauTau/interface/HhhEMuMVA.h"
@@ -259,6 +258,7 @@ HTTSequence::HTTSequence(std::string& chan, std::string postf, Json::Value const
  }
  if (channel_str == "tt"){
   tau_pt = 45;
+  if (strategy_type == strategy::fall15) tau_pt=40;
   tau_eta = 2.1;
   tau_iso = 1.0;
   tau_dz = 0.2;
@@ -471,6 +471,32 @@ void HTTSequence::BuildSequence(){
   BuildModule(httPrint);  
 }
 
+
+ if(output_name.find("WZJetsTo3LNu") != output_name.npos){ 
+  BuildModule(GenericModule("lowGenMLLEventVeto")
+   .set_function([](ic::TreeEvent *event){
+     std::vector<GenParticle *> const& particles = event->GetPtrVec<GenParticle>("genParticles");
+     std::vector<GenParticle *> sel_particles;
+     for (unsigned i=0; i < particles.size(); ++i){
+        std::vector<bool> status_flags_start = particles[i]->statusFlags();
+        if ( ((particles[i]->pt()>8&& ((abs(particles[i]->pdgid()) == 11 )||(abs(particles[i]->pdgid()) == 13))) ||(abs(particles[i]->pdgid())==15)) && (status_flags_start[IsPrompt]) ){
+        sel_particles.push_back(particles[i]);
+      }
+    }
+    bool skip_evt=false;
+    for(unsigned i = 0; i<sel_particles.size(); ++i){
+      for(unsigned j = 0; j<i; ++j){
+        if(skip_evt==false){
+          if(((sel_particles[i]->vector()+sel_particles[j]->vector()).M() > 4) && (sel_particles[i]->vector()+sel_particles[j]->vector()).M() < 30) skip_evt=true;
+        }
+      }
+    }
+    if(skip_evt) return 1;
+    else return 0;
+   }));
+  }
+          
+
 /*  BuildModule(GenericModule("checkGoodVertices")
     .set_function([](ic::TreeEvent *event){
        std::vector<ic::Vertex*> vertices = event->GetPtrVec<ic::Vertex>("vertices");
@@ -532,7 +558,7 @@ void HTTSequence::BuildSequence(){
   if (era_type == era::data_2015&&output_name.find("2015C")!=output_name.npos)  data_json= "input/json/Cert_246908-255031_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt";
   if (era_type == era::data_2015&&output_name.find("2015B")!=output_name.npos)  data_json= "input/json/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON_v2.txt";
   //if (era_type == era::data_2015&&output_name.find("2015D")!=output_name.npos)  data_json= "input/json/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt";  //json used for datacard sync v1
-  if (era_type == era::data_2015&&output_name.find("2015D")!=output_name.npos)  data_json= "input/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON.txt";
+  if (era_type == era::data_2015&&output_name.find("2015D")!=output_name.npos)  data_json= "input/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt";
 
  LumiMask lumiMask = LumiMask("LumiMask")
    .set_produce_output_jsons("")
@@ -546,7 +572,7 @@ void HTTSequence::BuildSequence(){
  }
 
 
-if(ztautau_mode > 0 && strategy_type != strategy::spring15){
+if(ztautau_mode > 0 && strategy_type != strategy::spring15 && strategy_type != strategy::fall15){
   SimpleCounter<GenParticle> zTauTauFilter = SimpleCounter<GenParticle>("ZToTauTauSelector")
     .set_input_label("genParticles")
     .set_predicate(
@@ -692,11 +718,11 @@ if(channel != channel::wmnu) {
     .set_gen_taus_label(is_embedded ? "genParticlesEmbedded" : "genParticlesTaus")
     .set_scale_met_for_tau((tau_scale_mode > 0 || (moriond_tau_scale && (is_embedded || !is_data) )   ))
     .set_tau_scale(tau_shift)
-    .set_use_most_isolated((strategy_type == strategy::phys14 || strategy_type == strategy::spring15) && (!(channel == channel::zee || channel == channel::zmm || channel == channel::tpzmm || channel == channel::tpzee)))
-    .set_use_os_preference(!(strategy_type == strategy::phys14 || strategy_type==strategy::spring15) || (channel == channel::zee || channel == channel::zmm || channel == channel::tpzmm || channel == channel::tpzee))
+    .set_use_most_isolated((strategy_type == strategy::phys14 || strategy_type == strategy::spring15 || strategy_type == strategy::fall15) && (!(channel == channel::zee || channel == channel::zmm || channel == channel::tpzmm || channel == channel::tpzee)))
+    .set_use_os_preference(!(strategy_type == strategy::phys14 || strategy_type==strategy::spring15 || strategy_type==strategy::fall15) || (channel == channel::zee || channel == channel::zmm || channel == channel::tpzmm || channel == channel::tpzee))
     .set_allowed_tau_modes(allowed_tau_modes);
 
- if(strategy_type == strategy::spring15){
+ if(strategy_type == strategy::spring15 || strategy_type == strategy::fall15){
    httPairSelector.set_gen_taus_label("genParticles");
   }
   
@@ -738,14 +764,14 @@ if(channel == channel::tpzmm || channel == channel::tpzee){
  }
 
 
-if(strategy_type==strategy::spring15&&!is_data&&channel != channel::wmnu){
+if((strategy_type==strategy::spring15||strategy_type==strategy::fall15)&&!is_data&&channel != channel::wmnu){
   BuildModule(HTTPairGenInfo("HTTPairGenInfo")
     .set_fs(fs.get())
     .set_write_plots(false)
     .set_ditau_label("ditau"));
 }
 
-if(strategy_type!=strategy::spring15&&!is_data&&js["do_btag_eff"].asBool()){
+if((strategy_type!=strategy::spring15||strategy_type==strategy::fall15)&&!is_data&&js["do_btag_eff"].asBool()){
    BuildModule(BTagCheck("BTagCheck")
     .set_fs(fs.get())
     .set_channel(channel)
@@ -762,8 +788,8 @@ if(strategy_type!=strategy::spring15&&!is_data&&js["do_btag_eff"].asBool()){
     jes_input_set  = "SubTotalMC";
   }
   if (era_type == era::data_2015) {
-    jes_input_file = "input/jec/Summer13_V1_DATA_UncertaintySources_AK5PF.txt";
-    jes_input_set  = "SubTotalMC";
+    jes_input_file = "input/jec/Summer15_25nsV5_DATA_UncertaintySources_AK4PFchs.txt";
+    jes_input_set  = "Total";
   }
  BuildModule(JetEnergyUncertainty<PFJet>("JetEnergyUncertainty")
   .set_input_label(jets_label)
@@ -791,9 +817,14 @@ if(channel != channel::wmnu) {
     .set_input_label(jets_label)
     .set_reference_label("ditau")
     .set_min_dr(0.5));
+} else if (channel == channel::wmnu){
+  BuildModule(OverlapFilter<PFJet,Muon>("JetLeptonOverlapFilter")
+    .set_input_label(jets_label)
+    .set_reference_label("sel_muons")
+    .set_min_dr(0.5));
 }
 
-if(strategy_type==strategy::spring15&&!is_data&&js["do_btag_eff"].asBool()){
+if((strategy_type==strategy::spring15||strategy_type==strategy::fall15)&&!is_data&&js["do_btag_eff"].asBool()){
    BuildModule(BTagCheck("BTagCheck")
     .set_fs(fs.get())
     .set_channel(channel)
@@ -802,7 +833,7 @@ if(strategy_type==strategy::spring15&&!is_data&&js["do_btag_eff"].asBool()){
 }
 
 
-  if(strategy_type != strategy::phys14&& strategy_type!= strategy::spring15){
+  if(strategy_type != strategy::phys14&& strategy_type!= strategy::spring15 &&strategy_type != strategy::fall15){
     BuildModule(HTTRecoilCorrector("HTTRecoilCorrector")
      .set_sample(output_name)
      .set_channel(channel)
@@ -826,10 +857,11 @@ if(strategy_type==strategy::spring15&&!is_data&&js["do_btag_eff"].asBool()){
 
   SVFitTest svFitTest  = SVFitTest("SVFitTest")
     .set_channel(channel)
+    .set_strategy(strategy_type)
     .set_outname(svfit_override == "" ? output_name : svfit_override)
     .set_run_mode(new_svfit_mode)
     .set_fail_mode(0)
-    .set_require_inputs_match(false)
+    .set_require_inputs_match(true)
     .set_split(7000)
     .set_dilepton_label("ditau")
     .set_met_label(met_label)
@@ -841,6 +873,7 @@ if(strategy_type==strategy::spring15&&!is_data&&js["do_btag_eff"].asBool()){
    svFitTest.set_legacy_svfit(false);
    svFitTest.set_do_preselection(!js["make_sync_ntuple"].asBool());
    svFitTest.set_read_svfit_mt(true);
+   svFitTest.set_tau_optimisation(js["tau_id_study"].asBool());
    svFitTest.set_read_all(js["read_all_svfit_files"].asBool());
    svFitTest.set_from_grid(js["svfit_from_grid"].asBool());
  }
@@ -849,7 +882,7 @@ BuildModule(svFitTest);
 
 
 
- if(strategy_type != strategy::phys14 && strategy_type != strategy::spring15){
+ if(strategy_type != strategy::phys14 && strategy_type != strategy::spring15 && strategy_type != strategy::fall15){
   HTTWeights httWeights = HTTWeights("HTTWeights")
     .set_channel(channel)
     .set_era(era_type)
@@ -924,7 +957,7 @@ BuildModule(svFitTest);
 }
 
 
- if(strategy_type == strategy::spring15){
+ if(strategy_type == strategy::spring15 &&channel!=channel::wmnu){
    TH2D et_trig_mc = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_2015.root","/","Electron_SingleEle_MC_eff");
    TH2D et_trig_data = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_2015.root","/","Electron_SingleEle_Data_eff");
    TH2D mt_trig_mc = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_2015.root","/","Muon_SingleMu_MC_eff");
@@ -952,6 +985,7 @@ BuildModule(svFitTest);
     .set_mc(mc_type)
     .set_do_tau_id_weights(false)
     .set_ditau_label("ditau")
+    .set_jets_label("ak4PFJetsCHS")
     .set_et_trig_mc(new TH2D(et_trig_mc)).set_et_trig_data(new TH2D(et_trig_data))
     .set_mt_trig_mc(new TH2D(mt_trig_mc)).set_mt_trig_data(new TH2D(mt_trig_data))
     .set_et_idiso_mc(new TH2D(et_idiso_mc)).set_et_idiso_data(new TH2D(et_idiso_data))
@@ -962,11 +996,12 @@ BuildModule(svFitTest);
     .set_em_e12_trig_mc(new TH2D(em_e12_trig_mc)).set_em_e12_trig_data(new TH2D(em_e12_trig_data))
     .set_em_e_idiso_mc(new TH2D(em_e_idiso_mc)).set_em_e_idiso_data(new TH2D(em_e_idiso_data))
     .set_em_m_idiso_mc(new TH2D(em_m_idiso_mc)).set_em_m_idiso_data(new TH2D(em_m_idiso_data));
-  if (!is_data) {
+  if (!is_data ) {
     httWeights.set_do_trg_weights(true).set_trg_applied_in_mc(true).set_do_idiso_weights(true);
+    if(channel ==channel::zmm || channel==channel::zee) httWeights.set_do_trg_weights(false).set_trg_applied_in_mc(false);
   }
 
-   if (output_name.find("DYJetsToLL_M-50") != output_name.npos){
+  if (output_name.find("DYJetsToLL_M-50") != output_name.npos){
       httWeights.set_do_dy_soup_htbinned(true);
       httWeights.SetDYInputCrossSections(4895,139.4,42.75,5.497,2.21);
       httWeights.SetDYInputYields(9042031,2725655,973937,1067758,998912);
@@ -978,6 +1013,58 @@ BuildModule(svFitTest);
       httWeights.SetWInputYields(72207128,10152718,5221599,1745914,1039152);
     }
    
+
+    BuildModule(httWeights);
+  }
+
+ if(strategy_type ==strategy::fall15&&channel!=channel::wmnu){
+   TH2D et_trig_mc = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_SingleEle_MC_eff");
+   TH2D et_trig_data = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_SingleEle_Data_eff");
+   TH2D mt_trig_mc = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_SingleMu_MC_eff");
+   TH2D mt_trig_data = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_SingleMu_Data_eff");
+   TH2D et_idiso_mc = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_IdIso0p10_MC_eff");
+   TH2D et_idiso_data = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_IdIso0p10_Data_eff");
+   TH2D em_e_idiso_mc = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_IdIso0p15_MC_eff");
+   TH2D em_e_idiso_data = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_IdIso0p15_Data_eff");
+   TH2D mt_idiso_mc = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_IdIso0p10_MC_eff");
+   TH2D mt_idiso_data = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_IdIso0p10_Data_eff");
+   TH2D em_m_idiso_mc = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_IdIso0p15_MC_eff");
+   TH2D em_m_idiso_data = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_IdIso0p15_Data_eff");
+   TH2D em_m17_trig_data = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_Mu17_Data_eff");
+   TH2D em_m17_trig_mc = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_Mu17_MC_eff");
+   TH2D em_m8_trig_data = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_Mu8_Data_eff");
+   TH2D em_m8_trig_mc = GetFromTFile<TH2D>("input/scale_factors/Muon_SF_Fall15.root","/","Muon_Mu8_MC_eff");
+   TH2D em_e17_trig_data = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_Ele17_Data_eff");
+   TH2D em_e17_trig_mc = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_Ele17_MC_eff");
+   TH2D em_e12_trig_data = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_Ele12_Data_eff");
+   TH2D em_e12_trig_mc = GetFromTFile<TH2D>("input/scale_factors/Ele_SF_Fall15.root","/","Electron_Ele12_MC_eff");
+
+   HTTWeights httWeights = HTTWeights("HTTWeights")   
+    .set_channel(channel)
+    .set_era(era_type)
+    .set_mc(mc_type)
+    .set_do_tau_id_weights(false)
+    .set_ditau_label("ditau")
+    .set_jets_label("ak4PFJetsCHS")
+    .set_et_trig_mc(new TH2D(et_trig_mc)).set_et_trig_data(new TH2D(et_trig_data))
+    .set_mt_trig_mc(new TH2D(mt_trig_mc)).set_mt_trig_data(new TH2D(mt_trig_data))
+    .set_et_idiso_mc(new TH2D(et_idiso_mc)).set_et_idiso_data(new TH2D(et_idiso_data))
+    .set_mt_idiso_mc(new TH2D(mt_idiso_mc)).set_mt_idiso_data(new TH2D(mt_idiso_data))
+    .set_em_m17_trig_mc(new TH2D(em_m17_trig_mc)).set_em_m17_trig_data(new TH2D(em_m17_trig_data))
+    .set_em_m8_trig_mc(new TH2D(em_m8_trig_mc)).set_em_m8_trig_data(new TH2D(em_m8_trig_data))
+    .set_em_e17_trig_mc(new TH2D(em_e17_trig_mc)).set_em_e17_trig_data(new TH2D(em_e17_trig_data))
+    .set_em_e12_trig_mc(new TH2D(em_e12_trig_mc)).set_em_e12_trig_data(new TH2D(em_e12_trig_data))
+    .set_em_e_idiso_mc(new TH2D(em_e_idiso_mc)).set_em_e_idiso_data(new TH2D(em_e_idiso_data))
+    .set_em_m_idiso_mc(new TH2D(em_m_idiso_mc)).set_em_m_idiso_data(new TH2D(em_m_idiso_data));
+  if (!is_data ) {
+    httWeights.set_do_trg_weights(true).set_trg_applied_in_mc(true).set_do_idiso_weights(true);
+  }
+
+  if (output_name.find("DY") != output_name.npos && output_name.find("JetsToLL_M-50") != output_name.npos){
+    httWeights.set_do_dy_soup(true);
+    httWeights.SetDYTargetFractions(0.696628989, 0.204582155, 0.067178037, 0.020549051, 0.011061768); //Target fractions are xs_n-jet/xs_inclusive
+    httWeights.SetDYInputYields(9004328.0,65314144.0 , 20019059.0, 5701878.0, 4189017.0);
+  }
 
     BuildModule(httWeights);
   }
@@ -1102,7 +1189,7 @@ BuildModule(HTTElectronEfficiency("ElectronEfficiencyForIDStudy")
 
 
   std::function<bool(Electron const*)> ElecID;
-  if(strategy_type!=strategy::phys14 && strategy_type!=strategy::spring15){
+  if(strategy_type!=strategy::phys14 && strategy_type!=strategy::spring15 && strategy_type != strategy::fall15){
     if(special_mode == 20 || special_mode == 22){
      ElecID = [](Electron const* e) { return HttEMuFakeElectron(e); };
     } else if (special_mode == 25){
@@ -1112,7 +1199,7 @@ BuildModule(HTTElectronEfficiency("ElectronEfficiencyForIDStudy")
     }
    } else if(strategy_type==strategy::phys14){
       ElecID = [](Electron const* e) { return ElectronHTTIdPhys14(e, false); };
-    } else if(strategy_type==strategy::spring15){
+    } else if(strategy_type==strategy::spring15 || strategy_type==strategy::fall15){
       ElecID = [](Electron const* e) { return ElectronHTTIdSpring15(e, false); };
     }
 
@@ -1138,7 +1225,7 @@ BuildModule(HTTElectronEfficiency("ElectronEfficiencyForIsoStudy")
  double elec_iso_max_val =0.;
  double elec_iso_min_val =0.; 
  elec_iso_min_val = -0.01;
- if(strategy_type != strategy::phys14 && strategy_type != strategy::spring15){
+ if(strategy_type != strategy::phys14 && strategy_type != strategy::spring15 && strategy_type != strategy::fall15){
   if(special_mode == 2){
    elec_iso_max_val = 0.5;
   } else if (special_mode ==3 || special_mode ==4){
@@ -1151,7 +1238,7 @@ BuildModule(HTTElectronEfficiency("ElectronEfficiencyForIsoStudy")
  }
   
 //Isolation applied at plotting time for run 2 analysis   
-if( strategy_type != strategy::phys14 && strategy_type!=strategy::spring15) {
+if( strategy_type != strategy::phys14 && strategy_type!=strategy::spring15 && strategy_type != strategy::fall15) {
  if (js["baseline"]["lep_iso"].asBool()&&special_mode !=25 &&special_mode != 23 ) {
     BuildModule(SimpleFilter<Electron>("ElectronIsoFilter")
         .set_input_label("sel_electrons").set_min(1)
@@ -1198,7 +1285,7 @@ void HTTSequence::BuildMTPairs() {
 
 
   std::function<bool(Muon const*)> MuonID;
-  if(strategy_type!=strategy::phys14 && strategy_type!=strategy::spring15){
+  if(strategy_type!=strategy::phys14 && strategy_type!=strategy::spring15 && strategy_type != strategy::fall15){
     if(special_mode == 21 || special_mode == 22){
      MuonID = [](Muon const* m) { return HttEMuFakeMuon(m); };
     } else if(special_mode ==25){
@@ -1238,7 +1325,7 @@ void HTTSequence::BuildMTPairs() {
  }
 
 //Isolation applied at plotting time for run 2 analysis   
-if(strategy_type != strategy::phys14 && strategy_type!=strategy::spring15) {
+if(strategy_type != strategy::phys14 && strategy_type!=strategy::spring15 && strategy_type != strategy::fall15) {
   if (js["baseline"]["lep_iso"].asBool()&&special_mode !=25 &&special_mode != 22 &&special_mode != 21 ) {
     BuildModule(SimpleFilter<Muon>("MuonIsoFilter")
         .set_input_label("sel_muons").set_min(1)
@@ -1297,7 +1384,7 @@ void HTTSequence::BuildEMPairs() {
 
 
   std::function<bool(Electron const*)> ElecID;
-  if(strategy_type!=strategy::phys14 && strategy_type!=strategy::spring15){
+  if(strategy_type!=strategy::phys14 && strategy_type!=strategy::spring15 && strategy_type != strategy::fall15){
     if(special_mode == 20 || special_mode == 22){
      ElecID = [](Electron const* e) { return HttEMuFakeElectron(e); };
     } else if(special_mode ==25){
@@ -1307,7 +1394,7 @@ void HTTSequence::BuildEMPairs() {
     }
    } else if(strategy_type==strategy::phys14){
       ElecID = [](Electron const* e) { return ElectronHTTIdPhys14(e, false); };
-   } else if(strategy_type==strategy::spring15){
+   } else if(strategy_type==strategy::spring15 || strategy_type==strategy::fall15){
       ElecID = [](Electron const* e) { return ElectronHTTIdSpring15(e, false); };
    }
 
@@ -1329,7 +1416,7 @@ void HTTSequence::BuildEMPairs() {
  double elec_iso_min_val = 0.; 
  elec_iso_min_val = -0.1;
  elec_iso_max_val = 0.5;
- if(strategy_type != strategy::phys14 && strategy_type !=strategy::spring15){
+ if(strategy_type != strategy::phys14 && strategy_type !=strategy::spring15 && strategy_type != strategy::fall15){
   if(special_mode == 2){
    elec_iso_max_val = 0.5;
   } else if (special_mode ==3 || special_mode ==4){
@@ -1340,7 +1427,7 @@ void HTTSequence::BuildEMPairs() {
    
 
 //Isolation applied at plotting time for run 2 analysis   
-if(strategy_type != strategy::phys14 && strategy_type!=strategy::spring15) {
+if(strategy_type != strategy::phys14 && strategy_type!=strategy::spring15 && strategy_type != strategy::fall15) {
  if (js["baseline"]["lep_iso"].asBool()&&special_mode!=22&&special_mode!=20&&special_mode !=25 &&special_mode != 23 &&strategy_type==strategy::paper2013) {
     BuildModule(SimpleFilter<Electron>("ElectronIsoFilter")
         .set_input_label("sel_electrons").set_min(1)
@@ -1372,7 +1459,7 @@ if(strategy_type != strategy::phys14 && strategy_type!=strategy::spring15) {
 
 
   std::function<bool(Muon const*)> MuonID;
-  if(strategy_type!=strategy::phys14 &&strategy_type!=strategy::spring15){
+  if(strategy_type!=strategy::phys14 &&strategy_type!=strategy::spring15 &&strategy_type != strategy::fall15){
     if(special_mode == 21 || special_mode == 22){
      MuonID = [](Muon const* m) { return HttEMuFakeMuon(m); };
     } else if(special_mode ==25){
@@ -1411,7 +1498,7 @@ if(strategy_type != strategy::phys14 && strategy_type!=strategy::spring15) {
 
 
 //Isolation applied at plotting time for run 2 analysis   
-if(strategy_type != strategy::phys14 && strategy_type!=strategy::spring15) {
+if(strategy_type != strategy::phys14 && strategy_type!=strategy::spring15 &&strategy_type != strategy::fall15) {
   if (js["baseline"]["lep_iso"].asBool()&&special_mode !=25 &&special_mode != 22 &&special_mode != 21) {
     BuildModule(SimpleFilter<Muon>("MuonIsoFilter")
         .set_input_label("sel_muons").set_min(1)
@@ -1468,7 +1555,7 @@ void HTTSequence::BuildZEEPairs() {
       js["electrons"].asString(), "sel_electrons"));
 
   std::function<bool(Electron const*)> ElecID;
-   if(strategy_type==strategy::spring15){
+   if(strategy_type==strategy::spring15 || strategy_type==strategy::fall15){
       ElecID = [](Electron const* e) { return ElectronHTTIdSpring15(e, false); };
    }
 
@@ -1505,7 +1592,7 @@ void HTTSequence::BuildTPZEEPairs() {
       js["electrons"].asString(), "sel_electrons"));
 
   std::function<bool(Electron const*)> ElecID;
-   if(strategy_type==strategy::spring15){
+   if(strategy_type==strategy::spring15||strategy_type ==strategy::fall15){
       ElecID = [](Electron const* e) { return ElectronHTTIdSpring15(e, false); };
    }
 
@@ -1550,7 +1637,7 @@ void HTTSequence::BuildZMMPairs() {
       js["muons"].asString(), "sel_muons"));
 
   std::function<bool(Muon const*)> MuonID;
-  if(strategy_type==strategy::spring15){
+  if(strategy_type==strategy::spring15 || strategy_type==strategy::fall15){
     MuonID = [](Muon const* m) { return MuonMedium(m); };
   }
 
@@ -1585,7 +1672,7 @@ void HTTSequence::BuildTPZMMPairs() {
       js["muons"].asString(), "sel_muons"));
 
   std::function<bool(Muon const*)> MuonID;
-  if(strategy_type==strategy::spring15){
+  if(strategy_type==strategy::spring15||strategy_type==strategy::fall15){
     MuonID = [](Muon const* m) { return MuonMedium(m); };
   }
 
@@ -1631,7 +1718,7 @@ void HTTSequence::BuildWMuNu() {
       js["muons"].asString(), "sel_muons"));
 
   std::function<bool(Muon const*)> MuonID;
-  if(strategy_type==strategy::spring15){
+  if(strategy_type==strategy::spring15||strategy_type==strategy::fall15){
     MuonID = [](Muon const* m) { return MuonMedium(m); };
   }
 
@@ -1657,9 +1744,9 @@ void HTTSequence::BuildTauSelection(){
   ic::channel channel_type         = String2Channel(channel_str);
 
  bool moriond_tau_scale =false;
- if(real_tau_sample&&strategy_type!=strategy::phys14&&strategy_type!=strategy::spring15) moriond_tau_scale = true; 
+ if(real_tau_sample&&strategy_type!=strategy::phys14&&strategy_type!=strategy::spring15&&strategy_type!=strategy::fall15) moriond_tau_scale = true; 
  
- if (tau_scale_mode > 0 && (!moriond_tau_scale||strategy_type==strategy::spring15)){
+ if (tau_scale_mode > 0 && (!moriond_tau_scale||strategy_type==strategy::spring15||strategy_type==strategy::fall15)){
     BuildModule(EnergyShifter<Tau>("TauEnergyShifter")
     .set_input_label(js["taus"].asString())
     .set_shift(tau_shift));
@@ -1695,7 +1782,18 @@ if(strategy_type == strategy::paper2013){
                 t->GetTauID("decayModeFindingNewDMs") > 0.5;
 
       }));
-  }
+  } else if (strategy_type == strategy::fall15){
+  BuildModule(SimpleFilter<Tau>("TauFilter")
+      .set_input_label(js["taus"].asString()).set_min(min_taus)
+      .set_predicate([=](Tau const* t) {
+        return  t->pt()                     >  tau_pt     &&
+                fabs(t->eta())              <  tau_eta    &&
+                fabs(t->lead_dz_vertex())   <  tau_dz     &&
+                fabs(t->charge())           == 1          &&
+                t->GetTauID("decayModeFinding") > 0.5;
+
+      }));
+   }
 
 if(js["do_tau_eff"].asBool()&&!js["make_sync_ntuple"].asBool()){
 BuildModule(HTTTauEfficiency("HTTTauEfficiency")
@@ -1708,7 +1806,7 @@ if(strategy_type == strategy::phys14){
  }
 
 //Isolation and anti-muon/anti-electron discriminators applied at plotting time for run 2 analysis   
-if(strategy_type!=strategy::phys14&&strategy_type!=strategy::spring15) {
+if(strategy_type!=strategy::phys14&&strategy_type!=strategy::spring15&&strategy_type!=strategy::fall15) {
   if (base["lep_iso"].asBool()) {
   if(strategy_type!= strategy::phys14 && strategy_type!=strategy::paper2013 && strategy_type!=strategy::spring15){
     BuildModule(SimpleFilter<Tau>("TauIsoFilter")
@@ -1804,7 +1902,7 @@ void HTTSequence::BuildDiElecVeto() {
                 //PF04IsolationVal(e, 0.5,0) < 0.3;
                 PF03IsolationVal(e, 0.5,0) < 0.3;
       });
-   } else if(strategy_type==strategy::spring15){ 
+   } else if(strategy_type==strategy::spring15||strategy_type==strategy::fall15){ 
        vetoElecFilter.set_predicate([=](Electron const* e) {
         return  e->pt()                 > veto_dielec_pt    &&
                 fabs(e->eta())          < veto_dielec_eta   &&
@@ -1831,7 +1929,7 @@ void HTTSequence::BuildDiElecVeto() {
       });
 	
 // Use special mode of veto module which stores the veto value but doesnt actually apply the filter for run 2 analysis	
-    if(strategy_type==strategy::phys14 || strategy_type==strategy::spring15){
+    if(strategy_type==strategy::phys14 || strategy_type==strategy::spring15 || strategy_type==strategy::fall15){
   	  vetoElecPairFilter.set_veto_name("dielec_veto");
   		vetoElecPairFilter.set_no_filter(true);
   	}
@@ -1857,7 +1955,7 @@ void HTTSequence::BuildDiElecVeto() {
                 m->is_tracker()                   &&
                 PF04IsolationVal(m, 0.5,1) < 0.3;
       });
-    } else if(strategy_type==strategy::phys14 || strategy_type==strategy::spring15){
+    } else if(strategy_type==strategy::phys14 || strategy_type==strategy::spring15 || strategy_type==strategy::fall15){
       vetoMuonFilter.set_predicate([=](Muon const* m) {
         return  m->pt()                 > veto_dimuon_pt    &&
                 fabs(m->eta())          < veto_dimuon_eta   &&
@@ -1885,7 +1983,7 @@ void HTTSequence::BuildDiElecVeto() {
 			});
 	
 // Use special mode of veto module which stores the veto value but doesnt actually apply the filter for run 2 analysis	
-	if(strategy_type==strategy::phys14 || strategy_type==strategy::spring15) {
+	if(strategy_type==strategy::phys14 || strategy_type==strategy::spring15 ||strategy_type==strategy::fall15) {
 	  vetoMuonPairFilter.set_veto_name("dimuon_veto");
 		vetoMuonPairFilter.set_no_filter(true);
 	}
@@ -1927,7 +2025,7 @@ void HTTSequence::BuildExtraElecVeto(){
       });
   }
 
- if(strategy_type==strategy::spring15){
+ if(strategy_type==strategy::spring15||strategy_type==strategy::fall15){
       extraElecFilter.set_no_filter(true);
       extraElecFilter.set_predicate([=](Electron const* e) {
         return  e->pt()                 > veto_elec_pt    &&
@@ -1964,7 +2062,7 @@ void HTTSequence::BuildExtraMuonVeto(){
                 MuonTight(m)                              &&
                 PF04IsolationVal(m, 0.5,1) < 0.3;
       });
-   } else if (strategy_type == strategy::phys14 || strategy_type==strategy::spring15){
+   } else if (strategy_type == strategy::phys14 || strategy_type==strategy::spring15 || strategy_type==strategy::fall15){
 // Use special mode of veto module which stores the veto value but doesnt actually apply the filter for run 2 analysis	
 	    extraMuonFilter.set_no_filter(true);
       extraMuonFilter.set_predicate([=](Muon const* m) {

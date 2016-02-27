@@ -41,6 +41,7 @@ class ICMetProducer : public edm::EDProducer {
   boost::hash<T const*> met_hasher_;
   bool do_custom_id_;
   edm::InputTag inputID_;
+  bool store_id_from_user_cand_;
 
   struct SigTags {
     edm::InputTag metsig;
@@ -89,7 +90,7 @@ ICMetProducer<T>::SigTagsMethod2::SigTagsMethod2(edm::ParameterSet const& pset, 
   : metsig(pset.getParameter<edm::InputTag>("metsig")),
     metsigcov(pset.getParameter<edm::InputTag>("metsigcov")) {
      collector.consumes<double>(metsig);
-     collector.consumes<double>(metsigcov);
+     collector.consumes<math::Error<2>::type>(metsigcov);
     }
 
 template <class T>
@@ -118,6 +119,7 @@ ICMetProducer<pat::MET>::ICMetProducer(const edm::ParameterSet& config)
       branch_(config.getParameter<std::string>("branch")),
       do_custom_id_(config.getParameter<bool>("includeCustomID")),
       inputID_(config.getParameter<edm::InputTag>("inputCustomID")),
+      store_id_from_user_cand_(config.getParameter<bool>("includeUserCandID")),
       do_gen_met_(config.getParameter<bool>("doGenMet")),
       do_external_metsig_(config.getParameter<bool>("includeExternalMetsig")),
       do_external_metsig_method2_(config.getParameter<bool>("includeExternalMetsigMethod2")),
@@ -129,6 +131,7 @@ ICMetProducer<pat::MET>::ICMetProducer(const edm::ParameterSet& config)
       metuncertainties_(config.getParameter<std::vector<std::string> >("metuncertainties")) {
   consumes<edm::View<pat::MET>>(input_);
   consumes<std::vector<std::size_t>>(inputID_);
+
   met_ = new std::vector<ic::Met>();
   PrintHeaderWithProduces(config, input_, branch_);
   PrintOptional(1, do_custom_id_, "includeCustomID");
@@ -235,6 +238,16 @@ void ICMetProducer<pat::MET>::constructSpecific(
     for (unsigned i = 0; i < mets_handle->size(); ++i) {
       pat::MET const& src = mets_handle->at(i);
       ic::Met& dest = met_->at(i);
+      if(store_id_from_user_cand_){
+        std::size_t id = 0;
+        std::vector<std::string> candidate_names = src.userCandNames(); 
+        for(unsigned j = 0; j < candidate_names.size(); ++j){
+          reco::CandidatePtr cand_ref = src.userCand(candidate_names.at(j));
+          boost::hash_combine(id, cand_ref.get());
+        }
+        dest.set_id(id);
+      }
+
 
       if (do_gen_met_){
 	dest.set_pt(src.genMET()->pt());
@@ -252,9 +265,9 @@ void ICMetProducer<pat::MET>::constructSpecific(
       dest.set_sum_et(src.sumEt());
       
       
-#if CMSSW_MAJOR_VERSION >=7 && CMSSW_MINOR_VERSION >=4
+#if CMSSW_MAJOR_VERSION > 7 || (CMSSW_MAJOR_VERSION ==7 && CMSSW_MINOR_VERSION >=4)
       // Only write correction into the output met if the user wants it
-#if CMSSW_REVISION >= 12
+#if CMSSW_MAJOR_VERSION > 7 || (CMSSW_MAJOR_VERSION == 7 && CMSSW_REVISION >= 12)
       if (do_metcorrections_) {
 	if (metcorrections_.size() != pat::MET::METCorrectionLevel::METCorrectionLevelSize){
 	  throw cms::Exception("MetCorrectionNotRecognised")<<__FILE__ << " line " << __LINE__ << ": size of expected met correction object is " << metcorrections_.size() << " but pat::MET::METCorrectionLevel enum contains " << pat::MET::METCorrectionLevel::METCorrectionLevelSize << " elements. Code needs updating.\n";

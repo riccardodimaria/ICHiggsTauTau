@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
 	string var;																		// Use background methods for chosen category
 	string cat;																		// Use background methods for chosen category
 	unsigned verbosity;														// Verbose output, useful for diagnostic purposes
-  unsigned use_status_flags;                    // Use status flag based gen info for sample splitting?
+  bool is_fall15;
 	bool do_ss;                            		    // Tweaking some things for the paper
 	string datacard;             									// Channel, e.g. et
 	vector<string> set_alias;											// A string like alias1:value1,alias2:value2 etc
@@ -30,6 +30,7 @@ int main(int argc, char* argv[]){
 	string mssm_masses_str;												
 	string Hhh_masses_str;												
 	string syst_tau_scale;
+    string tau_es_scales_str;
 	string syst_met_scale;
 	string syst_eff_b;
 	string syst_fake_b;
@@ -75,7 +76,7 @@ int main(int argc, char* argv[]){
 	  ("var",              		    po::value<string>(&var)->required())
 	  ("cat",             		    po::value<string>(&cat)->default_value(""))
 	  ("verbosity",               po::value<unsigned>(&verbosity)->default_value(0))
-    ("use_status_flags",        po::value<unsigned>(&use_status_flags)->default_value(1))
+	  ("is_fall15",               po::value<bool>(&is_fall15)->default_value(true))
 	  ("do_ss", 	                po::value<bool>(&do_ss)->default_value(false))
 	  ("interpolate", 	          po::value<bool>(&interpolate)->default_value(false))
 	  ("datacard",                po::value<string>(&datacard)->default_value(""))
@@ -84,6 +85,7 @@ int main(int argc, char* argv[]){
 	  ("mssm_masses",             po::value<string>(&mssm_masses_str)->default_value(""))
 	  ("Hhh_masses",              po::value<string>(&Hhh_masses_str)->default_value(""))
 	  ("syst_tau_scale",          po::value<string>(&syst_tau_scale)->default_value(""))
+	  ("tau_es_scales",          po::value<string>(&tau_es_scales_str)->default_value(""))
 	  ("syst_met_scale",          po::value<string>(&syst_met_scale)->default_value(""))
 	  ("syst_eff_b",      		    po::value<string>(&syst_eff_b)->default_value(""))
 	  ("syst_eff_t",      		    po::value<string>(&syst_eff_t)->default_value(""))
@@ -167,11 +169,13 @@ int main(int argc, char* argv[]){
 	if (mssm_masses_str != "") boost::split(mssm_masses, mssm_masses_str, boost::is_any_of(","));
 	std::vector<std::string> Hhh_masses;
 	if (Hhh_masses_str != "") boost::split(Hhh_masses, Hhh_masses_str, boost::is_any_of(","));
+	std::vector<std::string> tau_es_scales;
+	if (tau_es_scales_str != "") boost::split(tau_es_scales, tau_es_scales_str, boost::is_any_of(","));
 
 	// ************************************************************************
 	// Setup HTTRun2Analysis 
 	// ************************************************************************
-	HTTRun2Analysis ana(String2Channel(channel_str), "2015", use_status_flags, verbosity);
+	HTTRun2Analysis ana(String2Channel(channel_str), "2015", verbosity,is_fall15);
     ana.SetQCDRatio(qcd_os_ss_factor);
     if (do_ss) ana.SetQCDRatio(1.0);
 	for (auto const& a : alias_vec) ana.SetAlias(a.first, a.second);
@@ -309,9 +313,15 @@ int main(int argc, char* argv[]){
 	// ************************************************************************
 	// Add tau/electron energy scale systematics
 	// ************************************************************************
+    if(tau_es_scales_str !="") {
+        for(auto scale : tau_es_scales) {
+            systematics.push_back(make_pair("/TSCALE_UP_"+scale, scale));
+            systematics.push_back(make_pair("/TSCALE_DOWN_"+scale, "-"+scale));
+        }
+    } 
 	if (syst_tau_scale != "") {
-		systematics.push_back(make_pair("/TSCALE_DOWN", syst_tau_scale+"Down"));
-		systematics.push_back(make_pair("/TSCALE_UP", syst_tau_scale+"Up"));
+        systematics.push_back(make_pair("/TSCALE_DOWN", syst_tau_scale+"Down"));
+        systematics.push_back(make_pair("/TSCALE_UP", syst_tau_scale+"Up"));
 	}
 	if (syst_eff_b != "") {
 		systematics.push_back(make_pair("/BTAG_DOWN", syst_eff_b+"Down"));
@@ -333,7 +343,7 @@ int main(int argc, char* argv[]){
 	for (auto const& syst : systematics) {
 		std::cout << "-----------------------------------------------------------------------------------" << std::endl;
 		std::cout << "[HiggsTauTauPlot5] Doing systematic templates for \"" << syst.second << "\"..." << std::endl;
-		HTTRun2Analysis ana_syst(String2Channel(channel_str), "2015", use_status_flags, verbosity);
+		HTTRun2Analysis ana_syst(String2Channel(channel_str), "2015", verbosity,is_fall15);
         ana_syst.SetQCDRatio(qcd_os_ss_factor);
 		for (auto const& a : alias_vec) ana_syst.SetAlias(a.first, a.second);
 		ana_syst.AddSMSignalSamples(sm_masses);
@@ -350,12 +360,12 @@ int main(int argc, char* argv[]){
 			ana_syst.FillSMSignal(hmap, {add_sm_background}, var, sel, cat, "wt", "_SM", "_"+syst.second);
 		}
 		ana_syst.FillMSSMSignal(hmap, mssm_masses, var, sel, cat, "wt", "", "_"+syst.second, 1.0);
-		ana_syst.FillHhhSignal(hmap, mssm_masses, var, sel, cat, "wt", "", "_"+syst.second, 1.0);
+		ana_syst.FillHhhSignal(hmap, Hhh_masses, var, sel, cat, "wt", "", "_"+syst.second, 1.0);
 		if (extra_binning.size() == 2) {
 			ana_syst.FillHistoMap(hmap, method, reduced_var+extra_binning[0], sel, cat, "wt", "_"+syst.second+extra_binning[1]);
 			ana_syst.FillSMSignal(hmap, sm_masses, reduced_var+extra_binning[0], sel, cat, "wt", "", "_"+syst.second+extra_binning[1], 1.0);
 			ana_syst.FillMSSMSignal(hmap, mssm_masses, reduced_var+extra_binning[0], sel, cat, "wt", "", "_"+syst.second+extra_binning[1], 1.0);
-			ana_syst.FillHhhSignal(hmap, mssm_masses, reduced_var+extra_binning[0], sel, cat, "wt", "", "_"+syst.second+extra_binning[1], 1.0);
+			ana_syst.FillHhhSignal(hmap, Hhh_masses, reduced_var+extra_binning[0], sel, cat, "wt", "", "_"+syst.second+extra_binning[1], 1.0);
 		}
   }
 
