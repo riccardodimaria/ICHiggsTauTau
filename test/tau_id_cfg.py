@@ -193,23 +193,42 @@ process.icPFConversionProducer = cms.EDProducer('ICConversionProducer',
 )
 
 process.icVertexSequence = cms.Sequence(
-  process.icVertexProducer+
-  process.icConversionProducer+
-  process.icPFConversionProducer
+  process.icVertexProducer
+  #process.icConversionProducer+
+  #process.icPFConversionProducer
 )
 
 ################################################################
 # PFCandidates
 ################################################################
+process.tauChainGenParticles = cms.EDProducer("GenParticlePruner",
+    src = cms.InputTag("genParticles"),
+    select = cms.vstring(
+      "drop  *",
+      "keep++ abs(pdgId) == 15"
+    )
+)
+
+process.requestPFsByDeltaRToTaus = cms.EDProducer("RequestPFCandidatesByDeltaR",
+  src = cms.InputTag("selectedPFCandidates"),
+  reference = cms.InputTag("tauChainGenParticles"),
+  deltaR = cms.double(0.5)
+  )
+
 process.icPFProducer = cms.EDProducer('ICPFProducer',
   branch  = cms.string("pfCandidates"),
-  input   = cms.InputTag("selectedPFCandidates"),
+  input   = cms.InputTag("requestPFsByDeltaRToTaus"),
   requestTracks       = cms.bool(True),
   requestGsfTracks    = cms.bool(True),
   inputUnpackedTracks = cms.InputTag("")
 )
 
-process.icPFSequence = cms.Sequence(process.icPFProducer)
+
+process.icPFSequence = cms.Sequence(
+    process.tauChainGenParticles+
+    process.requestPFsByDeltaRToTaus+
+    process.icPFProducer
+    )
 
 
 ################################################################
@@ -220,25 +239,20 @@ process.selectedTracks = cms.EDFilter("TrackRefSelector",
   cut = cms.string("pt > 0.5")
 )
 
-process.selectedTauTracks = cms.EDFilter("TrackRefSelector",
-  src = cms.InputTag("generalTracks"),
-  cut = cms.string("pt > 0.5")
-)
-
+# New logic for selecting tracks: deltaR < 0.5 with any gen tau
+# or daughter particle
 process.requestTracksByDeltaRToTaus = cms.EDProducer("RequestTracksByDeltaR",
-  src = cms.InputTag("selectedTauTracks"),
-  reference = cms.InputTag("selectedPFTaus"),
+  src = cms.InputTag("selectedTracks"),
+  reference = cms.InputTag("tauChainGenParticles"),
   deltaR = cms.double(0.5)
   )
 
 # We write (for phys 14 studies):
-# - all tracks with pT > 5 GeV
 # - tracks referenced by the PF candidates we store
 # - tracks referenced by the taus we store
-# - all tracks with DR < 0.5 pf the selected PF taus with pT > 0.5 GeV
+# - all pT > 0.5 GeV tracks with DR < 0.5 of a gen tau 
 process.icMergedTracks = cms.EDProducer('ICTrackMerger',
   merge = cms.VInputTag(
-    cms.InputTag("selectedTracks"),
     cms.InputTag("icPFProducer", "requestedTracks"),
     cms.InputTag("icTauProducer", "requestedTracks"),
     cms.InputTag("requestTracksByDeltaRToTaus")
@@ -257,7 +271,6 @@ process.icGsfTrackProducer = producers.icTrackProducer.clone(
 
 process.icTrackSequence = cms.Sequence(
   process.selectedTracks+
-  process.selectedTauTracks+
   process.requestTracksByDeltaRToTaus+
   process.icMergedTracks+
   process.icTrackProducer+
@@ -593,6 +606,7 @@ process.prunedGenParticles = cms.EDProducer("GenParticlePruner",
       "keep isHardProcess() || fromHardProcessFinalState() || fromHardProcessDecayed() || fromHardProcessBeforeFSR() || (statusFlags().fromHardProcess() && statusFlags().isLastCopy())",  #keep event summary based on status flags
     )
 )
+
 
 process.icGenParticleProducer = producers.icGenParticleProducer.clone(
   input   = cms.InputTag("prunedGenParticles"),
