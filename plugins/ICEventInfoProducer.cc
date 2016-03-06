@@ -221,11 +221,13 @@ void ICEventInfoProducer::produce(edm::Event& event,
       info_->set_n_outgoing_partons(nOutgoingPartons);
     }
     if (do_lhe_weights_) {
+#if !(CMSSW_MAJOR_VERSION <= 5 && CMSSW_MINOR_VERSION <= 3 && CMSSW_REVISION < 15)
       double nominal_wt = lhe_handle->hepeup().XWGTUP;
       for (unsigned i = 0; i < lhe_handle->weights().size(); ++i) {
         info_->set_weight(lhe_handle->weights()[i].id,
                           lhe_handle->weights()[i].wgt / nominal_wt, false);
       }
+#endif
     }
   }
 

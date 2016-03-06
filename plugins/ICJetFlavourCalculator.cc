@@ -7,7 +7,9 @@
 #include "FWCore/Utilities/interface/InputTag.h"
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/ValueMap.h"
+#if !(CMSSW_MAJOR_VERSION <= 5 && CMSSW_MINOR_VERSION <= 3 && CMSSW_REVISION < 20)
 #include "SimDataFormats/JetMatching/interface/JetFlavourInfoMatching.h"
+#endif
 #include "SimDataFormats/JetMatching/interface/JetFlavourMatching.h"
 #include "UserCode/ICHiggsTauTau/plugins/Consumes.h"
 

@@ -290,7 +290,9 @@ struct JetSrcHelper<pat::Jet> {
       dest.set_jet_area(src.jetArea());
       if (include_jet_flavour) {
         dest.set_parton_flavour(src.partonFlavour());
+#if !(CMSSW_MAJOR_VERSION <= 5 && CMSSW_MINOR_VERSION <= 3 && CMSSW_REVISION < 20)
         dest.set_hadron_flavour(src.hadronFlavour());
+#endif
       }
       // Only write correction into the output jet if the user wants it
       if (include_jec_factors && src.availableJECLevels().size() >= 1) {
