@@ -68,7 +68,7 @@ process.maxEvents = cms.untracked.PSet(
   input = cms.untracked.int32(1000)
 )
 
-process.MessageLogger.cerr.FwkReport.reportEvery = 50
+process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 
 process.options   = cms.untracked.PSet(
   wantSummary = cms.untracked.bool(True)
@@ -297,9 +297,7 @@ process.icPFConversionProducer = cms.EDProducer('ICConversionProducer',
 )
 
 process.icVertexSequence = cms.Sequence(
-  process.icVertexProducer+
-  process.icConversionProducer+
-  process.icPFConversionProducer
+  process.icVertexProducer
 )
 
 ################################################################
@@ -590,7 +588,7 @@ process.icTauProducer = producers.icTauProducer.clone(
 if isPhys14: process.icTauProducer.requestTracks = cms.bool(True)
 
 
-if release in ['53X']: process.icTauProducer.tauIDs = tauIDs.fullNewIds
+if release in ['53X']: process.icTauProducer.tauIDs = tauIDs.fullLegacyIDs
 if release in ['70X', '72X']: process.icTauProducer.tauIDs = tauIDs.fullNewIds
 
 if release in ['70XMINIAOD', '72XMINIAOD']:
@@ -1483,15 +1481,15 @@ process.p = cms.Path(
   process.icSelectionSequence+
   process.pfParticleSelectionSequence+
   process.icVertexSequence+
-  process.icPFSequence+
+  #process.icPFSequence+
   process.icElectronSequence+
   process.icMuonSequence+
   process.icTauProducer+
   process.icTrackSequence+
-  process.icMvaMetSequence+
+  #process.icMvaMetSequence+
   process.icPFJetSequence+
-  process.icGenSequence+
-  process.icTriggerSequence+
+  #process.icGenSequence+
+  #process.icTriggerSequence+
   process.icEmbeddingSequence+
   process.icEventInfoSequence+
   process.icEventProducer
