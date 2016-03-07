@@ -82,8 +82,17 @@ HTTSequence::HTTSequence(std::string& chan, std::string postf, Json::Value const
  //   output_name="SYNCFILE"+output_name;
  // }
   if(!json["make_sync_ntuple"].asBool()) {
+    if(!json["batch_job"].asBool()){
       fs = std::make_shared<fwlite::TFileService>(
        (output_folder+output_name).c_str());
+    } else {
+      fs = std::make_shared<fwlite::TFileService>(
+    ("_"+addit_output_folder+"_"+output_name).c_str());
+     std::ofstream pathfile;
+     pathfile.open("paths.txt",std::ios::out | std::ios::app);
+     pathfile << ("_"+addit_output_folder+"_"+output_name+" "+output_folder+output_name+"\n").c_str();
+     pathfile.close();
+   }
   } else {
       // do not create output file when making sync ntuples
       fs = NULL;
@@ -334,7 +343,8 @@ HTTSequence::HTTSequence(std::string& chan, std::string postf, Json::Value const
 
 }
 
-HTTSequence::~HTTSequence() {}
+HTTSequence::~HTTSequence() {
+}
 
 
 void HTTSequence::BuildSequence(){
