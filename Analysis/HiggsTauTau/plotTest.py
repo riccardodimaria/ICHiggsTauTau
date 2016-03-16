@@ -45,6 +45,7 @@ plot.ModTDRStyle()
 for sel in [
         ('iso_m_iso_t', 'iso_1<0.1 && iso_2<1.5'),
         ('anti_m_iso_t', 'iso_1>0.2 && iso_2<1.5'),
+        ('anti_m_iso_t_btag1', 'iso_1>0.2 && iso_2<1.5 && nbtags>=1'),
         ('anti_m_anti_t', 'iso_1>0.2 && iso_2>1.5'),
         ('iso_m_anti_t', 'iso_1<0.1 && iso_2>1.5')]:
 

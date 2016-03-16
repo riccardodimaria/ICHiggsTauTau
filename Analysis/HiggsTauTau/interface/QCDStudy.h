@@ -79,6 +79,9 @@ class QCDStudy : public ModuleBase {
 
   bool anti_mu_2_ = false;
 
+  int nbtags_ = 0;
+  int flavour_btag_ = 0;
+
 
  private:
   static bool ETLooseEle(Electron const* e);

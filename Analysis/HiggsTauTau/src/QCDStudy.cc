@@ -34,6 +34,8 @@ int QCDStudy::PreAnalysis() {
     tree_->Branch("flavour_1", &flavour_1_);
     tree_->Branch("flavour_2", &flavour_2_);
     tree_->Branch("anti_mu_2", &anti_mu_2_);
+    tree_->Branch("nbtags", &nbtags_);
+    tree_->Branch("flavour_btag", &nbtags_);
     // TFileDirectory subdir = fs_->mkdir(this->ModuleName());
   }
   return 0;
@@ -77,6 +79,7 @@ int QCDStudy::Execute(TreeEvent* event) {
 
    std::vector<ic::Muon const*> sel_muo_vec = {sel_muo};
    std::vector<ic::Tau const*> sel_tau_vec = {sel_tau};
+   std::vector<ic::Candidate const*> cands = {sel_muo, sel_tau};
 
    auto muo_jet_matches = ic::MatchByDR(sel_muo_vec, jets, 0.5, true, true);
    auto tau_jet_matches = ic::MatchByDR(sel_tau_vec, jets, 0.5, true, true);
@@ -89,6 +92,14 @@ int QCDStudy::Execute(TreeEvent* event) {
     matched_jet_2_ = true;
     flavour_2_ = tau_jet_matches[0].second->parton_flavour();
    }
+
+   auto btag_jets = ic::copy_keep_if(jets, [&](ic::PFJet* jet) {
+     return ic::MinPtMaxEta(jet, 20., 2.4) &&
+            jet->GetBDiscriminator("combinedSecondaryVertexBJetTags") > 0.679 &&
+            ic::MinDRToCollection(jet, cands, 0.5);
+   });
+
+   nbtags_ = btag_jets.size();
 
    tree_->Fill();
   }
