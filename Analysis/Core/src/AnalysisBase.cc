@@ -132,7 +132,7 @@ int AnalysisBase::RunAnalysis() {
         continue;
       }
     }
-    file_ptr = TFile::Open(input_files_[file].c_str());
+    file_ptr = TFile::Open(input_files_[file].c_str(), "TIMEOUT=5");
     if (!file_ptr) {
       std::cerr << ">> Error: Unable to open file \"" << input_files_[file]
                 << "\"\n";
@@ -141,7 +141,7 @@ int AnalysisBase::RunAnalysis() {
           std::cout << ">> Retry attempt " << att + 1 << "/" << retry_attempts_
                     << " in " << retry_pause_ << " seconds\n";
           sleep(retry_pause_);
-          file_ptr = TFile::Open(input_files_[file].c_str());
+          file_ptr = TFile::Open(input_files_[file].c_str(), "TIMEOUT=5");
           if (file_ptr) {
             std::cout << ">> File opened successfully\n";
             break;
