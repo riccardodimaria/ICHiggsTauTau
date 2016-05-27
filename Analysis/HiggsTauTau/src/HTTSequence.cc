@@ -128,7 +128,7 @@ HTTSequence::HTTSequence(std::string& chan, std::string postf, Json::Value const
      muon_dxy = 0.02;
      muon_dz = 0.1;
      pair_dr = 0.3;
-    if(era_type == era::data_2015){
+    if(era_type == era::data_2015 || era_type==era::data_2016){
        elec_dxy = 0.045;
        elec_dz = 0.2;
        muon_dxy = 0.045;
@@ -187,7 +187,7 @@ HTTSequence::HTTSequence(std::string& chan, std::string postf, Json::Value const
       tau_iso = 10;
     }
   }
-  if(era_type == era::data_2015){
+  if(era_type == era::data_2015 || era_type == era::data_2016){
    min_taus = 1;
    pair_dr = 0.5;
    elec_pt = 24;//Up from 23 to avoid turn on in new data trigger for first set of runs from run D
@@ -238,7 +238,7 @@ HTTSequence::HTTSequence(std::string& chan, std::string postf, Json::Value const
      tau_iso = 10.;
      }
    }
-  if (era_type == era::data_2015){
+  if (era_type == era::data_2015 || era_type == era::data_2016){
     muon_pt = 19.0;//Up from 18 to avoid trigger turn on in new data trigger
     muon_eta = 2.1;
     tau_pt = 20;
@@ -473,7 +473,7 @@ void HTTSequence::BuildSequence(){
   }else{
 
   HTTPrint httPrint("HTTPrint");
-  if(era_type==era::data_2015){
+  if(era_type==era::data_2015 || era_type==era::data_2016){
     httPrint.set_muon_label(js["muons"].asString());
     httPrint.set_jet_label(jets_label);
   }
@@ -576,6 +576,7 @@ void HTTSequence::BuildSequence(){
   if (era_type == era::data_2015&&output_name.find("2015B")!=output_name.npos)  data_json= "input/json/Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON_v2.txt";
   //if (era_type == era::data_2015&&output_name.find("2015D")!=output_name.npos)  data_json= "input/json/Cert_246908-258750_13TeV_PromptReco_Collisions15_25ns_JSON.txt";  //json used for datacard sync v1
   if (era_type == era::data_2015&&output_name.find("2015D")!=output_name.npos)  data_json= "input/json/Cert_246908-260627_13TeV_PromptReco_Collisions15_25ns_JSON_v2.txt";
+  if (era_type == era::data_2016&&output_name.find("2016B")!=output_name.npos)  data_json= "input/json/Cert_271036-273450_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt";
 
  LumiMask lumiMask = LumiMask("LumiMask")
    .set_produce_output_jsons("")
@@ -921,7 +922,7 @@ if((strategy_type==strategy::spring15||strategy_type==strategy::fall15)&&!is_dat
     .set_legacy_svfit(true)
     .set_do_preselection(false)
     .set_MC(true);
- if(era_type == era::data_2015){
+ if(era_type == era::data_2015 || era_type == era::data_2016){
    svFitTest.set_legacy_svfit(false);
    svFitTest.set_do_preselection(!js["make_sync_ntuple"].asBool());
    svFitTest.set_read_svfit_mt(true);

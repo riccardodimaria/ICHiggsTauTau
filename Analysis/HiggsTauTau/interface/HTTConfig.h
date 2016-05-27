@@ -84,7 +84,8 @@ struct era_def {
 	enum type {
 		data_2011,				// Entire 2011 dataset, mixture of prompt and re-reco
 		data_2012_rereco,
-		data_2015
+		data_2015,
+    data_2016
 	};
 };
 typedef safe_enum<era_def> era;
@@ -93,7 +94,8 @@ inline std::string Era2String(era const& in) {
 	static std::map<era, std::string> conv = boost::assign::map_list_of
 		(era::data_2011, 					"data_2011")
 		(era::data_2012_rereco, 	"data_2012_rereco")
-		(era::data_2015, 	        "data_2015");
+		(era::data_2015, 	        "data_2015")
+		(era::data_2016, 	        "data_2016");
 	if (conv.find(in) != conv.end()) {
 		return (conv[in]);
 	} else {
@@ -106,7 +108,8 @@ inline era String2Era(std::string const& in) {
 	static std::map<std::string, era> conv = boost::assign::map_list_of
 	("data_2011",					era::data_2011)
 	("data_2012_rereco", 	era::data_2012_rereco)
-	("data_2015", 	era::data_2015);
+	("data_2015", 	era::data_2015)
+	("data_2016", 	era::data_2016);
 	if (conv.find(in) != conv.end()) {
 		return (conv.find(in)->second);
 	} else {

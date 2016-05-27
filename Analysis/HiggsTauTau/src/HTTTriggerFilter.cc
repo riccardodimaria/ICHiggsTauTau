@@ -194,7 +194,7 @@ namespace ic {
           alt_leg1_filter = "hltEle32WPTightGsfTrackIsoFilter";
           high_leg_pt = 33.;
         }*/
-        if (run >= 253621 /*&& run <= xxxxxxxxx*/){
+        if (run >= 253621 && run <= 271035){
           trig_obj_label = "triggerObjectsEle22LooseTau20";
           leg1_filter = "hltEle22WPLooseL1IsoEG20erTau20erGsfTrackIsoFilter";
           leg2_filter = "hltPFTau20TrackLooseIso";
@@ -202,7 +202,16 @@ namespace ic {
           alt_trig_obj_label = "triggerObjectsEle23";
           alt_leg1_filter = "hltEle23WPLooseGsfTrackIsoFilter";
           high_leg_pt = 24.;
-        }
+        } 
+       if (run >= 271036 /*&& run <= xxxxxxxxxx*/){
+          trig_obj_label = "triggerObjectsEle24LooseTau20";
+          leg1_filter = "hltEle24WPLooseL1IsoEG20erTau20erGsfTrackIsoFilter";
+          leg2_filter = "hltPFTau20TrackLooseIso";
+          extra_leg2_filter = "hltOverlapFilterIsoEle24WPLooseGsfLooseIsoPFTau20";
+          alt_trig_obj_label = "triggerObjectsEle23";
+          alt_leg1_filter = "hltEle23WPLooseGsfTrackIsoFilter";
+          high_leg_pt = 24.;
+        } 
        // if (run >= 258655 /*&& run <= xxxxxxxx*/){
         /*  trig_obj_label = "triggerObjectsEle22LooseTau20";
           leg1_filter = "hltEle22WPLooseL1IsoEG20erTau20erGsfTrackIsoFilter";
@@ -345,7 +354,6 @@ namespace ic {
          alt_leg1_filter = "hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter";
          alt_leg2_filter = "hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered8";*/
 
-//        if (run >= 250985 /*&& run <= xxxxxx*/){
          trig_obj_label = "triggerObjectsEle12Mu17";
          leg1_filter = "hltMu17TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter";
          leg2_filter = "hltMu17TrkIsoVVLEle12CaloIdLTrackIdLIsoVLMuonlegL3IsoFiltered17";
@@ -358,8 +366,13 @@ namespace ic {
 
       }
       if(channel_ == channel::tt){
-        if(run >= 250985 /*&& run <= xxxxxx*/){
+        if(run >= 250985 && run <= 271035){
           trig_obj_label = "triggerObjectsDiTau35";
+          leg1_filter = "hltDoublePFTau35TrackPt1MediumIsolationDz02Reg";
+          leg2_filter = "hltDoublePFTau35TrackPt1MediumIsolationDz02Reg";
+        }
+        if(run >= 271036 /*&& run <= xxxxxxxxxx*/){
+          trig_obj_label = "triggerObjectsDoubleMediumTau35";
           leg1_filter = "hltDoublePFTau35TrackPt1MediumIsolationDz02Reg";
           leg2_filter = "hltDoublePFTau35TrackPt1MediumIsolationDz02Reg";
         }

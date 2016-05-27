@@ -59,6 +59,8 @@ namespace ic {
 
     if (fs_ && write_tree_) {
       outtree_ = fs_->make<TTree>("ntuple","ntuple");
+      outtree_->Branch("run",               &run_);
+      outtree_->Branch("lumi",              &lumi_);
       outtree_->Branch("event",             &event_);
       outtree_->Branch("wt",                &wt_.var_double);
       outtree_->Branch("wt_btag",           &wt_btag_);
@@ -1207,7 +1209,7 @@ namespace ic {
         mva_1_ = elec->GetIdIso("mvaNonTrigSpring15");
         lPhotonPtSum_1 = 0.;
         iso_2_ = tau->GetTauID("byIsolationMVArun2v1DBoldDMwLTraw");
-        mva_2_ = tau->GetTauID("againstElectronMVA6raw");
+        mva_2_ = tau->HasTauID("againstElectronMVA6raw") ? tau->GetTauID("againstElectronMVA6raw") : 0.;
         l3Hits_2 = tau->HasTauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") ? tau->GetTauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") : 0. ;
         lagainstElectronLooseMVA_2 = tau->HasTauID("againstElectronLooseMVA6") ? tau->GetTauID("againstElectronLooseMVA6") : 0.;
         lagainstElectronMediumMVA_2 = tau->HasTauID("againstElectronMediumMVA6") ? tau->GetTauID("againstElectronMediumMVA6") : 0.;
@@ -1346,7 +1348,7 @@ namespace ic {
         mva_1_ = 0.0;
         lPhotonPtSum_1 = 0.;
         iso_2_ = tau->GetTauID("byIsolationMVArun2v1DBoldDMwLTraw");
-        mva_2_ = tau->GetTauID("againstElectronMVA6raw");
+        mva_2_ = tau->HasTauID("againstElectronMVA6raw") ? tau->GetTauID("againstElectronMVA6raw"): 0.;
         l3Hits_2 = tau->HasTauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") ? tau->GetTauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") : 0. ;
         lagainstElectronLooseMVA_2 = tau->HasTauID("againstElectronLooseMVA6") ? tau->GetTauID("againstElectronLooseMVA6") : 0.;
         lagainstElectronMediumMVA_2 = tau->HasTauID("againstElectronMediumMVA6") ? tau->GetTauID("againstElectronMediumMVA6") : 0.;
@@ -1512,9 +1514,9 @@ namespace ic {
       }
       if(strategy_ == strategy::fall15) {
         iso_1_ = tau1->GetTauID("byIsolationMVArun2v1DBoldDMwLTraw");
-        mva_1_ = tau1->GetTauID("againstElectronMVA6raw");
+        mva_1_ = tau1->HasTauID("againstElectronMVA6raw") ? tau1->GetTauID("againstElectronMVA6raw") : 0.;
         iso_2_ = tau2->GetTauID("byIsolationMVArun2v1DBoldDMwLTraw");
-        mva_2_ = tau2->GetTauID("againstElectronMVA6raw");
+        mva_2_ = tau2->HasTauID("againstElectronMVA6raw") ? tau2->GetTauID("againstElectronMVA6raw") : 0.;
         l3Hits_1 = tau1->HasTauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") ? tau1->GetTauID("byCombinedIsolationDeltaBetaCorrRaw3Hits") : 0. ;
         lagainstElectronLooseMVA_1 = tau1->HasTauID("againstElectronLooseMVA6") ? tau1->GetTauID("againstElectronLooseMVA6") : 0.;
         lagainstElectronMediumMVA_1 = tau1->HasTauID("againstElectronMediumMVA6") ? tau1->GetTauID("againstElectronMediumMVA6") : 0.;

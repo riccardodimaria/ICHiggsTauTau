@@ -178,7 +178,7 @@ namespace ic {
       MuonFakeRateHist_PtEta->SetDirectory(0);
     }
 
-    if (do_w_soup_ && era_!=era::data_2015) {
+    if (do_w_soup_ && era_!=era::data_2015 && era_!=era::data_2016) {
       std::cout << boost::format(param_fmt()) % "make_w_soup"      % true;
       std::cout << "nInc = " << n_inc_ << std::endl;
       w1_ = (n_inc_*f1_) / ( (n_inc_*f1_) + n1_ );
@@ -190,7 +190,7 @@ namespace ic {
       std::cout << boost::format("f3=%-9.2f  n3=%-9i  w3=%-9.2f \n") % f3_ % n3_ % w3_;
       std::cout << boost::format("f4=%-9.2f  n4=%-9i  w4=%-9.2f \n") % f4_ % n4_ % w4_;
     }
-    if (do_w_soup_ && era_ == era::data_2015) {
+    if (do_w_soup_ && (era_ == era::data_2015 ||era_ == era::data_2016)) {
       std::cout << boost::format(param_fmt()) % "make_w_soup"      % true;
       std::cout << "nInc = " << n_inc_ << std::endl;
       f1_ = wxs1_/wxs0_;
@@ -206,7 +206,7 @@ namespace ic {
       std::cout << boost::format("f3=%-9.2f  n3=%-9i  w3=%-9.2f \n") % f3_ % n3_ % w3_;
       std::cout << boost::format("f4=%-9.2f  n4=%-9i  w4=%-9.2f \n") % f4_ % n4_ % w4_;
     }
-    if (do_dy_soup_ && era_!=era::data_2015) {
+    if (do_dy_soup_ && era_!=era::data_2015 && era_!=era::data_2016) {
       std::cout << boost::format(param_fmt()) % "make_dy_soup"      % true;
       std::cout << "nInc = " << zn_inc_ << std::endl;
       zw1_ = (zn_inc_*zf1_) / ( (zn_inc_*zf1_) + zn1_ );
@@ -218,7 +218,7 @@ namespace ic {
       std::cout << boost::format("f3=%-9.2f  n3=%-9i  w3=%-9.2f \n") % zf3_ % zn3_ % zw3_;
       std::cout << boost::format("f4=%-9.2f  n4=%-9i  w4=%-9.2f \n") % zf4_ % zn4_ % zw4_;
     }
-    if (do_dy_soup_ && era_==era::data_2015) {
+    if (do_dy_soup_ && (era_==era::data_2015 || era_==era::data_2016)) {
       std::cout << boost::format(param_fmt()) % "make_dy_soup"      % true;
       std::cout << "nInc = " << zn_inc_ << std::endl;
       zf1_ = zxs1_/zxs0_;
@@ -341,7 +341,7 @@ namespace ic {
       double top_wt_up = 1.0;
       double top_wt_down = 1.0;
       std::vector<GenParticle *> const& parts = event->GetPtrVec<GenParticle>("genParticles");
-      if(era_ != era::data_2015){
+      if(era_ != era::data_2015 && era_!=era::data_2016){
         for (unsigned i = 0; i < parts.size(); ++i) {
           if (parts[i]->status() == 3 && abs(parts[i]->pdgid()) == 6) {
             double pt = parts[i]->pt();
@@ -382,7 +382,7 @@ namespace ic {
     }
 
     if (do_tau_id_weights_) {
-      if(era_ != era::data_2015){
+      if(era_ != era::data_2015 && era_ !=era::data_2016){
         std::vector<Candidate *> tau = { (dilepton[0]->GetCandidate("lepton2")) };
         std::vector<GenParticle *> const& particles = event->GetPtrVec<GenParticle>(gen_tau_collection_);
         std::vector<GenJet> gen_taus = BuildTauJets(particles, false,false);
@@ -538,7 +538,7 @@ namespace ic {
         Tau const* tau = dynamic_cast<Tau const*>(dilepton[0]->GetCandidate("lepton2"));
         double e_pt = elec->pt();
         double e_eta = fabs(elec->sc_eta());
-        if(era_ == era::data_2015) e_eta = fabs(elec->eta());
+        if(era_ == era::data_2015 ||era_==era::data_2016) e_eta = fabs(elec->eta());
         double t_pt = tau->pt();
         double t_eta = fabs(tau->eta());
         double ele_trg = 1.0;
@@ -770,7 +770,7 @@ namespace ic {
         Muon const* muon = dynamic_cast<Muon const*>(dilepton[0]->GetCandidate("lepton2"));
         double e_pt = elec->pt();
         double e_eta = fabs(elec->sc_eta());
-        if(era_ == era::data_2015) e_eta = fabs(elec->sc_eta());
+        if(era_ == era::data_2015||era_==era::data_2016) e_eta = fabs(elec->sc_eta());
         double m_pt = muon->pt();
         double m_eta = fabs(muon->eta());
         double m_trg = 1.0;
@@ -1060,7 +1060,7 @@ namespace ic {
         Electron const* elec = dynamic_cast<Electron const*>(dilepton[0]->GetCandidate("lepton1"));
         double pt = elec->pt();
         double sc_eta = fabs(elec->sc_eta());
-        if(era_ == era::data_2015) sc_eta = fabs(elec->eta());
+        if(era_ == era::data_2015||era_ ==era::data_2016) sc_eta = fabs(elec->eta());
         double ele_id = 1.0;
         double ele_iso = 1.0;
         double ele_idiso_mc =1.0;
@@ -1155,7 +1155,7 @@ namespace ic {
         Muon const* muon = dynamic_cast<Muon const*>(dilepton[0]->GetCandidate("lepton2"));
         double e_pt = elec->pt();
         double e_eta = fabs(elec->sc_eta());
-        if (era_ == era::data_2015) e_eta = fabs(elec->eta());
+        if (era_ == era::data_2015||era_==era::data_2016) e_eta = fabs(elec->eta());
         double m_pt = muon->pt();
         double m_eta = fabs(muon->eta());
         double m_idiso = 1.0;
@@ -1456,7 +1456,7 @@ namespace ic {
       eventInfo->set_weight("emu_m_fakerate", mufakerate);
     }
 
-    if (do_etau_fakerate_ && era_!=era::data_2015) {
+    if (do_etau_fakerate_ && era_!=era::data_2015 && era_!=era::data_2016) {
       std::vector<GenParticle *> parts = event->GetPtrVec<GenParticle>("genParticles");
       ic::erase_if(parts, !(boost::bind(&GenParticle::status, _1) == 3));
       ic::erase_if(parts, ! ((boost::bind(&GenParticle::pdgid, _1) == 11)||(boost::bind(&GenParticle::pdgid, _1) == -11)) );
@@ -1492,7 +1492,7 @@ namespace ic {
       }
     }
 
-    if (do_etau_fakerate_ && era_==era::data_2015) {
+    if (do_etau_fakerate_ && (era_==era::data_2015||era_==era::data_2016)) {
       unsigned gm2_ = MCOrigin2UInt(event->Get<ic::mcorigin>("gen_match_2"));
       Tau const* tau = dynamic_cast<Tau const*>(dilepton[0]->GetCandidate("lepton2"));
       if(gm2_==1||gm2_==3){
@@ -1525,7 +1525,7 @@ namespace ic {
 
     if (do_w_soup_) {
       unsigned partons = 0;
-      if(era_ != era::data_2015){
+      if(era_ != era::data_2015 && era_ !=era::data_2016){
         std::vector<GenParticle*> const& parts = event->GetPtrVec<GenParticle>("genParticles");
         bool count_jets = false;
         for (unsigned i = 0; i < parts.size(); ++i) {
@@ -1556,7 +1556,7 @@ namespace ic {
 
     if (do_dy_soup_) {
       unsigned partons = 0;
-      if(era_ != era::data_2015){
+      if(era_ != era::data_2015 &&era_!=era::data_2016){
         std::vector<GenParticle*> const& parts = event->GetPtrVec<GenParticle>("genParticles");
         bool count_jets = false;
       

@@ -582,7 +582,7 @@ namespace ic {
    };
    if(ch_==channel::et || ch_==channel::zee|| ch_==channel::tpzee){
      samples_alias_map_["data_samples"] = {
-      "SingleElectron-2015D"
+      "SingleElectron-2016B"
      };
     if(!is_fall15_){
        samples_alias_map_["data_samples"] = {
@@ -592,7 +592,7 @@ namespace ic {
    }
    if(ch_==channel::mt || ch_==channel::zmm || ch_==channel::tpzmm || ch_==channel::wmnu){
      samples_alias_map_["data_samples"] = {
-     "SingleMuon-2015D"
+     "SingleMuon-2016B"
      };
     if(!is_fall15_){
      samples_alias_map_["data_samples"] = {
@@ -602,7 +602,7 @@ namespace ic {
    }
    if(ch_==channel::tt){
      samples_alias_map_["data_samples"] = {
-      "Tau-2015D"
+      "Tau-2016B"
      };
     if(!is_fall15_){
      samples_alias_map_["data_samples"] = {
