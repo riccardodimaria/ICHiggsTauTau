@@ -972,13 +972,14 @@ int main(int argc, char* argv[]){
     .set_sample_name(output_name)
     .set_fs(fs);
 
-
-  if (output_name.find("JetsToLNu") != output_name.npos &&
-      output_name.find("EWKW") == output_name.npos &&
-      output_name.find("nlo") == output_name.npos) {
-
-    SetDoW( mc, &xsWeights );
-  }
+//   Do not weight anymore, since we are dropping the inclusive sample due to MIT sync
+//   If you switch it back, remember to change filelists/*/Params*.dat 
+//   if (output_name.find("JetsToLNu") != output_name.npos &&
+//       output_name.find("EWKW") == output_name.npos &&
+//       output_name.find("nlo") == output_name.npos) {
+// 
+//     SetDoW( mc, &xsWeights );
+//   }
 
   if (output_name.find("JetsToLL-mg-m50") != output_name.npos &&
       output_name.find("PtZ-100-madgraph") == output_name.npos &&
