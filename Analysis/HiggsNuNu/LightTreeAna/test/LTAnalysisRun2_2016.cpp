@@ -154,10 +154,8 @@ int main(int argc, char* argv[]){
     //Input output and config options
     ("output_name,o",            po::value<std::string>(&outputname)->default_value("tmp.root"))
     ("input_folder,i",           po::value<std::string>(&inputfolder)->default_value("/vols/cms/rd1715/HiggsToInv/output_lighttree_161031/"))
-    ("eos_path_mc",           po::value<std::string>(&eos_path_mc)->default_value(""))
-    //root://eoscms//eos/cms/store/user/amagnan/SkimFiles/151030/"))
-    ("eos_path_data",           po::value<std::string>(&eos_path_data)->default_value(""))
-    //root://eoscms//eos/cms/store/user/amagnan/SkimFiles/151113/"))
+    ("eos_path_mc",              po::value<std::string>(&eos_path_mc)->default_value(""))
+    ("eos_path_data",            po::value<std::string>(&eos_path_data)->default_value(""))
     ("syst,s",                   po::value<std::string>(&syst)->default_value(""))
     ("input_params,p",           po::value<std::string>(&inputparams)->default_value("../filelists/161031/Params161031.dat"))
     ("filelist,f",               po::value<std::string>(&filelist)->default_value("filelists/run2filelist80X.dat"))
@@ -166,8 +164,8 @@ int main(int argc, char* argv[]){
     ("datalist",                 po::value<bool>(&datalist)->default_value(false))
     ("do_list",                  po::value<bool>(&do_list)->default_value(false))
     ("listset",                  po::value<std::string>(&listset)->default_value("Top"))
-    ("basesel",                  po::value<std::string>(&basesel)->default_value("jet1_eta*jet2_eta<0 && jet1_eta<4.7 && jet2_eta<4.7 && dijet_M>=1100&&jet1_pt>80&&dijet_deta>3.6&& jet2_pt>70&&metnomuons>200"))
-    ("baseselele",               po::value<std::string>(&baseselele)->default_value("jet1_eta*jet2_eta<0 && jet1_eta<4.7 && jet2_eta<4.7 && dijet_M>=1100&&jet1_pt>80&&dijet_deta>3.6&& jet2_pt>70&&metnoelectrons>200"))
+    ("basesel",                  po::value<std::string>(&basesel)->default_value(""))
+    ("baseselele",               po::value<std::string>(&baseselele)->default_value(""))
     ("channel",                  po::value<std::string>(&channel)->default_value("nunu"))
 
     ("runblind",                 po::value<bool>(&runblind)->default_value(true))
@@ -183,8 +181,8 @@ int main(int argc, char* argv[]){
     ("debug",                    po::value<unsigned>(&debug)->default_value(0))
     ("do_mcbkg",                 po::value<bool>(&do_mcbkg)->default_value(true))
     ("use_nlo",                  po::value<bool>(&use_nlo)->default_value(false))
-    ("jetmetdphicut",            po::value<std::string>(&jetmetdphicut)->default_value("alljetsmetnomu_mindphi>1.0"))
-    ("metsigcut",                po::value<std::string>(&metsigcut)->default_value(">4.0"))
+    ("jetmetdphicut",            po::value<std::string>(&jetmetdphicut)->default_value(""))
+    ("metsigcut",                po::value<std::string>(&metsigcut)->default_value(""))
     ("histTitlePar",             po::value<std::string>(&histTitlePar)->default_value(";#Delta#phi(E_{T}^{miss},j);Events"))
     ("shapePar",                 po::value<std::string>(&shapePar)->default_value("alljetsmetnomu_mindphi(32,0.,3.1416)"))
     ("lumiSF",                   po::value<double>(&lumiSF)->default_value(1.0))
@@ -543,8 +541,8 @@ int main(int argc, char* argv[]){
     .set_basesel(analysis->baseselection())
     .set_cat(sigcat+mcextrasel);
 
-  DataShape signal110("signal110");
-  signal110.set_dataset("VBFH110")
+  DataShape qqH110("qqH110");
+  qqH110.set_dataset("VBFH110")
     .set_dirname("qqH110")
     .set_shape(shape)
     .set_dataweight(sigmcweight)
@@ -552,77 +550,77 @@ int main(int argc, char* argv[]){
     .set_cat(sigcat+mcextrasel);  
 
 
-  DataShape signal125("signal125");
-  signal125.set_dataset("VBFH125")
+  DataShape qqH125("qqH125");
+  qqH125.set_dataset("VBFH125")
     .set_dirname("qqH125")
     .set_shape(shape)
     .set_dataweight(sig125mcweight)
     .set_basesel(analysis->baseselection())
     .set_cat(sigcat+mcextrasel);  
 
-  DataShape signal150("signal150");
-  signal150.set_dataset("VBFH150")
+  DataShape qqH150("qqH150");
+  qqH150.set_dataset("VBFH150")
     .set_dirname("qqH150")
     .set_shape(shape)
     .set_dataweight(sigmcweight)
     .set_basesel(analysis->baseselection())
     .set_cat(sigcat+mcextrasel);  
 
-  DataShape signal200("signal200");
-  signal200.set_dataset("VBFH200")
+  DataShape qqH200("qqH200");
+  qqH200.set_dataset("VBFH200")
     .set_dirname("qqH200")
     .set_shape(shape)
     .set_dataweight(sigmcweight)
     .set_basesel(analysis->baseselection())
     .set_cat(sigcat+mcextrasel);  
 
-  DataShape signal300("signal300");
-  signal300.set_dataset("VBFH300")
+  DataShape qqH300("qqH300");
+  qqH300.set_dataset("VBFH300")
     .set_dirname("qqH300")
     .set_shape(shape)
     .set_dataweight(sigmcweight)
     .set_basesel(analysis->baseselection())
     .set_cat(sigcat+mcextrasel);  
 
-  DataShape signal400("signal400");
-  signal400.set_dataset("VBFH400")
+  DataShape qqH400("qqH400");
+  qqH400.set_dataset("VBFH400")
     .set_dirname("qqH400")
     .set_shape(shape)
     .set_dataweight(sigmcweight)
     .set_basesel(analysis->baseselection())
     .set_cat(sigcat+mcextrasel);  
 
-  DataShape signal500("signal500");
-  signal500.set_dataset("VBFH500")
+  DataShape qqH500("qqH500");
+  qqH500.set_dataset("VBFH500")
     .set_dirname("qqH500")
     .set_shape(shape)
     .set_dataweight(sigmcweight)
     .set_basesel(analysis->baseselection())
     .set_cat(sigcat+mcextrasel);
 
-  DataShape signal600("signal600");
-  signal600.set_dataset("VBFH600")
+  DataShape qqH600("qqH600");
+  qqH600.set_dataset("VBFH600")
     .set_dirname("qqH600")
     .set_shape(shape)
     .set_dataweight(sigmcweight)
     .set_basesel(analysis->baseselection())
     .set_cat(sigcat+mcextrasel);
 
-//   DataShape signal800("signal800");
-//   signal800.set_dataset("VBFH800")
-//     .set_dirname("qqH800")
-//     .set_shape(shape)
-//     .set_dataweight(sigmcweight)
-//     .set_basesel(analysis->baseselection())
-//     .set_cat(sigcat+mcextrasel);
-// 
-//   DataShape signal1000("signal1000");
-//   signal1000.set_dataset("VBFH1000")
-//     .set_dirname("qqH1000")
-//     .set_shape(shape)
-//     .set_dataweight(sigmcweight)
-//     .set_basesel(analysis->baseselection())
-//     .set_cat(sigcat+mcextrasel);
+  DataShape qqH800("qqH800");
+  qqH800.set_dataset("VBFH800")
+    .set_dirname("qqH800")
+    .set_shape(shape)
+    .set_dataweight(sigmcweight)
+    .set_basesel(analysis->baseselection())
+    .set_cat(sigcat+mcextrasel);
+
+  DataShape qqH1000("qqH1000");
+  qqH1000.set_dataset("VBFH1000")
+    .set_dirname("qqH1000")
+    .set_shape(shape)
+    .set_dataweight(sigmcweight)
+    .set_basesel(analysis->baseselection())
+    .set_cat(sigcat+mcextrasel);
 
   DataShape ggH110("ggH110");
   ggH110.set_dataset("GluGluH110")
@@ -688,21 +686,21 @@ int main(int argc, char* argv[]){
     .set_basesel(analysis->baseselection())
     .set_cat(sigcat+mcextrasel);
 
-//   DataShape ggH800("ggH800");
-//   ggH800.set_dataset("GluGluH800")
-//     .set_dirname("ggH800")
-//     .set_shape(shape)
-//     .set_dataweight(sigmcweight)
-//     .set_basesel(analysis->baseselection())
-//     .set_cat(sigcat+mcextrasel);
-// 
-//   DataShape ggH1000("ggH1000");
-//   ggH1000.set_dataset("GluGluH1000")
-//     .set_dirname("ggH1000")
-//     .set_shape(shape)
-//     .set_dataweight(sigmcweight)
-//     .set_basesel(analysis->baseselection())
-//     .set_cat(sigcat+mcextrasel);
+  DataShape ggH800("ggH800");
+  ggH800.set_dataset("GluGluH800")
+    .set_dirname("ggH800")
+    .set_shape(shape)
+    .set_dataweight(sigmcweight)
+    .set_basesel(analysis->baseselection())
+    .set_cat(sigcat+mcextrasel);
+
+  DataShape ggH1000("ggH1000");
+  ggH1000.set_dataset("GluGluH1000")
+    .set_dirname("ggH1000")
+    .set_shape(shape)
+    .set_dataweight(sigmcweight)
+    .set_basesel(analysis->baseselection())
+    .set_cat(sigcat+mcextrasel);
 
   DataShape vv("vv");
   vv.set_dataset("VV")
@@ -1231,10 +1229,18 @@ int main(int argc, char* argv[]){
     .set_legname("Signal")
     .set_sample("sig125");
 
+  LTPlotElement qqHele;
+  qqHele.set_is_data(false)
+    .set_scale(1)
+    .set_color(kBlue)
+    .set_in_stack(false)
+    .set_legname("qq#rightarrow H")
+    .set_sample("qqH125");
+
   LTPlotElement ggHele;
   ggHele.set_is_data(false)
     .set_scale(1)
-    .set_color(kBlue)
+    .set_color(kGreen)
     .set_in_stack(false)
     .set_legname("gg#rightarrow H")
     .set_sample("ggH125");
@@ -1274,13 +1280,13 @@ int main(int argc, char* argv[]){
     elementvec.push_back(topele);
     elementvec.push_back(qcdele);
     elementvec.push_back(vvele);
-    if(channel!="mumu"&&channel!="ee"&&channel!="enu"&&channel!="munu"){
-      if (channel!="taunu"){
-        elementvec.push_back(qcdznunuele);
-        elementvec.push_back(ewkznunuele);
-        elementvec.push_back(sigele);
-      }
-      //elementvec.push_back(ggHele);
+
+    if(channel=="nunu") {
+      elementvec.push_back(qcdznunuele);
+      elementvec.push_back(ewkznunuele);
+      elementvec.push_back(sigele);
+      elementvec.push_back(qqHele);
+      elementvec.push_back(ggHele);
     }
   }
   //if(!(channel=="nunu"&&runblind))elementvec.push_back(dataele);
@@ -1376,18 +1382,18 @@ int main(int argc, char* argv[]){
     analysis->AddModule(&ggH400);
     analysis->AddModule(&ggH500);
     analysis->AddModule(&ggH600);
-//     analysis->AddModule(&ggH800);
-//     analysis->AddModule(&ggH1000);
-    analysis->AddModule(&signal110);
-    analysis->AddModule(&signal150);
-    analysis->AddModule(&signal200);
-    analysis->AddModule(&signal300);
-    analysis->AddModule(&signal400);
-    analysis->AddModule(&signal500);
-    analysis->AddModule(&signal600);
-//     analysis->AddModule(&signal800);
-//     analysis->AddModule(&signal1000);
-    analysis->AddModule(&signal125);
+    analysis->AddModule(&ggH800);
+    analysis->AddModule(&ggH1000);
+    analysis->AddModule(&qqH110);
+    analysis->AddModule(&qqH150);
+    analysis->AddModule(&qqH200);
+    analysis->AddModule(&qqH300);
+    analysis->AddModule(&qqH400);
+    analysis->AddModule(&qqH500);
+    analysis->AddModule(&qqH600);
+    analysis->AddModule(&qqH800);
+    analysis->AddModule(&qqH1000);
+    analysis->AddModule(&qqH125);
     analysis->AddModule(&ggH125);
     analysis->AddModule(&totsignal125);
   }

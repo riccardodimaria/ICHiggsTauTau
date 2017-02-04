@@ -112,11 +112,11 @@ int main(int argc, char* argv[]){
   //Rate to use if qcd not taken from a shape
   double qcdabserr= (channel=="nunu")?14:0;
 
-  if((mass!="110")&&(mass!="125")&&(mass!="150")&&(mass!="200")&&(mass!="300")&&(mass!="400")&&(mass!="500")&&(mass!="600")){
-    std::cout<<"Mass "<<mass<<" not currently supported, please use 110, 125, 200, 300, 400, 500 or 600. Exiting!"<<std::endl;
+  if((mass!="110")&&(mass!="125")&&(mass!="150")&&(mass!="200")&&(mass!="300")&&(mass!="400")&&(mass!="500")&&(mass!="600")&&(mass!="800")&&(mass!="1000")){
+    std::cout<<" -- WARNING: Mass "<<mass<<" not currently supported, please use 110, 125, 200, 300, 400, 500, 600, 800 or 1000. Exiting!"<<std::endl;
     return 1;
   }
-  
+
   std::vector<std::string> sigprocesses;
     std::vector<std::string> sigprocessesnames;
   std::vector<std::string> sigprocesslatex;
@@ -250,7 +250,7 @@ int main(int argc, char* argv[]){
   .set_procsaffected(tau_veto_unc_affected)
   .set_constvalue(1.030);
 
-  std::vector<std::string> lumi8tevprocsaffected={"ggH110","ggH125","ggH150","ggH200","ggH300","ggH400","ggH500","ggH600","qqH110","qqH125","qqH150","qqH200","qqH300","qqH400","qqH500","qqH600","wg","vv","qcd"};
+  std::vector<std::string> lumi8tevprocsaffected={"ggH110","ggH125","ggH150","ggH200","ggH300","ggH400","ggH500","ggH600","ggH800","ggH1000","qqH110","qqH125","qqH150","qqH200","qqH300","qqH400","qqH500","qqH600","qqH800","qqH1000","wg","vv","qcd"};
   if (mcBkgOnly) {
     //if (do_run2) lumi8tevprocsaffected.push_back("zvv");
     //else {
@@ -283,10 +283,10 @@ int main(int argc, char* argv[]){
     .set_procsaffected(lumi8tevprocsaffected)
     .set_constvalue(1.062);
 
-  std::vector<std::string> allprocs={"ggH110","ggH125","ggH150","ggH200","ggH300","ggH400","ggH500","ggH600","qqH110","qqH125","qqH1C50","qqH200","qqH300","qqH400","qqH500","qqH600","zvv","zvvewk","zvvqcd","zmumu","zee","zmumuqcd","zeeqcd","wmu","wel","wtau","wmuqcd","welqcd","wtauqcd","zmumuewk","zeeewk","wmuewk","welewk","wtauewk","top","qcd","wg","vv"};
-  std::vector<std::string> allprocsnotqcd={"ggH110","ggH125","ggH150","ggH200","ggH300","ggH400","ggH500","ggH600","qqH110","qqH125","qqH150","qqH200","qqH300","qqH400","qqH500","qqH600","zvv","zvvewk","zvvqcd","zmumu","zee","zmumuqcd","zeeqcd","wmu","wel","wtau","wmuqcd","welqcd","wtauqcd","zmumuewk","zeeewk","wmuewk","welewk","wtauewk","top","wg","vv"};
-  std::vector<std::string> ggHprocs={"ggH110","ggH125","ggH150","ggH200","ggH300","ggH400","ggH500","ggH600","ggH"};
-  std::vector<std::string> qqHprocs={"qqH110","qqH125","qqH150","qqH200","qqH300","qqH400","qqH500","qqH600","qqH"};
+  std::vector<std::string> allprocs={"ggH110","ggH125","ggH150","ggH200","ggH300","ggH400","ggH500","ggH600","ggH800","ggH1000","qqH110","qqH125","qqH1C50","qqH200","qqH300","qqH400","qqH500","qqH600","qqH800","qqH1000","zvv","zvvewk","zvvqcd","zmumu","zee","zmumuqcd","zeeqcd","wmu","wel","wtau","wmuqcd","welqcd","wtauqcd","zmumuewk","zeeewk","wmuewk","welewk","wtauewk","top","qcd","wg","vv"};
+  std::vector<std::string> allprocsnotqcd={"ggH110","ggH125","ggH150","ggH200","ggH300","ggH400","ggH500","ggH600","ggH800","ggH1000","qqH110","qqH125","qqH150","qqH200","qqH300","qqH400","qqH500","qqH600","qqH800","qqH1000","zvv","zvvewk","zvvqcd","zmumu","zee","zmumuqcd","zeeqcd","wmu","wel","wtau","wmuqcd","welqcd","wtauqcd","zmumuewk","zeeewk","wmuewk","welewk","wtauewk","top","wg","vv"};
+  std::vector<std::string> ggHprocs={"ggH110","ggH125","ggH150","ggH200","ggH300","ggH400","ggH500","ggH600","ggH800","ggH1000","ggH"};
+  std::vector<std::string> qqHprocs={"qqH110","qqH125","qqH150","qqH200","qqH300","qqH400","qqH500","qqH600","qqH800","qqH1000","qqH"};
   Syst eleeff;
   eleeff.set_name("CMS_eff_e")
     .set_latexname("Electron efficiency")
@@ -632,6 +632,8 @@ int main(int argc, char* argv[]){
   if(mass=="400")qqHqcdscale.set_constvalue(1.004);
   if(mass=="500")qqHqcdscale.set_constvalue(1.004);
   if(mass=="600")qqHqcdscale.set_constvalue(1.004);
+  if(mass=="800")qqHqcdscale.set_constvalue(1.004);
+  if(mass=="1000")qqHqcdscale.set_constvalue(1.004);
 
   Syst qqHpdf;
   qqHpdf.set_name("pdf_qqbar")
@@ -646,6 +648,8 @@ int main(int argc, char* argv[]){
   if(mass=="400")qqHpdf.set_constvalue(1.021);
   if(mass=="500")qqHpdf.set_constvalue(1.021);
   if(mass=="600")qqHpdf.set_constvalue(1.021);
+  if(mass=="800")qqHpdf.set_constvalue(1.021);
+  if(mass=="1000")qqHpdf.set_constvalue(1.021);
 
   Syst vvmcstat;
   vvmcstat.set_name("CMS_VBFHinv_vv_norm")
