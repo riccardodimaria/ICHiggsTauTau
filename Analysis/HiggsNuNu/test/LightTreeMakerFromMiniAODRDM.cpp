@@ -401,8 +401,8 @@ int main(int argc, char* argv[]){
     if (doICHEP2016){ // 12d9 /fb
       data_json     =  "input/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON.txt";
     }
-    else if (doLastJSON){ // 36d77 /fb
-      data_json     =  "input/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON.txt";
+    else if (doLastJSON){ // 36d8 /fb ReReco
+      data_json     =  "input/json/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt";
     }
   }
 
@@ -436,8 +436,8 @@ int main(int argc, char* argv[]){
     if (doICHEP2016){ // 12d9 /fb
       data_pu_file         =  "input/pileup/12d9/Data_Pileup_mb69d2_2016-600bins.root";
     }
-    else if (doLastJSON){ // 36d77 /fb
-      data_pu_file         =  "input/pileup/36d77/Data_Pileup_mb69d2_2016-600bins.root";
+    else if (doLastJSON){ // 36d8 /fb ReReco
+      data_pu_file         =  "input/pileup/ReReco_Moriond17/Data_Pileup_mb69d2_2016-600bins.root";
     }
   }
 
@@ -469,8 +469,8 @@ int main(int argc, char* argv[]){
       data_pu_down  = GetFromTFile<TH1D>("input/pileup/12d9/Data_Pileup_mb66_2016-600bins.root", "/", "pileup");
     }
     else if (doLastJSON){ // 36d77 /fb
-      data_pu_up    = GetFromTFile<TH1D>("input/pileup/36d77/Data_Pileup_mb72d4_2016-600bins.root", "/", "pileup");
-      data_pu_down  = GetFromTFile<TH1D>("input/pileup/36d77/Data_Pileup_mb66_2016-600bins.root", "/", "pileup");
+      data_pu_up    = GetFromTFile<TH1D>("input/pileup/ReReco_Moriond17/Data_Pileup_mb72d4_2016-600bins.root", "/", "pileup");
+      data_pu_down  = GetFromTFile<TH1D>("input/pileup/ReReco_Moriond17/Data_Pileup_mb66_2016-600bins.root", "/", "pileup");
     }
   }
 
