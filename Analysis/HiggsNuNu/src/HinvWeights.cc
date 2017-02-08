@@ -78,6 +78,7 @@ namespace ic {//namespace
     errLabel.push_back("_v2Down");
 
     // For v_nlo_Reweighting (kfactor_VBF_zjets_v2.root and kfactor_VBF_wjets_v2.root files in input/scalefactors from MIT group)
+    kfactors_file_="input/scale_factors/kfactors.root";
     kfactor_VBF_zjets_v2_file_="input/scale_factors/kfactor_VBF_zjets_v2.root";
     kfactor_VBF_wjets_v2_file_="input/scale_factors/kfactor_VBF_wjets_v2.root";
   }
@@ -197,6 +198,7 @@ namespace ic {//namespace
     }
     if (do_w_reweighting_ || do_dy_reweighting_) { // For v_nlo_Reweighting (kfactors.root file in input/scalefactors from MIT group)
 
+      kfactors_ = TFile::Open(kfactors_file_.c_str());
       kfactor_VBF_zjets_v2_ = TFile::Open(kfactor_VBF_zjets_v2_file_.c_str());
       kfactor_VBF_wjets_v2_ = TFile::Open(kfactor_VBF_wjets_v2_file_.c_str());
 
@@ -208,11 +210,15 @@ namespace ic {//namespace
 //         hist_kfactors_N_W->Scale(1./hist_kfactors_N_W->Integral());
 //         hist_kfactors_D_W->Sumw2();
 //         hist_kfactors_D_W->Scale(1./hist_kfactors_D_W->Integral());
+        hist_kfactors_EWKcorr_W      = (TH1F*)kfactors_->Get("EWKcorr/W");
+        hist_kfactors_WJets_012j_NLO = (TH1F*)kfactors_->Get("WJets_012j_NLO/nominal");
       }
       if (do_dy_reweighting_) {
         std::cout << " -- Applying reweighting of DY events to NLO from MIT (Raffaele)." << std::endl;
         hist_kfactors_N_Z = (TH1F*)kfactor_VBF_zjets_v2_->Get("bosonPt_NLO_vbf");
         hist_kfactors_D_Z = (TH1F*)kfactor_VBF_zjets_v2_->Get("bosonPt_LO_vbf");
+        hist_kfactors_EWKcorr_Z      = (TH1F*)kfactors_->Get("EWKcorr/Z");
+        hist_kfactors_ZJets_012j_NLO = (TH1F*)kfactors_->Get("ZJets_012j_NLO/nominal");
       }
     }
 
@@ -1004,6 +1010,7 @@ namespace ic {//namespace
     if (do_w_reweighting_ || do_dy_reweighting_) { // For v_nlo_Reweighting (kfactors.root file in input/scalefactors from MIT group)
       double v_nlo_Reweight = 1.0;
       double v_pt = 0.0;
+      double v_pt_oldBinning = 0.0;
 
       std::vector<GenParticle*> const& parts = event->GetPtrVec<GenParticle>("genParticles");
 
@@ -1015,6 +1022,7 @@ namespace ic {//namespace
                 flags[GenStatusBits::FromHardProcess] && 
                 flags[GenStatusBits::IsFirstCopy]) ) continue;
         v_pt = parts[idxPart]->pt();
+        v_pt_oldBinning = parts[idxPart]->pt();
 
         if (absPdgId==24) {// W+-
           if (v_pt<150) {
@@ -1025,7 +1033,13 @@ namespace ic {//namespace
             //std::cout << " -- Overflow! v_pt = "<< v_pt << " has been re-set to v_pt = 1249.0" << std::endl;
             v_pt = 999.0;
           }
-          v_nlo_Reweight = (hist_kfactors_N_W->GetBinContent(hist_kfactors_N_W->FindBin(v_pt)))/(hist_kfactors_D_W->GetBinContent(hist_kfactors_D_W->FindBin(v_pt)));
+          if (v_pt_oldBinning<150) {
+            v_pt_oldBinning = 151.0;
+          }
+          if (v_pt_oldBinning>=1250) {
+            v_pt_oldBinning = 1249.0;
+          }
+          v_nlo_Reweight = ( ( hist_kfactors_N_W->GetBinContent(hist_kfactors_N_W->FindBin(v_pt)) )/( hist_kfactors_D_W->GetBinContent(hist_kfactors_D_W->FindBin(v_pt)) ) )*( ( hist_kfactors_EWKcorr_W->GetBinContent(hist_kfactors_EWKcorr_W->FindBin(v_pt_oldBinning)) )/( hist_kfactors_WJets_012j_NLO->GetBinContent(hist_kfactors_WJets_012j_NLO->FindBin(v_pt_oldBinning)) ) );
           //std::cout << " -- The NLO weight of W is v_nlo_Reweight = "<< v_nlo_Reweight << std::endl;
         } 
         if (absPdgId==23) {// Z
@@ -1037,7 +1051,13 @@ namespace ic {//namespace
             //std::cout << " -- Overflow! v_pt = "<< v_pt << " has been re-set to v_pt = 1249.0" << std::endl;
             v_pt = 999.0;
           }
-          v_nlo_Reweight = (hist_kfactors_N_Z->GetBinContent(hist_kfactors_N_Z->FindBin(v_pt)))/(hist_kfactors_D_Z->GetBinContent(hist_kfactors_D_Z->FindBin(v_pt)));
+          if (v_pt_oldBinning<150) {
+            v_pt_oldBinning = 151.0;
+          }
+          if (v_pt_oldBinning>=1250) {
+            v_pt_oldBinning = 1249.0;
+          }
+          v_nlo_Reweight = ( ( hist_kfactors_N_Z->GetBinContent(hist_kfactors_N_Z->FindBin(v_pt)) )/( hist_kfactors_D_Z->GetBinContent(hist_kfactors_D_Z->FindBin(v_pt)) ) )*( ( hist_kfactors_EWKcorr_Z->GetBinContent(hist_kfactors_EWKcorr_Z->FindBin(v_pt_oldBinning)) )/( hist_kfactors_ZJets_012j_NLO->GetBinContent(hist_kfactors_ZJets_012j_NLO->FindBin(v_pt_oldBinning)) ) );
           //std::cout << " -- The NLO weight of Z is v_nlo_Reweight = "<< v_nlo_Reweight << std::endl;
         }
       }//endof Loop over genParticles

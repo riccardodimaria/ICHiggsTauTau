@@ -56,6 +56,13 @@ class HinvWeights : public ModuleBase {
   CLASS_MEMBER(HinvWeights, double, Dlumi)
 
   // For v_nlo_Reweighting (kfactors.root file in input/scalefactors from MIT group)
+  CLASS_MEMBER(HinvWeights, std::string, kfactors_file)
+  TFile *kfactors_;
+  TH1F *hist_kfactors_EWKcorr_W;
+  TH1F *hist_kfactors_WJets_012j_NLO;
+  TH1F *hist_kfactors_EWKcorr_Z;
+  TH1F *hist_kfactors_ZJets_012j_NLO;
+
   CLASS_MEMBER(HinvWeights, std::string, kfactor_VBF_zjets_v2_file)
   CLASS_MEMBER(HinvWeights, std::string, kfactor_VBF_wjets_v2_file)
   TFile *kfactor_VBF_zjets_v2_;
