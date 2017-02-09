@@ -36,12 +36,12 @@ for SYST in central
   SYSTOPTIONS="--dojessyst=false --dojersyst=false" 
 
   #JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_${PRODUCTION}_ICHEP
-  #JOBDIRPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/jobs_lighttree_170111
-  JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_170201_ICHEP
+  JOBDIRPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/jobs_lighttree_170209_oldJEC
+  #JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_170201_ICHEP
   JOBDIR=$JOBDIRPREFIX/
   #OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_${PRODUCTION}_ICHEP
-  #OUTPUTPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/output_lighttree_170111
-  OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_170201_ICHEP
+  OUTPUTPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/output_lighttree_170209_oldJEC
+  #OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_170201_ICHEP
   OUTPUTDIR=$OUTPUTPREFIX/
 
   if [ "$SYST" != "central" ]
@@ -96,7 +96,7 @@ for SYST in central
 
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleElectron*`
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_*MET*`
-    for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_*`
+    for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_2016E*`
       do
       echo "Processing files in "$FILELIST
 
