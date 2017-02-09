@@ -282,7 +282,8 @@ namespace ic {//namespace
             for(unsigned iVar3=0;iVar3<(do_run2_?2:1);iVar3++){
               std::ostringstream convert;
               if (!do_metmht_) convert<<iVar1+1<<iVar2+1;
-              if (do_run2_) convert<<iVar3+1;
+              //if (do_run2_) convert<<iVar3+1;
+	      if (do_run2_) convert<<iVar2+1;
               std::string histnumber=convert.str();
               if(!do_run2_){
                 thisfuncvector[0].push_back((TF1*)gDirectory->Get(("fData_"+binnedin2d1dfitweightvarorder_[2]+"_1D_"+histnumber+"A").c_str()));
@@ -292,7 +293,8 @@ namespace ic {//namespace
               else{
                 for (unsigned iErr(0); iErr<7;++iErr){
                   if (!do_metmht_) thisfuncvector[iErr].push_back((TF1*)gDirectory->Get(("fdata_"+binnedin2d1dfitweightvarorder_[2]+"_1d_"+histnumber+"Deff"+errLabel[iErr]).c_str()));
-                  else thisfuncvector[iErr].push_back((TF1*)gDirectory->Get(("METMHT_BIN"+histnumber+errLabel[iErr]).c_str()));
+                  //else thisfuncvector[iErr].push_back((TF1*)gDirectory->Get(("METMHT_BIN"+histnumber+errLabel[iErr]).c_str()));
+                  else thisfuncvector[iErr].push_back((TF1*)gDirectory->Get(("f1_METMHT120_MJJBIN"+histnumber).c_str()));
                 }
               }
             }

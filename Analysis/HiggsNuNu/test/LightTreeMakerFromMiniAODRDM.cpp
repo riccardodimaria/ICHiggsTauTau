@@ -937,11 +937,13 @@ int main(int argc, char* argv[]){
     jptbinning.push_back(0);
     jptbinning.push_back(7000);
     std::vector<double> mjjbinning;
-    //mjjbinning.push_back(800);
-    //mjjbinning.push_back(1000);
-    //mjjbinning.push_back(10000);
     mjjbinning.push_back(0);
+    mjjbinning.push_back(800);
+    mjjbinning.push_back(1200);
+    mjjbinning.push_back(1700);
     mjjbinning.push_back(14000);
+    //mjjbinning.push_back(0);
+    //mjjbinning.push_back(14000);
     hinvWeights.set_do_trg_weights(dotrgeff)
       .set_do_3dtrg_weights(do3dtrgeff)
       .set_do_1dparkedtrg_weights(do1dparkedtrgeff)
