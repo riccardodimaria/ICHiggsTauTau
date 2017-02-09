@@ -40,13 +40,12 @@ for SYST in central #JESUP JESDOWN JERBETTER JERWORSE UESUP UESDOWN ELEEFFUP ELE
   SYSTOPTIONS="--dojessyst=false --dojersyst=false"
 
   #JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_${PRODUCTION}_ICHEP
-  #JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_170201_ICHEP
-  JOBDIRPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/jobs_lighttree_170209
+  JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_170209_ReReco
+  #JOBDIRPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/jobs_lighttree_170111
   JOBDIR=$JOBDIRPREFIX/
   #OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_${PRODUCTION}_ICHEP
-  #OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_170201_ICHEP
-  OUTPUTPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/output_lighttree_170209
-
+  OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_170209_ReReco
+  #OUTPUTPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/output_lighttree_170111
   OUTPUTDIR=$OUTPUTPREFIX/
 
   if [ "$SYST" != "central" ]

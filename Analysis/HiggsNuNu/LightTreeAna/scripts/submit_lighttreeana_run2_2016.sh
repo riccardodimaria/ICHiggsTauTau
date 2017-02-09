@@ -21,14 +21,14 @@ export JOBSUBMIT=$JOBSCRIPT" "$JOBQUEUE
 echo "Using job-wrapper: " $JOBWRAPPER
 echo "Using job-submission: " $JOBSUBMIT
 
-#CONFIG=scripts/DefaultRun2Config.cfg
 CONFIG=scripts/DefaultRun2Config.cfg
+#CONFIG=scripts/DefaultRun2Config_withDY.cfg
 
 QUEUEDIR=short #medium long
 
-JOBDIRPREFIX=jobs_run2ana_170206
+JOBDIRPREFIX=jobs_run2ana_170206_ICHEP_allDY_noKfactors/
 JOBDIR=$JOBDIRPREFIX/
-OUTPUTPREFIX=output_run2ana_170206
+OUTPUTPREFIX=output_run2ana_170206_ICHEP_allDY_noKfactors/
 OUTPUTDIR=$OUTPUTPREFIX/
 
 OUTPUTNAME="output.root"
