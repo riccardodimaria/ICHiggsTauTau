@@ -370,6 +370,7 @@ int main(int argc, char* argv[]){
     "icEventProducer/EventTree", // TTree name
     max_events);          // Max. events to process (-1 = all)
 
+    analysis.StopOnFileFailure(false);
   // ------------------------------------------------------------------------------------
   // Misc Modules
   // ------------------------------------------------------------------------------------
@@ -393,7 +394,7 @@ int main(int argc, char* argv[]){
 //   if (era == era::data_2012_moriond) data_json   =  "input/json/data_2012_moriond.txt";
 //   if (era == era::data_2012_donly) data_json     =  "input/json/data_2012_donly.txt";
 
-  std::string mydebugoutput("/home/hep/rd1715/CMSSW_8_0_20/src/UserCode/ICHiggsTauTau/Analysis/HiggsNuNu/mydebugoutput");
+  std::string mydebugoutput("/home/hep/rd1715/CMSSW_8_0_20/src/UserCode/ICHiggsTauTau/Analysis/HiggsNuNu/mydebugJSON");
   std::string suffix = output_name.substr( 0 , output_name.find(".root") );
   mydebugoutput.append(suffix);
 
@@ -407,7 +408,7 @@ int main(int argc, char* argv[]){
   }
 
   LumiMask lumiMask = LumiMask("LumiMask")
-   //.set_produce_output_jsons(mydebugoutput.c_str())
+    .set_produce_output_jsons(mydebugoutput.c_str())
     .set_input_file(data_json);
 
   MakeRunStats runStats = MakeRunStats("RunStats")
