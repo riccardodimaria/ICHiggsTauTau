@@ -209,9 +209,9 @@ int main(int argc, char* argv[]){
     ("doetsmear",             po::value<bool>(&doetsmear)->default_value(false))
     ("dogaus",                po::value<bool>(&dogaus)->default_value(false))
     ("dospring10gaus",        po::value<bool>(&dospring10gaus)->default_value(false))
-    ("jesuncfile",            po::value<string>(&jesuncfile)->default_value("input/jec/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt"))
+    ("jesuncfile",            po::value<string>(&jesuncfile)->default_value(""))
     ("reapplyJEC",            po::value<bool>(&reapplyJEC)->default_value(false))
-    ("jecdata",               po::value<string>(&jecdata)->default_value("input/jec/Spring16_25nsV6_DATA_L1FastJet_AK4PFchs.txt,input/jec/Spring16_25nsV6_DATA_L2Relative_AK4PFchs.txt,input/jec/Spring16_25nsV6_DATA_L3Absolute_AK4PFchs.txt,input/jec/Spring16_25nsV6_DATA_L2L3Residual_AK4PFchs.txt"))
+    ("jecdata",               po::value<string>(&jecdata)->default_value(""))
     ("turnoffpuid",           po::value<bool>(&turnoffpuid)->default_value(false))
     ("useOldLT",              po::value<bool>(&useOldLT)->default_value(false))
     ("doTrigLT",              po::value<bool>(&doTrigLT)->default_value(false))
@@ -223,15 +223,31 @@ int main(int argc, char* argv[]){
   po::store(po::parse_config_file<char>(cfg.c_str(), config), vm);
   po::notify(vm);
 
-  vector<string> filtersVec;
-  boost::split(filtersVec, filters, boost::is_any_of(","));
-
-  std::vector<string> jecdatafiles;
-  boost::split(jecdatafiles, jecdata, boost::is_any_of(","));
-
   // Some options must now be re-configured based on other options
   ic::era era           = String2Era(era_str);
   ic::mc mc             = String2MC(mc_str);
+
+  vector<string> filtersVec;
+  boost::split(filtersVec, filters, boost::is_any_of(","));
+
+  if (era == era::data_2016){
+    if (output_name.find("2016E") != output_name.npos ||
+        output_name.find("2016F") != output_name.npos) {
+      jesuncfile="input/jec/Summer16_23Sep2016EFV4_DATA_Uncertainty_AK4PFchs.txt";
+      jecdata="input/jec/Summer16_23Sep2016EFV4_DATA_L1FastJet_AK4PFchs.txt,input/jec/Summer16_23Sep2016EFV4_DATA_L2Relative_AK4PFchs.txt,input/jec/Summer16_23Sep2016EFV4_DATA_L3Absolute_AK4PFchs.txt,input/jec/Summer16_23Sep2016EFV4_DATA_L2L3Residual_AK4PFchs.txt";
+    }
+    if (output_name.find("2016G") != output_name.npos) {
+      jesuncfile="input/jec/Summer16_23Sep2016GV4_DATA_Uncertainty_AK4PFchs.txt";
+    jecdata="input/jec/Summer16_23Sep2016GV4_DATA_L1FastJet_AK4PFchs.txt,input/jec/Summer16_23Sep2016GV4_DATA_L2Relative_AK4PFchs.txt,input/jec/Summer16_23Sep2016GV4_DATA_L3Absolute_AK4PFchs.txt,input/jec/Summer16_23Sep2016GV4_DATA_L2L3Residual_AK4PFchs.txt";
+    }
+    if (output_name.find("2016H") != output_name.npos) {
+      jesuncfile="input/jec/Summer16_23Sep2016HV4_DATA_Uncertainty_AK4PFchs.txt";
+      jecdata="input/jec/Summer16_23Sep2016HV4_DATA_L1FastJet_AK4PFchs.txt,input/jec/Summer16_23Sep2016HV4_DATA_L2Relative_AK4PFchs.txt,input/jec/Summer16_23Sep2016HV4_DATA_L3Absolute_AK4PFchs.txt,input/jec/Summer16_23Sep2016HV4_DATA_L2L3Residual_AK4PFchs.txt";
+    }
+  }
+  std::vector<string> jecdatafiles;
+  boost::split(jecdatafiles, jecdata, boost::is_any_of(","));
+
 
   std::cout << "**** HiggsNuNu Analysis *****" << std::endl;
   string param_fmt = "%-25s %-40s\n";
@@ -370,7 +386,7 @@ int main(int argc, char* argv[]){
     "icEventProducer/EventTree", // TTree name
     max_events);          // Max. events to process (-1 = all)
 
-    analysis.StopOnFileFailure(false);
+    //analysis.StopOnFileFailure(false);
   // ------------------------------------------------------------------------------------
   // Misc Modules
   // ------------------------------------------------------------------------------------
@@ -569,8 +585,8 @@ int main(int argc, char* argv[]){
   ComplexFilter<Electron,EventInfo,double> vetoElectronFilter = ComplexFilter<Electron,EventInfo,double>
     ("VetoElectronPtEtaFilter")
     .set_primary_input_label("vetoElectrons").set_predicate(bind(MinPtMaxSCEta, _1, veto_elec_pt, veto_elec_eta) &&
-							    //bind(VetoElectronFullID16, _1, _2)// && 
-							    bind(VetoElectronFullIDSpring15, _1, _2)// && 
+							    bind(VetoElectronFullID16, _1, _2)// && 
+							    //bind(VetoElectronFullIDSpring15, _1, _2)// && 
 							    //bind(fabs, bind(&Electron::dxy_vertex, _1)) < veto_elec_dxy && 
 							    //bind(fabs, bind(&Electron::dz_vertex, _1)) < veto_elec_dz
 							    )
@@ -585,8 +601,8 @@ int main(int argc, char* argv[]){
   ComplexFilter<Electron,EventInfo,double> selElectronFilter = ComplexFilter<Electron,EventInfo,double>
     ("SelElectronPtEtaFilter")
     .set_primary_input_label("selElectrons").set_predicate(bind(MinPtMaxSCEta, _1, elec_pt, elec_eta) &&
-							   //bind(TightElectronFullID16, _1, _2) //&&
-							   bind(TightElectronFullIDSpring15, _1, _2) //&&
+							   bind(TightElectronFullID16, _1, _2) //&&
+							   //bind(TightElectronFullIDSpring15, _1, _2) //&&
 							   //bind(fabs, bind(&Electron::dxy_vertex, _1)) < elec_dxy && 
 							   //bind(fabs, bind(&Electron::dz_vertex, _1)) < elec_dz
 							   )
