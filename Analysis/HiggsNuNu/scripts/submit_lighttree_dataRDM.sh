@@ -27,8 +27,8 @@ echo "Using job-wrapper: " $JOBWRAPPER
 echo "Using job-submission: " $JOBSUBMIT
 
 INPUTPARAMS="filelists/$PRODUCTION/Params${PRODUCTION}.dat"
-CONFIG=scripts/DefaultLightTreeConfig_data.cfg
-#CONFIG=scripts/DefaultLightTreeConfig_data_forMaria.cfg
+#CONFIG=scripts/DefaultLightTreeConfig_data.cfg
+CONFIG=scripts/DefaultLightTreeConfig_data_forMaria.cfg
 
 
 for SYST in central
@@ -92,9 +92,9 @@ for SYST in central
         PREFIX=root://xrootd.grid.hep.ph.ic.ac.uk//store/user/${PRODUSER}/${PRODUCTION}/DATA
     fi
 
-    #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleMuon*`
+    for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleMuon*`
 
-    for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleElectron*`
+    #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleElectron*`
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_*MET*`
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_*`
 
