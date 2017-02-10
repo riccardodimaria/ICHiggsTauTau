@@ -1,6 +1,6 @@
 #!/bin/sh
 DOCERN=0
-DOSUBMIT=0
+DOSUBMIT=1
 
 ## Try and take the JOBWRAPPER and JOBSUBMIT commands
 ## from the environment if set, otherwise use these defaults
@@ -68,7 +68,7 @@ for syst in "" #JESUP JESDOWN JERBETTER JERWORSE ELEEFFUP ELEEFFDOWN MUEFFUP MUE
 do
   mkdir -p $JOBDIR$syst
   mkdir -p $OUTPUTDIR$syst
-  for channels in mumu munu #enu munu taunu ee mumu qcd nunu
+  for channels in mumu munu taunu qcd #enu munu taunu ee mumu qcd nunu
     do
     JOB=$channels
     #executable expect strings separated by "!"

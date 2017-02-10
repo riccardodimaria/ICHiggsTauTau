@@ -231,16 +231,22 @@ int main(int argc, char* argv[]){
   boost::split(filtersVec, filters, boost::is_any_of(","));
 
   if (era == era::data_2016){
-    if (output_name.find("2016E") != output_name.npos ||
-        output_name.find("2016F") != output_name.npos) {
+    if (output_name.find("2016B") != output_name.npos ||
+        output_name.find("2016C") != output_name.npos || 
+	output_name.find("2016D") != output_name.npos) {
+      jesuncfile="input/jec/Summer16_23Sep2016BCDV4_DATA_Uncertainty_AK4PFchs.txt";
+      jecdata="input/jec/Summer16_23Sep2016BCDV4_DATA_L1FastJet_AK4PFchs.txt,input/jec/Summer16_23Sep2016BCDV4_DATA_L2Relative_AK4PFchs.txt,input/jec/Summer16_23Sep2016BCDV4_DATA_L3Absolute_AK4PFchs.txt,input/jec/Summer16_23Sep2016BCDV4_DATA_L2L3Residual_AK4PFchs.txt";
+    }
+    else if (output_name.find("2016E") != output_name.npos ||
+	     output_name.find("2016F") != output_name.npos) {
       jesuncfile="input/jec/Summer16_23Sep2016EFV4_DATA_Uncertainty_AK4PFchs.txt";
       jecdata="input/jec/Summer16_23Sep2016EFV4_DATA_L1FastJet_AK4PFchs.txt,input/jec/Summer16_23Sep2016EFV4_DATA_L2Relative_AK4PFchs.txt,input/jec/Summer16_23Sep2016EFV4_DATA_L3Absolute_AK4PFchs.txt,input/jec/Summer16_23Sep2016EFV4_DATA_L2L3Residual_AK4PFchs.txt";
     }
-    if (output_name.find("2016G") != output_name.npos) {
+    else if (output_name.find("2016G") != output_name.npos) {
       jesuncfile="input/jec/Summer16_23Sep2016GV4_DATA_Uncertainty_AK4PFchs.txt";
     jecdata="input/jec/Summer16_23Sep2016GV4_DATA_L1FastJet_AK4PFchs.txt,input/jec/Summer16_23Sep2016GV4_DATA_L2Relative_AK4PFchs.txt,input/jec/Summer16_23Sep2016GV4_DATA_L3Absolute_AK4PFchs.txt,input/jec/Summer16_23Sep2016GV4_DATA_L2L3Residual_AK4PFchs.txt";
     }
-    if (output_name.find("2016H") != output_name.npos) {
+    else if (output_name.find("2016H") != output_name.npos) {
       jesuncfile="input/jec/Summer16_23Sep2016HV4_DATA_Uncertainty_AK4PFchs.txt";
       jecdata="input/jec/Summer16_23Sep2016HV4_DATA_L1FastJet_AK4PFchs.txt,input/jec/Summer16_23Sep2016HV4_DATA_L2Relative_AK4PFchs.txt,input/jec/Summer16_23Sep2016HV4_DATA_L3Absolute_AK4PFchs.txt,input/jec/Summer16_23Sep2016HV4_DATA_L2L3Residual_AK4PFchs.txt";
     }
@@ -410,7 +416,8 @@ int main(int argc, char* argv[]){
 //   if (era == era::data_2012_moriond) data_json   =  "input/json/data_2012_moriond.txt";
 //   if (era == era::data_2012_donly) data_json     =  "input/json/data_2012_donly.txt";
 
-  std::string mydebugoutput("/home/hep/rd1715/CMSSW_8_0_20/src/UserCode/ICHiggsTauTau/Analysis/HiggsNuNu/mydebugJSON");
+  //std::string mydebugoutput("/home/hep/rd1715/CMSSW_8_0_20/src/UserCode/ICHiggsTauTau/Analysis/HiggsNuNu/mydebugJSON");
+  std::string mydebugoutput("./mydebugJSON");
   std::string suffix = output_name.substr( 0 , output_name.find(".root") );
   mydebugoutput.append(suffix);
 
