@@ -498,6 +498,8 @@ int main(int argc, char* argv[]){
   if(syst=="PUUP") mcweightpufactor << "*puweight_up_scale";
   if(syst=="PUDOWN") mcweightpufactor << "*puweight_down_scale";
   
+  if (syst=="TRIGUP") mcweightpufactor<<"*weight_trig_1/weight_trig_0";
+  if (syst=="TRIGDOWN") mcweightpufactor<<"*weight_trig_2/weight_trig_0";
   if (syst=="TRIG0UP") mcweightpufactor<<"*weight_trig_1/weight_trig_0";
   if (syst=="TRIG0DOWN") mcweightpufactor<<"*weight_trig_2/weight_trig_0";
   if (syst=="TRIG1UP") mcweightpufactor<<"*weight_trig_3/weight_trig_0";

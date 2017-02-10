@@ -69,13 +69,19 @@ namespace ic {//namespace
     BClumi_ = -1;
     Dlumi_  = -1;
 
-    errLabel.push_back("");
-    errLabel.push_back("_v0Up");
-    errLabel.push_back("_v0Down");
-    errLabel.push_back("_v1Up");
-    errLabel.push_back("_v1Down");
-    errLabel.push_back("_v2Up");
-    errLabel.push_back("_v2Down");
+    errLabelSave.push_back("");
+    errLabelSave.push_back("_Up");
+    errLabelSave.push_back("_Down");
+    //errLabel.push_back("_v0Up");
+    //errLabel.push_back("_v0Down");
+    //errLabel.push_back("_v1Up");
+    //errLabel.push_back("_v1Down");
+    //errLabel.push_back("_v2Up");
+    //errLabel.push_back("_v2Down");
+
+    errLabel.push_back("f1_");
+    errLabel.push_back("f1Up_");
+    errLabel.push_back("f1Down_");
 
     // For v_nlo_Reweighting (kfactor_VBF_zjets_v2.root and kfactor_VBF_wjets_v2.root files in input/scalefactors from MIT group)
     kfactors_file_="input/scale_factors/kfactors.root";
@@ -275,9 +281,9 @@ namespace ic {//namespace
       else if(do_binnedin2d1dfittedtrg_weights_){
         std::cout<<"Getting trigger efficiency functions"<<std::endl;
         for(unsigned iVar1=0;iVar1<(binnedin2d1dfitweightvar1binning_.size()-1);iVar1++){
-          std::vector<std::vector<TF1*> > thisfuncvectorvector[7];
+          std::vector<std::vector<TF1*> > thisfuncvectorvector[errLabel.size()];
           for(unsigned iVar2=0;iVar2<(binnedin2d1dfitweightvar2binning_.size()-1);iVar2++){
-            std::vector<TF1*> thisfuncvector[7];
+            std::vector<TF1*> thisfuncvector[errLabel.size()];
             //HF bins
             for(unsigned iVar3=0;iVar3<(do_run2_?2:1);iVar3++){
               std::ostringstream convert;
@@ -291,20 +297,26 @@ namespace ic {//namespace
                 thisfuncvector[0].push_back((TF1*)gDirectory->Get(("fData_"+binnedin2d1dfitweightvarorder_[2]+"_1D_"+histnumber+"D").c_str()));
               }
               else{
-                for (unsigned iErr(0); iErr<7;++iErr){
-                  if (!do_metmht_) thisfuncvector[iErr].push_back((TF1*)gDirectory->Get(("fdata_"+binnedin2d1dfitweightvarorder_[2]+"_1d_"+histnumber+"Deff"+errLabel[iErr]).c_str()));
-                  //else thisfuncvector[iErr].push_back((TF1*)gDirectory->Get(("METMHT_BIN"+histnumber+errLabel[iErr]).c_str()));
-                  else thisfuncvector[iErr].push_back((TF1*)gDirectory->Get(("f1_METMHT120_MJJBIN"+histnumber).c_str()));
+                for (unsigned iErr(0); iErr<errLabel.size();++iErr){
+		  std::string newhistnumber= histnumber;
+		  if (do_metmht_ && iErr>0) newhistnumber = "1;"+histnumber;
+		  TF1 *tmp;
+                  if (!do_metmht_) tmp = (TF1*)gDirectory->Get(("fdata_"+binnedin2d1dfitweightvarorder_[2]+"_1d_"+histnumber+"Deff"+errLabel[iErr]).c_str());
+		  //else thisfuncvector[iErr].push_back((TF1*)gDirectory->Get(("METMHT_BIN"+histnumber+errLabel[iErr]).c_str()));
+		  else tmp = (TF1*)gDirectory->Get((errLabel[iErr]+"METMHT120_MJJBIN"+newhistnumber).c_str());
+
+		  thisfuncvector[iErr].push_back(tmp);
+		  std::cout << " -- trigger Function " << errLabel[iErr]+"METMHT120_MJJBIN"+newhistnumber << " " << thisfuncvector[iErr][thisfuncvector[iErr].size()-1]->GetName() << " " << tmp->GetName() << " check value Mjj=2000 " << tmp->Eval(2000.) << " " << thisfuncvector[iErr][thisfuncvector[iErr].size()-1]->Eval(2000.) << std::endl; 
                 }
               }
             }
             if(!do_run2_) thisfuncvectorvector[0].push_back(thisfuncvector[0]);
-            for (unsigned iErr(0); iErr<7;++iErr){
+            for (unsigned iErr(0); iErr<errLabel.size();++iErr){
               thisfuncvectorvector[iErr].push_back(thisfuncvector[iErr]);
             }
           }
           if (!do_run2_) func_trigSF_binnedin2d[0].push_back(thisfuncvectorvector[0]);
-          for (unsigned iErr(0); iErr<7;++iErr){
+          for (unsigned iErr(0); iErr<errLabel.size();++iErr){
             func_trigSF_binnedin2d[iErr].push_back(thisfuncvectorvector[iErr]);
           }
         }
@@ -725,7 +737,7 @@ namespace ic {//namespace
             if(var2bin==-10)var2bin=binnedin2d1dfitweightvar2binning_.size()-1;
           }
 
-          for (unsigned iErr(0); iErr<7;++iErr){//Loop on errors
+          for (unsigned iErr(0); iErr<errLabel.size();++iErr){//Loop on errors
             double trgweights[3]={0,0,0};
             double xmin,xmax;
             if((var1bin!=-1)&&(var2bin!=-1)){
@@ -772,7 +784,7 @@ namespace ic {//namespace
               <<" hasJetsInHF=" << hasJetsInHF
               <<std::endl;   */
             //SET TRIGGER WEIGHT
-            eventInfo->set_weight(("!trig_2dbinned1d"+errLabel[iErr]).c_str(),trgweight);
+            eventInfo->set_weight(("!trig_2dbinned1d"+errLabelSave[iErr]).c_str(),trgweight);
 
           }//endof Loop on errors
         }//2D-1D

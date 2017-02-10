@@ -1,6 +1,6 @@
 #!/bin/sh
 DOCERN=0
-DOSUBMIT=1
+DOSUBMIT=0
 #JETTYPE="ak4SlimmedJetsPuppi"
 JETTYPE="pfJetsPFlow"
 MYEXEC=LightTreeMakerFromMiniAODRDM
@@ -150,7 +150,6 @@ for SYST in MUEFFUP MUEFFDOWN
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/*_MC_EWK*`
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/*_MC_*NuNu*`
     for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/*_MC_*`
-    #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/*_MC_TT-powheg_split59*`
       do
       echo "Processing files in "$FILELIST
 
