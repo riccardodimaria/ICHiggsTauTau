@@ -26,9 +26,9 @@ CONFIG=scripts/DefaultRun2Config.cfg
 
 QUEUEDIR=short #medium long
 
-JOBDIRPREFIX=jobs_run2ana_170206_ICHEP_allDY_noKfactors/
+JOBDIRPREFIX=jobs_run2ana_170210
 JOBDIR=$JOBDIRPREFIX/
-OUTPUTPREFIX=output_run2ana_170206_ICHEP_allDY_noKfactors/
+OUTPUTPREFIX=output_run2ana_170210
 OUTPUTDIR=$OUTPUTPREFIX/
 
 OUTPUTNAME="output.root"
@@ -68,7 +68,7 @@ for syst in "" #JESUP JESDOWN JERBETTER JERWORSE ELEEFFUP ELEEFFDOWN MUEFFUP MUE
 do
   mkdir -p $JOBDIR$syst
   mkdir -p $OUTPUTDIR$syst
-  for channels in mumu #enu munu taunu ee mumu qcd nunu
+  for channels in mumu munu #enu munu taunu ee mumu qcd nunu
     do
     JOB=$channels
     #executable expect strings separated by "!"

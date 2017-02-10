@@ -228,12 +228,12 @@ int main(int argc, char* argv[]){
   //trigger
   TFile* trigup=new TFile((indir+"/TRIGUP/"+channel+".root").c_str());
   TFile* trigdown=new TFile((indir+"/TRIGDOWN/"+channel+".root").c_str());
-  //TFile* trig0up=new TFile((indir+"/TRIG0UP/"+channel+".root").c_str());
-  //TFile* trig0down=new TFile((indir+"/TRIG0DOWN/"+channel+".root").c_str());
-  //TFile* trig1up=new TFile((indir+"/TRIG1UP/"+channel+".root").c_str());
-  //TFile* trig1down=new TFile((indir+"/TRIG1DOWN/"+channel+".root").c_str());
-  //TFile* trig2up=new TFile((indir+"/TRIG2UP/"+channel+".root").c_str());
-  //TFile* trig2down=new TFile((indir+"/TRIG2DOWN/"+channel+".root").c_str());
+  TFile* trig0up=0;//new TFile((indir+"/TRIG0UP/"+channel+".root").c_str());
+  TFile* trig0down=0;//new TFile((indir+"/TRIG0DOWN/"+channel+".root").c_str());
+  TFile* trig1up=0;//new TFile((indir+"/TRIG1UP/"+channel+".root").c_str());
+  TFile* trig1down=0;//new TFile((indir+"/TRIG1DOWN/"+channel+".root").c_str());
+  TFile* trig2up=0;//new TFile((indir+"/TRIG2UP/"+channel+".root").c_str());
+  TFile* trig2down=0;//new TFile((indir+"/TRIG2DOWN/"+channel+".root").c_str());
 
 
   //SYSTEMATICS
