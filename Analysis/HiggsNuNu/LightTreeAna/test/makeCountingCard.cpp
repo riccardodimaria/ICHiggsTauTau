@@ -226,12 +226,14 @@ int main(int argc, char* argv[]){
   TFile* pudown=new TFile((indir+"/PUDOWN/"+channel+".root").c_str());
 
   //trigger
-  TFile* trig0up=new TFile((indir+"/TRIG0UP/"+channel+".root").c_str());
-  TFile* trig0down=new TFile((indir+"/TRIG0DOWN/"+channel+".root").c_str());
-  TFile* trig1up=new TFile((indir+"/TRIG1UP/"+channel+".root").c_str());
-  TFile* trig1down=new TFile((indir+"/TRIG1DOWN/"+channel+".root").c_str());
-  TFile* trig2up=new TFile((indir+"/TRIG2UP/"+channel+".root").c_str());
-  TFile* trig2down=new TFile((indir+"/TRIG2DOWN/"+channel+".root").c_str());
+  TFile* trigup=new TFile((indir+"/TRIGUP/"+channel+".root").c_str());
+  TFile* trigdown=new TFile((indir+"/TRIGDOWN/"+channel+".root").c_str());
+  //TFile* trig0up=new TFile((indir+"/TRIG0UP/"+channel+".root").c_str());
+  //TFile* trig0down=new TFile((indir+"/TRIG0DOWN/"+channel+".root").c_str());
+  //TFile* trig1up=new TFile((indir+"/TRIG1UP/"+channel+".root").c_str());
+  //TFile* trig1down=new TFile((indir+"/TRIG1DOWN/"+channel+".root").c_str());
+  //TFile* trig2up=new TFile((indir+"/TRIG2UP/"+channel+".root").c_str());
+  //TFile* trig2down=new TFile((indir+"/TRIG2DOWN/"+channel+".root").c_str());
 
 
   //SYSTEMATICS
@@ -334,6 +336,14 @@ int main(int argc, char* argv[]){
     .set_procsaffected(do_run2?allprocs:allprocsnotqcd)
     .set_uptfile(puup)
     .set_downtfile(pudown);
+
+  Syst trig;
+  trig.set_name("CMS_VBFHinv_trigweight")
+    .set_latexname("Trig weight")
+    .set_type("fromfilelnN")
+    .set_procsaffected(do_run2?allprocs:allprocsnotqcd)
+    .set_uptfile(trigup)
+    .set_downtfile(trigdown);
 
   Syst trig0;
   trig0.set_name("CMS_VBFHinv_trig0weight")
@@ -715,9 +725,10 @@ int main(int argc, char* argv[]){
   }
   //if (!do_run2) 
   systematics.push_back(pu);
-  systematics.push_back(trig0);
-  systematics.push_back(trig1);
-  systematics.push_back(trig2);
+  systematics.push_back(trig);
+  //systematics.push_back(trig0);
+  //systematics.push_back(trig1);
+  //systematics.push_back(trig2);
   if (channel=="nunu" || channel=="mumu" || channel=="ee") {
     //if (mcBkgOnly) systematics.push_back(zxsunc);
     if (channel=="nunu") {

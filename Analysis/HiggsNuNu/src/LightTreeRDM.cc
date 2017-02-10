@@ -688,8 +688,9 @@ namespace ic {
       pileupwtup=eventInfo->weight("pileup_up");
       pileupwtdown=eventInfo->weight("pileup_down");
 
-      std::string label[7] = {"","_v0Up","_v0Down","_v1Up","_v1Down","_v2Up","_v2Down"};
-      for (unsigned iT(0); iT<7; ++iT){
+      //std::string label[7] = {"","_v0Up","_v0Down","_v1Up","_v1Down","_v2Up","_v2Down"};
+      std::string label[7] = {"","_Up","_Down"};
+      for (unsigned iT(0); iT<3; ++iT){
         std::string thislabel = "trig_2dbinned1d"+label[iT];
         weight_trig_[iT]=eventInfo->weight_defined(thislabel.c_str())?eventInfo->weight(thislabel.c_str()):0;
       }
