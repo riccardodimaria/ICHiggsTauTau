@@ -27,8 +27,8 @@ echo "Using job-wrapper: " $JOBWRAPPER
 echo "Using job-submission: " $JOBSUBMIT
 
 INPUTPARAMS="filelists/$PRODUCTION/Params${PRODUCTION}.dat"
-#CONFIG=scripts/DefaultLightTreeConfig_data.cfg
-CONFIG=scripts/DefaultLightTreeConfig_data_forMaria.cfg
+CONFIG=scripts/DefaultLightTreeConfig_data.cfg
+#CONFIG=scripts/DefaultLightTreeConfig_data_forMaria.cfg
 
 
 for SYST in central
@@ -36,12 +36,12 @@ for SYST in central
   SYSTOPTIONS="--dojessyst=false --dojersyst=false" 
 
   #JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_${PRODUCTION}_ICHEP
-  JOBDIRPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/jobs_lighttree_170209
-  #JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_170210_ReReco
+  #JOBDIRPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/jobs_lighttree_170209
+  JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_170210_ReReco
   JOBDIR=$JOBDIRPREFIX/
   #OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_${PRODUCTION}_ICHEP
-  OUTPUTPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/output_lighttree_170209
-  #OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_170210_ReReco
+  #OUTPUTPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/output_lighttree_170209
+  OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_170210_ReReco
   OUTPUTDIR=$OUTPUTPREFIX/
 
   if [ "$SYST" != "central" ]
@@ -92,9 +92,9 @@ for SYST in central
         PREFIX=root://xrootd.grid.hep.ph.ic.ac.uk//store/user/${PRODUSER}/${PRODUCTION}/DATA
     fi
 
-    for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleMuon*`
+    #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleMuon*`
 
-    #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleElectron*`
+    for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleElectron*`
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_*MET*`
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_*`
 
