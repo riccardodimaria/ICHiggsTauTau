@@ -11,7 +11,7 @@
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 #include "DataFormats/CaloTowers/interface/CaloTower.h"
-#include "DataFormats/CaloTowers/interface/CaloTowerFwd.h"
+#include "DataFormats/CaloTowers/interface/CaloTowerDefs.h"
 #include "RecoEgamma/EgammaIsolationAlgos/interface/EgammaTowerIsolation.h"
 #include "UserCode/ICHiggsTauTau/plugins/Consumes.h"
 
@@ -27,7 +27,7 @@ ICElectronHcalDepthCalculator::~ICElectronHcalDepthCalculator() {}
 
 void ICElectronHcalDepthCalculator::produce(edm::Event& event,
                                  const edm::EventSetup& setup) {
-  std::auto_ptr<edm::ValueMap<float> > product(new edm::ValueMap<float>());
+  std::unique_ptr<edm::ValueMap<float> > product(new edm::ValueMap<float>());
   edm::Handle<reco::GsfElectronCollection> elecs_handle;
   event.getByLabel(input_, elecs_handle);
 
@@ -50,7 +50,7 @@ void ICElectronHcalDepthCalculator::produce(edm::Event& event,
   filler.insert(elecs_handle, values.begin(), values.end());
   filler.fill();
 
-  event.put(product);
+  event.put(std::move(product));
 }
 
 void ICElectronHcalDepthCalculator::beginJob() {}
