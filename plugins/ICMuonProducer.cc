@@ -107,12 +107,12 @@ void ICMuonProducer::produce(edm::Event& event, const edm::EventSetup& setup) {
   edm::Handle<edm::View<reco::Vertex> > vertices_handle;
   if (do_vertex_ip_) event.getByLabel(input_vertices_, vertices_handle);
 
-  edm::Handle<edm::PtrVector<reco::Muon> > bad_quality_muons_handle;
-  unsigned n_bad_muons = 0;
-  if (do_bad_quality_muons_) {
-    event.getByLabel(input_bad_quality_muons_, bad_quality_muons_handle);
-    n_bad_muons = bad_quality_muons_handle->size();
-  }
+//  edm::Handle<edm::PtrVector<reco::Muon> > bad_quality_muons_handle;
+//  unsigned n_bad_muons = 0;
+//  if (do_bad_quality_muons_) {
+//    event.getByLabel(input_bad_quality_muons_, bad_quality_muons_handle);
+//    n_bad_muons = bad_quality_muons_handle->size();
+//  }
 
   edm::Handle<reco::BeamSpot> beamspot_handle;
   if (do_beamspot_ip_) event.getByLabel(input_beamspot_, beamspot_handle);
