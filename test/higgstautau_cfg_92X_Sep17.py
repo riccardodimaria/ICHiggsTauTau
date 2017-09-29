@@ -8,18 +8,23 @@ import sys
 import FWCore.ParameterSet.VarParsing as parser
 opts = parser.VarParsing ('analysis')
 
-opts.register('file', 'root://xrootd.unl.edu//store/mc/RunIISummer16MiniAODv2/SUSYGluGluToBBHToTauTau_M-1000_TuneCUETP8M1_13TeV-amcatnlo-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/130000/10B3D2AA-286C-E711-B57F-141877410B85.root', parser.VarParsing.multiplicity.singleton,               
+opts.register('file', 
+#'root://xrootd.unl.edu//store/mc/RunIISummer17MiniAOD/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/92X_upgrade2017_realistic_v10_ext1-v2/10000/00F9D855-E293-E711-B625-02163E014200.root'              
+'root://xrootd.unl.edu//store/data/Run2017C/SingleMuon/MINIAOD/PromptReco-v3/000/301/461/00000/12289DDE-0B87-E711-8ACC-02163E01A1E9.root'
+,parser.VarParsing.multiplicity.singleton, 
 parser.VarParsing.varType.string, "input file")
-opts.register('globalTag', '92X_dataRun2_Prompt_v9', parser.VarParsing.multiplicity.singleton,
+opts.register('globalTag', '92X_dataRun2_Prompt_v9', parser.VarParsing.multiplicity.singleton, ## lates GT i can find for MC = 90X_upgrade2017_realistic_v20
     parser.VarParsing.varType.string, "global tag")
-opts.register('isData', 0, parser.VarParsing.multiplicity.singleton,
+opts.register('isData', 1, parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.int, "Process as data?")
-opts.register('release', '80XMINIAOD', parser.VarParsing.multiplicity.singleton,
+opts.register('release', '92XMINIAOD', parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.string, "Release label")
 opts.register('LHEWeights', False, parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.bool, "Produce LHE weights for sample")
 opts.register('LHETag', 'externalLHEProducer', parser.VarParsing.multiplicity.singleton,
     parser.VarParsing.varType.string, "Input tag for LHE weights")
+opts.register('doHT', 0, parser.VarParsing.multiplicity.singleton,
+    parser.VarParsing.varType.int, "Store HT and number of outgoing partons?")
 
 
 opts.parseArguments()
@@ -29,14 +34,18 @@ isData      = opts.isData
 tag         = opts.globalTag
 release     = opts.release
 doLHEWeights = opts.LHEWeights
+if not isData:
+  doHT     = opts.doHT
+else: doHT = 0
 
 
-if not release in ["76X", "80XMINIAOD"]:
+if not release in ["92XMINIAOD"]:
   print 'Release not recognised, exiting!'
   sys.exit(1)
 print 'release     : '+release
 print 'isData      : '+str(isData)
 print 'globalTag   : '+str(tag)
+print 'doHT        : '+str(doHT)
 
 
 ################################################################
@@ -56,7 +65,7 @@ process.TFileService = cms.Service("TFileService",
 # Message Logging, summary, and number of events
 ################################################################
 process.maxEvents = cms.untracked.PSet(
-  input = cms.untracked.int32(100)
+  input = cms.untracked.int32(10000)
 )
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 50
@@ -273,10 +282,6 @@ process.pfParticleSelectionSequence = cms.Sequence(
     process.pfAllNeutralHadronsAndPhotons
     )
 
-vtxLabel = cms.InputTag("offlinePrimaryVertices")
-if release in ['80XMINIAOD']:
-  vtxLabel = cms.InputTag("offlineSlimmedPrimaryVertices")
-
 vtxLabel = cms.InputTag("offlineSlimmedPrimaryVertices")
 
 ################################################################
@@ -300,7 +305,144 @@ process.icVertexSequence = cms.Sequence(
 
 if isData :
   process.icVertexSequence.remove(process.icGenVertexProducer)
-  
+
+################################################################
+# Electrons
+################################################################
+electronLabel = cms.InputTag("slimmedElectrons")
+
+process.icElectronSequence = cms.Sequence()
+
+process.icElectronConversionCalculator = cms.EDProducer('ICElectronConversionCalculator',
+    input       = electronLabel,
+    beamspot    = cms.InputTag("offlineBeamSpot"),
+    conversions = cms.InputTag("reducedEgamma:reducedConversions")
+)
+
+process.load("RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi")
+process.electronMVAValueMapProducer.src = electronLabel
+process.electronMVAValueMapProducer.srcMiniAOD = electronLabel
+
+process.icElectronSequence+=cms.Sequence(
+   process.electronMVAValueMapProducer
+   )
+
+#Electron PF iso sequence:
+process.load("CommonTools.ParticleFlow.Isolation.pfElectronIsolation_cff")
+process.elPFIsoValueChargedAll03PFIdPFIso = process.elPFIsoValueChargedAll03PFId.clone()
+process.elPFIsoDepositChargedAll.src  = electronLabel
+
+process.elPFIsoValueCharged03PFIdPFIso = cms.EDProducer('ICRecoElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.3),
+  iso_type = cms.string("charged_iso") 
+)    
+process.elPFIsoValueGamma03PFIdPFIso = cms.EDProducer('ICRecoElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.3),
+  iso_type = cms.string("photon_iso") 
+)    
+process.elPFIsoValueNeutral03PFIdPFIso = cms.EDProducer('ICRecoElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.3),
+  iso_type = cms.string("neutral_iso") 
+)    
+process.elPFIsoValuePU03PFIdPFIso = cms.EDProducer('ICRecoElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.3),
+  iso_type = cms.string("pu_iso") 
+)    
+
+process.electronPFIsolationValuesSequence = cms.Sequence(
+      process.elPFIsoValueCharged03PFIdPFIso+
+      process.elPFIsoValueChargedAll03PFIdPFIso+
+      process.elPFIsoValueGamma03PFIdPFIso+
+      process.elPFIsoValueNeutral03PFIdPFIso+
+      process.elPFIsoValuePU03PFIdPFIso
+      )
+
+
+process.elPFIsoDepositGamma.ExtractorPSet.ComponentName = cms.string("CandViewExtractor")
+process.icElectronSequence += cms.Sequence(
+  process.elPFIsoDepositChargedAll+
+  process.electronPFIsolationValuesSequence
+  )
+
+process.elPFIsoValueChargedAll03PFIdPFIso.deposits[0].vetos = (
+    cms.vstring('EcalEndcaps:ConeVeto(0.015)','EcalBarrel:ConeVeto(0.01)'))
+
+process.elPFIsoValueCharged04PFIdPFIso = cms.EDProducer('ICElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.4),
+  iso_type = cms.string("charged_iso") 
+)    
+process.elPFIsoValueGamma04PFIdPFIso = cms.EDProducer('ICElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.4),
+  iso_type = cms.string("photon_iso") 
+)    
+process.elPFIsoValueNeutral04PFIdPFIso = cms.EDProducer('ICElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.4),
+  iso_type = cms.string("neutral_iso") 
+)    
+process.elPFIsoValuePU04PFIdPFIso = cms.EDProducer('ICElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.4),
+  iso_type = cms.string("pu_iso") 
+)    
+
+process.elEcalPFClusterIso = cms.EDProducer('ICElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.3), 
+  iso_type     = cms.string("ecal_pf_cluster_iso")
+)
+
+process.elHcalPFClusterIso = cms.EDProducer('ICElectronIsolation',
+  input        = electronLabel,
+  deltaR       = cms.double(0.3), 
+  iso_type     = cms.string("hcal_pf_cluster_iso")
+)
+
+process.elPFIsoValueChargedAll04PFIdPFIso = process.elPFIsoValueChargedAll04PFId.clone()
+process.elPFIsoValueChargedAll04PFIdPFIso.deposits[0].vetos = (
+  cms.vstring('EcalEndcaps:ConeVeto(0.015)','EcalBarrel:ConeVeto(0.01)'))
+
+process.electronPFIsolationValuesSequence +=cms.Sequence(
+  process.elPFIsoValueCharged04PFIdPFIso+
+  process.elPFIsoValueGamma04PFIdPFIso+
+  process.elPFIsoValuePU04PFIdPFIso+
+  process.elPFIsoValueNeutral04PFIdPFIso+
+  process.elPFIsoValueChargedAll04PFIdPFIso+
+  process.elEcalPFClusterIso+
+  process.elHcalPFClusterIso
+)
+
+
+process.icElectronProducer = producers.icElectronProducer.clone(
+  branch                    = cms.string("electrons"),
+  input                     = cms.InputTag("selectedElectrons"),
+  includeConversionMatches  = cms.bool(True),
+  inputConversionMatches    = cms.InputTag("icElectronConversionCalculator"),
+  includeVertexIP           = cms.bool(True),
+  inputVertices             = vtxLabel,
+  includeBeamspotIP         = cms.bool(True),
+  inputBeamspot             = cms.InputTag("offlineBeamSpot"),
+  includeFloats = cms.PSet(
+     mvaNonTrigSpring15    = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15NonTrig25nsV1Values"),
+     mvaTrigSpring15       = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values"),
+     generalPurposeMVASpring16  = cms.InputTag("electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values")
+  ),
+  includeClusterIso        = cms.bool(True),
+  includePFIso03           = cms.bool(True),
+  includePFIso04           = cms.bool(True)
+)
+
+
+process.icElectronSequence += cms.Sequence(
+  process.icElectronConversionCalculator+
+  process.icElectronProducer
+)  
 
 ################################################################
 # Muons
@@ -421,41 +563,34 @@ process.icMuonSequence += cms.Sequence(
 ################################################################
 import UserCode.ICHiggsTauTau.tau_discriminators_cfi as tauIDs
 
-process.icTauProducer = producers.icTauProducer.clone(
+process.icTauProducer = cms.EDProducer("ICPFTauFromPatProducer",
+  branch                  = cms.string("taus"),
   input                   = cms.InputTag("selectedTaus"),
   inputVertices           = vtxLabel,
   includeVertexIP         = cms.bool(True),
-  requestTracks           = cms.bool(True),
-  tauIDs = tauIDs.dynamicStripIds
+  requestTracks           = cms.bool(False),
+  includeTotalCharged     = cms.bool(False),
+  totalChargedLabel       = cms.string('totalCharged'),
+  requestPFCandidates     = cms.bool(False),
+  inputPFCandidates       = cms.InputTag("packedPFCandidates"),
+  isSlimmed               = cms.bool(True),
+  tauIDs = cms.PSet()
 )
-
-if release in ['80XMINIAOD']:
-  process.icTauProducer = cms.EDProducer("ICPFTauFromPatProducer",
-    branch                  = cms.string("taus"),
-    input                   = cms.InputTag("selectedTaus"),
-    inputVertices           = vtxLabel,
-    includeVertexIP         = cms.bool(True),
-    requestTracks           = cms.bool(False),
-    includeTotalCharged     = cms.bool(False),
-    totalChargedLabel       = cms.string('totalCharged'),
-    requestPFCandidates     = cms.bool(False),
-    inputPFCandidates       = cms.InputTag("packedPFCandidates"),
-    isSlimmed               = cms.bool(True),
-    tauIDs = cms.PSet()
-  )
 
 
 process.icTauSequence = cms.Sequence(
   process.icTauProducer 
 )
 
+
 # ################################################################
 # # Jets
 # ################################################################
 from RecoJets.JetProducers.ak4PFJets_cfi import ak4PFJets
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
 
+#rebuild ak4 chs jets as in  https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD#Jets
+process.load('PhysicsTools.PatAlgos.slimming.unpackedTracksAndVertices_cfi')
 
 #Reapply JECs:
 if not isData:
@@ -519,10 +654,8 @@ from RecoJets.JetAssociationProducers.ak4JTA_cff import ak4JetTracksAssociatorAt
 process.load("RecoBTag.Configuration.RecoBTag_cff")
 import RecoBTag.Configuration.RecoBTag_cff as btag
 
-
-if release in ['80XMINIAOD']:
-  process.pfImpactParameterTagInfos.primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices")
-  process.pfImpactParameterTagInfos.candidates = cms.InputTag("packedPFCandidates")
+process.pfImpactParameterTagInfos.primaryVertex = cms.InputTag("offlineSlimmedPrimaryVertices")
+process.pfImpactParameterTagInfos.candidates = cms.InputTag("packedPFCandidates")
 
  # Pileup ID
  # ---------
@@ -537,6 +670,7 @@ process.pileupJetIdCalculator.jets = cms.InputTag("ak4PFJetsCHS")
 process.pileupJetIdCalculator.rho = cms.InputTag("fixedGridRhoFastjetAll")
 process.pileupJetIdEvaluator.jets = cms.InputTag("ak4PFJetsCHS")
 process.pileupJetIdEvaluator.rho = cms.InputTag("fixedGridRhoFastjetAll")
+
 
 process.icPFJetProducerFromPat = producers.icPFJetFromPatProducer.clone(
     branch                    = cms.string("ak4PFJetsCHS"),
@@ -561,12 +695,13 @@ process.icPFJetProducerFromPat = producers.icPFJetFromPatProducer.clone(
 
 process.icPFJetSequence = cms.Sequence()
 
+
 process.icPFJetSequence += cms.Sequence(
    process.patJetCorrFactorsUpdatedJEC+
    process.updatedPatJetsUpdatedJEC+
    process.selectedUpdatedPatJetsUpdatedJEC+
    process.selectedSlimmedJetsAK4+
-   process.unpackedTracksAndVertices+
+   #process.unpackedTracksAndVertices+  # this line causes an exception, commenting it out means some jet variables aren't filled - i can't see these variabled being used anywhere at the moment but if this changes then this needs to be fixed
    process.icPFJetProducerFromPat
    )
 
@@ -590,6 +725,132 @@ process.icPfMetProducer = producers.icMetFromPatProducer.clone(
 process.icPfMetSequence = cms.Sequence(
   process.icPfMetProducer
 )
+
+
+################################################################
+# Simulation only: GenParticles, GenJets, PileupInfo
+################################################################
+
+process.icGenSequence = cms.Sequence()
+
+process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
+
+process.icGenParticleProducer = producers.icGenParticleProducer.clone(
+  input   = cms.InputTag("prunedGenParticles","","PAT"),
+  includeMothers = cms.bool(True),
+  includeDaughters = cms.bool(True),
+  includeStatusFlags = cms.bool(True)
+)
+
+
+process.icGenParticleProducerFromLHEParticles = producers.icGenParticleFromLHEParticlesProducer.clone()
+
+
+process.load("RecoJets.Configuration.GenJetParticles_cff")
+process.genParticlesForJets.ignoreParticleIDs = cms.vuint32(
+  1000022, 2000012, 2000014,
+  2000016, 1000039, 5000039,
+  4000012, 9900012, 9900014,
+  9900016, 39, 12, 14, 16
+)
+process.genParticlesForJets.src = cms.InputTag("packedGenParticles")
+process.load("RecoJets.JetProducers.ak4GenJets_cfi")
+process.ak4GenJetsNoNuBSM  =  process.ak4GenJets.clone()
+process.ak4GenJetsNoNuBSM.src=cms.InputTag("packedGenParticles")
+
+process.selectedGenJets = cms.EDFilter("GenJetRefSelector",
+  src = cms.InputTag("ak4GenJetsNoNuBSM"),
+  cut = cms.string("pt > 10.0")
+)
+
+process.icGenJetProducer = producers.icGenJetProducer.clone(
+  branch  = cms.string("genJetsReclustered"),
+  input   = cms.InputTag("selectedGenJets"),
+  inputGenParticles = cms.InputTag("prunedGenParticles","","PAT"),
+  requestGenParticles = cms.bool(False),
+  isSlimmed  = cms.bool(True)
+)
+  
+process.icGenJetProducerFromSlimmed = producers.icGenJetProducer.clone(
+  branch = cms.string("genJets"),
+  input = cms.InputTag("slimmedGenJets"),
+  inputGenParticles=cms.InputTag("genParticles"),
+  requestGenParticles = cms.bool(False),
+  isSlimmed = cms.bool(True)
+) 
+
+process.icPileupInfoProducer = producers.icPileupInfoProducer.clone()
+process.icPileupInfoProducer.input=cms.InputTag("slimmedAddPileupInfo")
+
+
+if not isData:
+  process.icGenSequence += (
+    process.icGenParticleProducer+
+    process.ak4GenJetsNoNuBSM+
+    process.selectedGenJets+
+    process.icGenJetProducer+
+    process.icGenJetProducerFromSlimmed+
+    process.icPileupInfoProducer
+  )
+  if doHT:
+    process.icGenSequence += (
+      process.icGenParticleProducerFromLHEParticles
+    )
+ 
+# ################################################################
+# # Trigger
+# ################################################################
+
+from PhysicsTools.PatAlgos.tools.trigTools import *
+process.icTriggerSequence = cms.Sequence()
+process.icTriggerObjectSequence = cms.Sequence()
+
+
+process.patTriggerPath = cms.Path()
+
+switchOnTrigger(process, path = 'patTriggerPath',  outputModule = '')
+
+
+process.icTriggerPathProducer = producers.icTriggerPathProducer.clone(
+ branch = cms.string("triggerPaths"),
+ input  = cms.InputTag("TriggerResults","","HLT"),
+ inputIsStandAlone = cms.bool(True),
+ inputPrescales = cms.InputTag("patTrigger")
+)
+
+if isData:
+  process.icTriggerSequence += cms.Sequence(
+   process.icTriggerPathProducer
+  )
+  
+process.icIsoMu27ObjectProducer = producers.icTriggerObjectProducer.clone(
+    input   = cms.InputTag("selectedPatTrigger"),
+    branch = cms.string("triggerObjectsIsoMu27"),
+    hltPath = cms.string("HLT_IsoMu27_v"),
+    inputIsStandAlone = cms.bool(True),
+    storeOnlyIfFired = cms.bool(False)
+    )
+
+process.icTriggerObjectSequence += cms.Sequence(
+    process.icIsoMu27ObjectProducer
+    )
+
+## Need to unpack filterLabels on slimmedPatTrigger then make selectedPatTrigger
+process.patTriggerUnpacker = cms.EDProducer("PATTriggerObjectStandAloneUnpacker",
+   patTriggerObjectsStandAlone = cms.InputTag("slimmedPatTrigger"),
+   triggerResults = cms.InputTag("TriggerResults", "", "HLT"),
+   unpackFilterLabels = cms.bool(True)
+)
+process.selectedPatTrigger = cms.EDFilter(
+ 'PATTriggerObjectStandAloneSelector',
+  cut = cms.string('!filterLabels.empty()'),
+  src = cms.InputTag('patTriggerUnpacker')
+)
+process.icTriggerSequence += cms.Sequence(
+    process.patTriggerUnpacker +
+    process.selectedPatTrigger
+    )   
+
 
 ################################################################
 # EventInfo
@@ -649,15 +910,18 @@ process.icEventInfoSequence = cms.Sequence(
 process.icEventProducer = producers.icEventProducer.clone()
 
 
-
 process.p = cms.Path(
   process.icSelectionSequence+  
   process.pfParticleSelectionSequence+  
-  process.icVertexSequence+  
+  process.icVertexSequence+ 
+  process.icElectronSequence+
   process.icMuonSequence+ 
   process.icTauSequence+
   process.icPFJetSequence+
   process.icPfMetSequence+
+  process.icGenSequence+
+  process.icTriggerSequence+
+  process.icTriggerObjectSequence+
   process.icEventInfoSequence+
   process.icEventProducer
 )
