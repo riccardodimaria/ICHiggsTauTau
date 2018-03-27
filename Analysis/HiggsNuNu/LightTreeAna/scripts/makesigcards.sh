@@ -5,7 +5,7 @@ if [ "$#" -ne "2" ]; then
   exit 0
 fi
 
-DATE=171020_datacards
+DATE=171201_unblind_datacards
 
 DOSUBMIT=$1
 DO4PARAMS=$2
@@ -13,7 +13,7 @@ infolder=output_run2ana_${DATE}
 outfolder=cards_run2ana_${DATE}_masscards
 do_tau_veto_unc=true
 do_b_veto_unc=true
-blind=true
+blind=false
 zvvstat=0
 mkdir -p $outfolder
 

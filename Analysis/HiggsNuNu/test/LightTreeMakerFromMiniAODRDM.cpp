@@ -844,8 +844,8 @@ int main(int argc, char* argv[]){
     ("JetIDFilter")
     .set_input_label(jettype);
     if(!turnoffpuid){
-      //Loose ID implemented. To use Medium ID, turn it back in Analysis/Utilities/src/FnPredicates.cc#L406
-//       jetIDFilter.set_predicate((bind(PFJetID2016v2, _1)) && bind(PileupJetID, _1,is2012?2:4,true));
+      //Medium ID implemented. Loose ID implemented. To use Medium ID, turn it back in Analysis/Utilities/src/FnPredicates.cc#L406
+      //jetIDFilter.set_predicate((bind(PFJetID2016v2, _1)) && bind(PileupJetID, _1,is2012?2:4,true));
       //jetIDFilter.set_predicate((bind(PFJetID2015, _1)) && bind(PileupJetID, _1,is2012?2:3,true));
       jetIDFilter.set_predicate((bind(PFJetID2016v2, _1)) && bind(PileupJetID, _1,is2012?2:4,false));
     }

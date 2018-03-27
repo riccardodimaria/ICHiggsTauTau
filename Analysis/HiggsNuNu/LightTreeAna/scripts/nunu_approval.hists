@@ -5,11 +5,11 @@ jet1_eta(47,-4.7,4.7)	;#eta^{j1};Events
 jet2_eta(47,-4.7,4.7)	;#eta^{j2};Events
 metnomuons(35,250.,950.)	;E_{T,no-#mu}^{miss} [GeV];Events
 met(35,250.,950.)	;MET [GeV];Events
-dijet_M(40,1300.,5300.)	;M_{jj} [GeV];Events
+dijet_M(40,1300.,5300.)	;m_{jj} [GeV];Events
 dijet_dphi(30,0.,1.5)	;#Delta#phi_{jj};Events
-dijet_deta(20,4.,8.)	;#Delta#eta_{jj};Events
+dijet_deta(15,4.,6.5)	;#Delta#eta_{jj};Events
 dijet_sumeta(30,-5,5)	;#eta_{j1}+#eta_{j2};Events
 fourjetsmetnomu_mindphi(20,0.5,3.1416)	;#Delta#phi(E_{T,no-#mu}^{miss},j);Events
 central_tag_eta(28,-4.,4.)	;Central tag jet #eta;Events
 forward_tag_eta(25,-5.,5.)	;Forward tag jet #eta;Events
-fourjetsmetnomu_mindphi:dijet_M(24,800.,2000.,20,1.,3.)	;M_{jj} [GeV];#Delta#phi(E_{T}^{miss},j);Events
+fourjetsmetnomu_mindphi:dijet_M(24,800.,2000.,20,1.,3.)	;m_{jj} [GeV];#Delta#phi(E_{T}^{miss},j);Events

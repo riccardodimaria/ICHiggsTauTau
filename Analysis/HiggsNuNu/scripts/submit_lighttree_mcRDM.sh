@@ -7,7 +7,7 @@ PRODUCTION=170201
 PRODUSER=rdimaria
 JPTCUTVAL=40
 
-DATE=180209_PUid
+DATE=180209_PUid_medium
 #HACK
 #turnoffpuid=false
 
