@@ -67,6 +67,9 @@ namespace ic {
 
     double v_nlo_Reweight_;
     double ewk_v_nlo_Reweight_;
+    double prefiring_Reweight_;
+    double prefiring_SingleMuon_Reweight_;
+    double prefiring_JetHT_Reweight_;
 
     double weight_eleVeto_[7];
     double weight_muVeto_[7];

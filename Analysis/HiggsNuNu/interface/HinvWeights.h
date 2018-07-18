@@ -43,6 +43,13 @@ class HinvWeights : public ModuleBase {
   CLASS_MEMBER(HinvWeights, std::string, mettrg_weight_file)
   CLASS_MEMBER(HinvWeights, std::string, mettrg_zmm_weight_file)
 
+  //L1EG pre-firing
+  CLASS_MEMBER(HinvWeights, bool, do_prefiring_reweighting)
+  CLASS_MEMBER(HinvWeights, std::string, prefiring_etaPt_file)
+  TFile *prefiring_etaPt_;
+  TH2F *hist_prefiring_etaPt_SingleMuon;
+  TH2F *hist_prefiring_etaPt_JetHT;
+
   // For v_nlo_Reweighting (kfactors.root file in input/scalefactors from MIT group)
   CLASS_MEMBER(HinvWeights, std::string, kfactors_wjets_file)
   CLASS_MEMBER(HinvWeights, std::string, kfactors_zjets_file)

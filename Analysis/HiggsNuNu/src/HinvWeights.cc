@@ -74,6 +74,7 @@ namespace ic {//namespace
     do_dy_reweighting_      = false;
     do_z_reweighting_       = false;
     do_ewk_dy_reweighting_  = false;
+    do_prefiring_reweighting_ = false;
     do_lumixs_weights_      = false;
     save_lumixs_weights_    = true;
     input_params_ = "";
@@ -91,6 +92,8 @@ namespace ic {//namespace
 
     kFactor_ZToNuNu_pT_Mjj_file_="input/nlo_factors/kFactor_ZToNuNu_pT_Mjj.root";
     kFactor_WToLNu_pT_Mjj_file_ ="input/nlo_factors/kFactor_WToLNu_pT_Mjj.root";
+
+    prefiring_etaPt_file_="input/trig_factors/l1v3.root";
   }
 
   HinvWeights::~HinvWeights() {
@@ -245,6 +248,16 @@ namespace ic {//namespace
         std::cout << " -- Applying reweighting of DY events to NLO from MIT (Raffaele)." << std::endl;
         hist_kFactors_ewk_Z = (TH2F*)kFactor_ZToNuNu_pT_Mjj_->Get("TH2F_kFactor");
       }
+    }
+
+    if (do_prefiring_reweighting_) {
+      prefiring_etaPt_ = TFile::Open(prefiring_etaPt_file_.c_str());
+
+      if (!prefiring_etaPt_) return 1;
+
+      std::cout << " -- Applying reweighting signal events (VBF and ggH) to account for pre-firing." << std::endl;
+      hist_prefiring_etaPt_SingleMuon = (TH2F*)prefiring_etaPt_->Get("h_SingleMuon_spike_finor_pteta");
+      hist_prefiring_etaPt_JetHT      = (TH2F*)prefiring_etaPt_->Get("h_JetHT_spike_finor_pteta");
     }
 
     if (save_weights_ && do_trg_weights_){
@@ -1302,13 +1315,89 @@ namespace ic {//namespace
       }
 
       if (do_ewk_w_reweighting_) {
-        ewk_v_nlo_Reweight = hist_kFactors_ewk_W->GetBinContent( hist_kFactors_ewk_W->FindBin(v_pt), hist_kFactors_ewk_W->FindBin(mjj) );
+//         ewk_v_nlo_Reweight = hist_kFactors_ewk_W->GetBinContent( hist_kFactors_ewk_W->FindBin(v_pt), hist_kFactors_ewk_W->FindBin(mjj) ); WRONG!
+        ewk_v_nlo_Reweight = hist_kFactors_ewk_W->GetBinContent( hist_kFactors_ewk_W->FindBin(v_pt,mjj) );
       } else if (do_ewk_dy_reweighting_) {
-        ewk_v_nlo_Reweight = hist_kFactors_ewk_Z->GetBinContent( hist_kFactors_ewk_Z->FindBin(v_pt), hist_kFactors_ewk_Z->FindBin(mjj) );
+//         ewk_v_nlo_Reweight = hist_kFactors_ewk_Z->GetBinContent( hist_kFactors_ewk_Z->FindBin(v_pt), hist_kFactors_ewk_Z->FindBin(mjj) ); WRONG!
+        ewk_v_nlo_Reweight = hist_kFactors_ewk_Z->GetBinContent( hist_kFactors_ewk_Z->FindBin(v_pt,mjj) );
       }
 
       eventInfo->set_weight("!ewk_v_nlo_Reweighting", ewk_v_nlo_Reweight);
 
+    }
+
+    if (do_prefiring_reweighting_) { // For prefiring_Reweighting (l1.root file in input/trig_factors from MIT group)
+      double prefiring_Reweight            = 1.0;
+      double prefiring_SingleMuon_Reweight = 1.0;
+      double prefiring_JetHT_Reweight      = 1.0;
+      double dijet_jet1_eta = -50.;
+      double dijet_jet2_eta = -50.;
+      double dijet_jet1_pt  = -50.;
+      double dijet_jet2_pt  = -50.;
+      double jet1_SingleMuon_weight = 0.;
+      double jet1_JetHT_weight      = 0.;
+      double jet1_weight            = 0.;
+      double jet2_SingleMuon_weight = 0.;
+      double jet2_JetHT_weight      = 0.;
+      double jet2_weight            = 0.;
+
+      std::vector<CompositeCandidate *> const& dijet_vec = event->GetPtrVec<CompositeCandidate>("jjLeadingCandidates");
+      if (dijet_vec.size() > 0) {//if dijets
+        CompositeCandidate const* dijet = dijet_vec.at(0);
+        Candidate const* jet1 = dijet->GetCandidate("jet1");
+        Candidate const* jet2 = dijet->GetCandidate("jet2");
+        dijet_jet1_eta = fabs(jet1->eta());
+        dijet_jet2_eta = fabs(jet2->eta());
+        dijet_jet1_pt  = jet1->pt();
+        dijet_jet2_pt  = jet2->pt();
+      }
+
+      if ((dijet_jet1_eta>2.25 && dijet_jet1_eta<3. && dijet_jet1_pt>40.)||
+          (dijet_jet2_eta>2.25 && dijet_jet2_eta<3. && dijet_jet2_pt>40.)) {
+        if ( dijet_jet1_pt<0. || dijet_jet2_pt<0. ) {
+          std::cout << " Warning: SOMETHING IS GOING WRONG! " << std::endl;
+          std::cout << " -- Jet1 pT: " << dijet_jet1_pt << std::endl;
+          std::cout << " -- Jet2 pT: " << dijet_jet2_pt << std::endl;
+        }
+        if (dijet_jet1_pt>600) dijet_jet1_pt = 599.0;
+        if (dijet_jet2_pt>600) dijet_jet2_pt = 599.0;
+
+        if (dijet_jet1_eta>2.25 && dijet_jet1_eta<3. && dijet_jet1_pt>40.) {
+          if (dijet_jet1_pt<=300) {
+            jet1_SingleMuon_weight = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
+            jet1_JetHT_weight      = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
+            jet1_weight            = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
+          } else {
+            jet1_SingleMuon_weight = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
+            if (jet1_SingleMuon_weight<0.001) {
+              jet1_SingleMuon_weight = 1.;
+            }
+            jet1_JetHT_weight      = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
+            jet1_weight            = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
+          }
+        }
+
+        if (dijet_jet2_eta>2.25 && dijet_jet2_eta<3. && dijet_jet2_pt>40.) {
+          if (dijet_jet2_pt<=300) {
+            jet2_SingleMuon_weight = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
+            jet2_JetHT_weight      = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
+            jet2_weight            = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
+          } else {
+            jet2_SingleMuon_weight = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
+            if (jet2_SingleMuon_weight<0.001) {
+              jet2_SingleMuon_weight = 1.;
+            }
+            jet2_JetHT_weight      = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
+            jet2_weight            = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
+          }
+        }
+        prefiring_SingleMuon_Reweight = (1.-jet1_SingleMuon_weight)*(1.-jet2_SingleMuon_weight);
+        prefiring_JetHT_Reweight      = (1.-jet1_JetHT_weight)*(1.-jet2_JetHT_weight);
+        prefiring_Reweight            = (1.-jet1_weight)*(1.-jet2_weight);
+      }
+      eventInfo->set_weight("!prefiring_SingleMuon_Reweighting", prefiring_SingleMuon_Reweight);
+      eventInfo->set_weight("!prefiring_JetHT_Reweighting", prefiring_JetHT_Reweight);
+      eventInfo->set_weight("!prefiring_Reweighting", prefiring_Reweight); 
     }
 
 

@@ -101,6 +101,9 @@ namespace ic {
     puweight_down_scale_=1;
     v_nlo_Reweight_=1;
     ewk_v_nlo_Reweight_=1;
+    prefiring_Reweight_=1;
+    prefiring_SingleMuon_Reweight_=1;
+    prefiring_JetHT_Reweight_=1;
     weight_pileup_=1;
     weight_xsection_=1;
     for (unsigned err(0); err<3;++err){
@@ -448,6 +451,9 @@ namespace ic {
     outputTree_->Branch("puweight_down_scale",&puweight_down_scale_);
     outputTree_->Branch("v_nlo_Reweight",&v_nlo_Reweight_);
     outputTree_->Branch("ewk_v_nlo_Reweight",&ewk_v_nlo_Reweight_);
+    outputTree_->Branch("prefiring_Reweight",&prefiring_Reweight_);
+    outputTree_->Branch("prefiring_SingleMuon_Reweight",&prefiring_SingleMuon_Reweight_);
+    outputTree_->Branch("prefiring_JetHT_Reweight",&prefiring_JetHT_Reweight_);
     outputTree_->Branch("weight_pileup",&weight_pileup_);
     outputTree_->Branch("weight_xsection",&weight_xsection_);
     outputTree_->Branch("weight_eletrigEff",&weight_eletrigEff_[0]);
@@ -931,6 +937,9 @@ namespace ic {
     if(!is_data_){
       v_nlo_Reweight_= eventInfo->weight_defined("v_nlo_Reweighting")?eventInfo->weight("v_nlo_Reweighting"):1;
       ewk_v_nlo_Reweight_= eventInfo->weight_defined("ewk_v_nlo_Reweighting")?eventInfo->weight("ewk_v_nlo_Reweighting"):1;
+      prefiring_Reweight_= eventInfo->weight_defined("prefiring_Reweighting")?eventInfo->weight("prefiring_Reweighting"):1;
+      prefiring_SingleMuon_Reweight_= eventInfo->weight_defined("prefiring_SingleMuon_Reweighting")?eventInfo->weight("prefiring_SingleMuon_Reweighting"):1;
+      prefiring_JetHT_Reweight_= eventInfo->weight_defined("prefiring_JetHT_Reweighting")?eventInfo->weight("prefiring_JetHT_Reweighting"):1;
       weight_pileup_=eventInfo->weight("pileup");
       weight_xsection_=eventInfo->weight("lumixs");
       weight_lepveto_= eventInfo->weight("idisoVeto");
