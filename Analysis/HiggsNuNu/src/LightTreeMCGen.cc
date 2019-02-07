@@ -15,8 +15,8 @@ namespace ic {
 
     //set vectors, do not reset later!!!
     //Used for setting branch addresses...
-    nSave_ = 15;
-    nJetsSave_ = 4;
+    nSave_ = 30;
+    nJetsSave_ = 10;
 
     //initialise arrays fixed size
     pdgid_ = new int[nSave_];
@@ -174,7 +174,7 @@ namespace ic {
 	else {
 	  std::cout << " -- Warning, file " << __FILE__ << " line " << __LINE__ << " found more than " << nSave_ << " particles passing selection. Increase nSave_ ?" << std::endl;
 	}
-      }//for MC
+      }//for MC status 3
     }//Loop over gen particles
 
 
