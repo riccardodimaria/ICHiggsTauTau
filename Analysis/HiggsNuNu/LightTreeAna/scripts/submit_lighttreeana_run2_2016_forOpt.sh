@@ -2,7 +2,7 @@
 DOCERN=0
 DOSUBMIT=1
 
-DATE=170721_200_Opt
+DATE=171005_DetajjTrig_Opt
 
 ## Try and take the JOBWRAPPER and JOBSUBMIT commands
 ## from the environment if set, otherwise use these defaults
@@ -23,8 +23,7 @@ export JOBSUBMIT=$JOBSCRIPT" "$JOBQUEUE
 echo "Using job-wrapper: " $JOBWRAPPER
 echo "Using job-submission: " $JOBSUBMIT
 
-#CONFIG=scripts/DefaultRun2Config_forOpt.cfg
-CONFIG=scripts/DefaultRun2Config_forOpt_200.cfg
+CONFIG=scripts/DefaultRun2Config_forOpt.cfg
 
 QUEUEDIR=short #medium long
 

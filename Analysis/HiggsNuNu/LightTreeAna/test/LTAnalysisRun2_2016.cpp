@@ -43,49 +43,153 @@ double deltaRmin(double eta1,double phi1,double eta2,double phi2,double eta3,dou
   return std::min(deltaR(eta1,phi1,eta3,phi3),deltaR(eta2,phi2,eta3,phi3));
 };
 
-double getPostFitSF(std::string channel, std::string process){
+double getPostFitSF(std::string channel, std::string process, bool do_pre_fit, bool do_CRonly_fit, bool do_CRsSR_bkgonly_fit){
 
-  if (process=="error") return -1; // to be removed after test
-  else return 1; // to be removed after test
-
-  if (channel=="enu"){
-    if (process=="wewk") return 7.824/7.31107;
-    else if (process=="wqcd") return 16.32675/15.2317;
-    else if (process=="top") return 1.42998/1.43447;
-    else if (process=="VV") return 0.37785/0.375499;
-    else if (process=="QCD") return 1.;
-    else if (process=="error") return 2.82507/26.0124;
-  } else if (channel=="munu"){
-    if (process=="wewk") return 27.464/26.2531;
-    else if (process=="wqcd") return 52.87799/50.5378;
-    else if (process=="top") return 6.8237/6.82765;
-    else if (process=="VV") return 0.79000/0.775874;
-    else if (process=="QCD") return 4.5360/5.58472;
-    else if (process=="error") return 8.6861979/92.4918;
-  }else if (channel=="taunu"){
-    if (process=="wewk") return 5.23699/5.09101;
-    else if (process=="wqcd") return 11.4885/11.1967;
-    else if (process=="top") return 7.13003/7.10643;
-    else if (process=="VV") return 1.;
-    else if (process=="QCD") return 0.4229/0.519936;
-    else if (process=="error") return 3.210465/25.063774;
-  } else if (channel=="mumu"){
-    if (process=="zewk") return 2.10208/1.94073;
-    else if (process=="zqcd") return 3.7217/3.37843;
-    else if (process=="top") return 0.218995/0.219786;
-    else if (process=="VV") return 0.018013/0.0173571;
-    else if (process=="QCD") return 1.;
-    else if (process=="error") return 1.3153597/6.060841;
-  } else if (channel=="nunu"){
-    if (process=="wewk") return (5.53635+4.37434+5.617556)/(5.20467+4.17524+5.41536);
-    else if (process=="wqcd") return (9.504317+13.400+12.8982)/(8.81025+12.836+12.3952);
-    else if (process=="zewk") return 21.9927864/20.3972;
-    else if (process=="zqcd") return 40.42113/36.7616;
-    else if (process=="top") return 2.2525/2.25912;
-    else if (process=="VV") return 0.6799356/0.680839;
-    else if (process=="QCD") return 3.08484/3.80019;
-    else if (process=="error") return 27.1030/119.76226;
+  if(do_pre_fit){
+    if (process=="error") return -1;
+    else return 1;
+  } else if(do_CRonly_fit){
+    if (channel=="ee"){
+      if      (process=="welewk")   return 1.;
+      else if (process=="wmuewk")   return 1.;
+      else if (process=="wtauewk")  return 1.;
+      else if (process=="welqcd")   return 0.818/0.790;
+      else if (process=="wmuqcd")   return 1.;
+      else if (process=="wtauqcd")  return 1.;
+      else if (process=="zeeqcd")   return 64.752/68.280;
+      else if (process=="zeeewk")   return 25.004/25.060;
+      else if (process=="qcd")      return 1.;
+      else if (process=="vv")       return 0.944/0.910;
+      else if (process=="top")      return 3.722/3.523;
+      else if (process=="error")    return 6.30273/95.24;
+    } else if (channel=="enu"){
+      if      (process=="welewk")   return 259.068/256.900;
+      else if (process=="wmuewk")   return 1.;
+      else if (process=="wtauewk")  return 0.676/0.673;
+      else if (process=="welqcd")   return 531.129/525.600;
+      else if (process=="wmuqcd")   return 0.094/0.093;
+      else if (process=="wtauqcd")  return 1.902/1.875;
+      else if (process=="zllqcd")   return 4.964/4.942;
+      else if (process=="zllewk")   return 2.428/2.408;
+      else if (process=="qcd")      return 2.915/2.871;
+      else if (process=="vv")       return 16.038/15.570;
+      else if (process=="top")      return 83.029/80.120;
+      else if (process=="error")    return 23.528/902.243;
+    } else if (channel=="mumu"){
+      if      (process=="welewk")   return 1.;
+      else if (process=="wmuewk")   return 0.143/0.151;
+      else if (process=="wtauewk")  return 1.;
+      else if (process=="welqcd")   return 1.;
+      else if (process=="wmuqcd")   return 0.204/0.217;
+      else if (process=="wtauqcd")  return 1.;
+      else if (process=="zmumuqcd") return 90.031/101.500;
+      else if (process=="zmumuewk") return 32.669/34.930;
+      else if (process=="qcd")      return 1.;
+      else if (process=="vv")       return 2.622/2.756;
+      else if (process=="top")      return 5.307/5.479;
+      else if (process=="error")    return 7.91127/130.976;
+    } else if (channel=="munu"){
+      if      (process=="welewk")   return 1.;
+      else if (process=="wmuewk")   return 415.708/421.700;
+      else if (process=="wtauewk")  return 1.;
+      else if (process=="welqcd")   return 1.;
+      else if (process=="wmuqcd")   return 890.997/904.400;
+      else if (process=="wtauqcd")  return 1.;
+      else if (process=="zllqcd")   return 26.800/27.250;
+      else if (process=="zllewk")   return 5.938/6.025;
+      else if (process=="qcd")      return 25.617/25.410;
+      else if (process=="vv")       return 23.520/23.670;
+      else if (process=="top")      return 126.599/125.200;
+      else if (process=="error")    return 33.6003/1515.179;
+    } else if (channel=="nunu"){
+      if      (process=="welewk")   return 46.315/46.630;
+      else if (process=="wmuewk")   return 40.167/40.500;
+      else if (process=="wtauewk")  return 58.442/58.830;
+      else if (process=="welqcd")   return 132.393/133.300;
+      else if (process=="wmuqcd")   return 213.933/215.500;
+      else if (process=="wtauqcd")  return 151.194/152.300;
+      else if (process=="zllqcd")   return 8.434/8.500;
+      else if (process=="zllewk")   return 0.695/0.697;
+      else if (process=="zvvqcd")   return 790.886/862.500;
+      else if (process=="zvvewk")   return 274.758/284.300;
+      else if (process=="qcd")      return 3.274/3.270;
+      else if (process=="vv")       return 19.863/19.420;
+      else if (process=="top")      return 43.758/42.790;
+      else if (process=="error")    return 96.877/1784.112;
+    }
+  } else if(do_CRsSR_bkgonly_fit){
+    if (channel=="ee"){
+      if      (process=="welewk")   return 1.;
+      else if (process=="wmuewk")   return 1.;
+      else if (process=="wtauewk")  return 1.;
+      else if (process=="welqcd")   return 0.827/0.790;
+      else if (process=="wmuqcd")   return 1.;
+      else if (process=="wtauqcd")  return 1.;
+      else if (process=="zeeqcd")   return 72.087/68.280;
+      else if (process=="zeeewk")   return 26.224/25.060;
+      else if (process=="qcd")      return 1.;
+      else if (process=="vv")       return 0.899/0.910;
+      else if (process=="top")      return 3.067/3.523;
+      else if (process=="error")    return 5.71772/103.104;
+    } else if (channel=="enu"){
+      if      (process=="welewk")   return 266.159/256.900;
+      else if (process=="wmuewk")   return 1.;
+      else if (process=="wtauewk")  return 0.701/0.673;
+      else if (process=="welqcd")   return 545.350/525.600;
+      else if (process=="wmuqcd")   return 0.097/0.093;
+      else if (process=="wtauqcd")  return 1.926/1.875;
+      else if (process=="zllqcd")   return 5.196/4.942;
+      else if (process=="zllewk")   return 2.492/2.408;
+      else if (process=="qcd")      return 2.992/2.871;
+      else if (process=="vv")       return 14.666/15.570;
+      else if (process=="top")      return 71.696/80.120;
+      else if (process=="error")    return 23.0554/911.275;
+    } else if (channel=="mumu"){
+      if      (process=="welewk")   return 1.;
+      else if (process=="wmuewk")   return 0.157/0.151;
+      else if (process=="wtauewk")  return 1.;
+      else if (process=="welqcd")   return 1.;
+      else if (process=="wmuqcd")   return 0.231/0.217;
+      else if (process=="wtauqcd")  return 1.;
+      else if (process=="zmumuqcd") return 100.533/101.500;
+      else if (process=="zmumuewk") return 34.297/34.930;
+      else if (process=="qcd")      return 1.;
+      else if (process=="vv")       return 2.513/2.756;
+      else if (process=="top")      return 4.226/5.479;
+      else if (process=="error")    return 6.94693/141.957;
+    } else if (channel=="munu"){
+      if      (process=="welewk")   return 1.;
+      else if (process=="wmuewk")   return 427.372/421.700;
+      else if (process=="wtauewk")  return 1.;
+      else if (process=="welqcd")   return 1.;
+      else if (process=="wmuqcd")   return 915.428/904.400;
+      else if (process=="wtauqcd")  return 1.;
+      else if (process=="zllqcd")   return 28.003/27.250;
+      else if (process=="zllewk")   return 6.159/6.025;
+      else if (process=="qcd")      return 24.237/25.410;
+      else if (process=="vv")       return 21.948/23.670;
+      else if (process=="top")      return 108.745/125.200;
+      else if (process=="error")    return 32.6295/1531.89;
+    } else if (channel=="nunu"){
+      if      (process=="welewk")   return 49.779/46.630;
+      else if (process=="wmuewk")   return 48.113/40.500;
+      else if (process=="wtauewk")  return 62.748/58.830;
+      else if (process=="welqcd")   return 142.894/133.300;
+      else if (process=="wmuqcd")   return 241.497/215.500;
+      else if (process=="wtauqcd")  return 163.312/152.300;
+      else if (process=="zllqcd")   return 9.475/8.500;
+      else if (process=="zllewk")   return 0.821/0.697;
+      else if (process=="zvvqcd")   return 928.114/862.500;
+      else if (process=="zvvewk")   return 302.989/284.300;
+      else if (process=="qcd")      return 3.375/3.270;
+      else if (process=="vv")       return 17.868/19.420;
+      else if (process=="top")      return 39.274/42.790;
+      else if (process=="error")    return 41.6282/2010.26;
+    }
   }
+
+
+
 
   return 1;
 };
@@ -133,6 +237,13 @@ int main(int argc, char* argv[]){
   bool do_lep_mt_cut;
   bool do_MIT_UCSD_sync;
   bool do_new_muVeto;
+  bool add_preliminary;
+  bool add_underflows;
+  bool add_overflows;
+  bool do_ratio_plot_SR;
+  bool do_pre_fit;
+  bool do_CRonly_fit;
+  bool do_CRsSR_bkgonly_fit;
 
   std::string jetmetdphicut;
   std::string metsigcut;
@@ -192,6 +303,13 @@ int main(int argc, char* argv[]){
     ("do_lep_mt_cut",            po::value<bool>(&do_lep_mt_cut)->default_value(false))
     ("do_MIT_UCSD_sync",         po::value<bool>(&do_MIT_UCSD_sync)->default_value(false))
     ("do_new_muVeto",            po::value<bool>(&do_new_muVeto)->default_value(false))
+    ("add_preliminary",          po::value<bool>(&add_preliminary)->default_value(true))
+    ("add_underflows",           po::value<bool>(&add_underflows)->default_value(true))
+    ("add_overflows",            po::value<bool>(&add_overflows)->default_value(true))
+    ("do_ratio_plot_SR",         po::value<bool>(&do_ratio_plot_SR)->default_value(true))
+    ("do_pre_fit",               po::value<bool>(&do_pre_fit)->default_value(true))
+    ("do_CRonly_fit",            po::value<bool>(&do_CRonly_fit)->default_value(false))
+    ("do_CRsSR_bkgonly_fit",     po::value<bool>(&do_CRsSR_bkgonly_fit)->default_value(false))
     ;
 
   po::store(po::command_line_parser(argc, argv).options(config).allow_unregistered().run(), vm);
@@ -1035,7 +1153,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement qcdwmunuele;
   qcdwmunuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"wqcd"))
+    .set_scale(getPostFitSF(channel,"wmuqcd",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#E19D07"))
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1045,7 +1163,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement ewkwmunuele;
   ewkwmunuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"wewk"))
+    .set_scale(getPostFitSF(channel,"wmuewk",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(kAzure+2)
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1065,7 +1183,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement qcdwenuele;
   qcdwenuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"wqcd"))
+    .set_scale(getPostFitSF(channel,"welqcd",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#FAAF08"))
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1075,7 +1193,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement ewkwenuele;
   ewkwenuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"wewk"))
+    .set_scale(getPostFitSF(channel,"welewk",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(kAzure+1)
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1095,7 +1213,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement qcdwtaunuele;
   qcdwtaunuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"wqcd"))
+    .set_scale(getPostFitSF(channel,"wtauqcd",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#C88C06"))
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1105,7 +1223,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement ewkwtaunuele;
   ewkwtaunuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"wewk"))
+    .set_scale(getPostFitSF(channel,"wtauewk",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(kAzure+3)
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1126,7 +1244,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement qcdzmumuele;
   qcdzmumuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"zqcd"))
+    .set_scale(getPostFitSF(channel,"zmumuqcd",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#9A9EAB"))
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1136,7 +1254,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement ewkzmumuele;
   ewkzmumuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"zewk"))
+    .set_scale(getPostFitSF(channel,"zmumuewk",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#91ABC4"))
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1156,7 +1274,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement qcdzeeele;
   qcdzeeele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"zqcd"))
+    .set_scale(getPostFitSF(channel,"zeeqcd",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#9A9EAB"))
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1166,7 +1284,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement ewkzeeele;
   ewkzeeele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"zewk"))
+    .set_scale(getPostFitSF(channel,"zeeewk",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#91ABC4"))
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1187,7 +1305,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement qcdzllele;
   qcdzllele.set_is_data(false)
-  .set_scale(1)
+  .set_scale(getPostFitSF(channel,"zllqcd",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
   .set_color(TColor::GetColor("#9A9EAB"))
   .set_in_stack(true)
   .set_is_inratioden(true)
@@ -1197,7 +1315,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement ewkzllele;
   ewkzllele.set_is_data(false)
-  .set_scale(1)
+  .set_scale(getPostFitSF(channel,"zllewk",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
   .set_color(TColor::GetColor("#91ABC4"))
   .set_in_stack(true)
   .set_is_inratioden(true)
@@ -1218,7 +1336,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement qcdznunuele;
   qcdznunuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"zqcd"))
+    .set_scale(getPostFitSF(channel,"zvvqcd",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#4D975D"))
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1228,7 +1346,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement ewkznunuele;
   ewkznunuele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"zewk"))
+    .set_scale(getPostFitSF(channel,"zvvewk",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(kCyan+1)
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1238,16 +1356,16 @@ int main(int argc, char* argv[]){
 
   LTPlotElement vvele;
   vvele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"VV"))
+    .set_scale(getPostFitSF(channel,"vv",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#4897D8"))
     .set_in_stack(true)
     .set_is_inratioden(true)
-    .set_legname("VV")
+    .set_legname("Dibosons")
     .set_sample("vv");
 
   LTPlotElement topele;
   topele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"top"))
+    .set_scale(getPostFitSF(channel,"top",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     .set_color(TColor::GetColor("#CF3721"))
     .set_in_stack(true)
     .set_is_inratioden(true)
@@ -1256,7 +1374,7 @@ int main(int argc, char* argv[]){
 
   LTPlotElement qcdele;
   qcdele.set_is_data(false)
-    .set_scale(getPostFitSF(channel,"QCD"))
+    .set_scale(getPostFitSF(channel,"qcd",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit))
     //AMM uncomment for QCD in signal region plots mindphi.
     //.set_scale(3.8/7.9)
     //AMM uncomment for QCD in signal region plots all but mindphi.
@@ -1292,7 +1410,8 @@ int main(int argc, char* argv[]){
     .set_color(kBlack)
     .set_line_style(1)
     .set_in_stack(false)
-    .set_legname("qqH_{inv} m_{h} = 125 GeV")
+//    .set_legname("qqH_{inv} m_{h} = 125 GeV")
+    .set_legname("qqH(125) #rightarrow inv.")
     .set_sample("qqH125");
 
   LTPlotElement ggHele;
@@ -1301,7 +1420,8 @@ int main(int argc, char* argv[]){
     .set_color(kBlack)
     .set_line_style(2)
     .set_in_stack(false)
-    .set_legname("ggH_{inv} m_{h} = 125 GeV")
+//    .set_legname("ggH_{inv} m_{h} = 125 GeV")
+    .set_legname("ggH(125) #rightarrow inv.")
     .set_sample("ggH125");
 
   if(!((channel=="nunu"||channel=="qcdD")&&runblind))elementvec.push_back(dataele);
@@ -1361,13 +1481,14 @@ int main(int argc, char* argv[]){
 
   HistPlotter plotter("plotter");
   plotter.set_dirname("ControlPlots")
-    .set_add_underflows(true)
-    .set_add_overflows(true)
+    .set_add_underflows(add_underflows)
+    .set_add_overflows(add_overflows)
+    .set_add_preliminary(add_preliminary)
     .set_elements(elementvec)
     //.set_histTitles(histTitle)
     .set_shapes(shapevec)
-    .set_toterror(getPostFitSF(channel,"error"));
-  if(!dataonly) plotter.set_do_ratio(true);
+    .set_toterror(getPostFitSF(channel,"error",do_pre_fit,do_CRonly_fit,do_CRsSR_bkgonly_fit));
+  if(!dataonly) plotter.set_do_ratio(do_ratio_plot_SR);
   else plotter.set_do_ratio(false);
   if(channel=="nunu"&&runblind)plotter.set_do_ratio(false);
 

@@ -101,6 +101,9 @@ namespace ic {
     puweight_down_scale_=1;
     v_nlo_Reweight_=1;
     ewk_v_nlo_Reweight_=1;
+    prefiring_Reweight_=1;
+    prefiring_SingleMuon_Reweight_=1;
+    prefiring_JetHT_Reweight_=1;
     weight_pileup_=1;
     weight_xsection_=1;
     for (unsigned err(0); err<3;++err){
@@ -213,6 +216,13 @@ namespace ic {
     ht30_ = 0;
     mht_ = 0;
     sqrt_ht_ = 0;
+
+    ht_eta3d0_   = 0;
+    ht30_eta3d0_ = 0;
+    mht30_eta3d0_  = 0;
+    ht_eta2d4_   = 0;
+    ht30_eta2d4_ = 0;
+    mht30_eta2d4_  = 0;
 
     unclustered_et_ = 0;
     jetunclet_mindphi_ = 0;
@@ -441,6 +451,9 @@ namespace ic {
     outputTree_->Branch("puweight_down_scale",&puweight_down_scale_);
     outputTree_->Branch("v_nlo_Reweight",&v_nlo_Reweight_);
     outputTree_->Branch("ewk_v_nlo_Reweight",&ewk_v_nlo_Reweight_);
+    outputTree_->Branch("prefiring_Reweight",&prefiring_Reweight_);
+    outputTree_->Branch("prefiring_SingleMuon_Reweight",&prefiring_SingleMuon_Reweight_);
+    outputTree_->Branch("prefiring_JetHT_Reweight",&prefiring_JetHT_Reweight_);
     outputTree_->Branch("weight_pileup",&weight_pileup_);
     outputTree_->Branch("weight_xsection",&weight_xsection_);
     outputTree_->Branch("weight_eletrigEff",&weight_eletrigEff_[0]);
@@ -566,6 +579,13 @@ namespace ic {
     outputTree_->Branch("ht30",&ht30_);
     outputTree_->Branch("mht",&mht_);
     outputTree_->Branch("sqrt_ht",&sqrt_ht_);
+
+    outputTree_->Branch("ht_eta3d0",&ht_eta3d0_);
+    outputTree_->Branch("ht30_eta3d0",&ht30_eta3d0_);
+    outputTree_->Branch("mht30_eta3d0",&mht30_eta3d0_);
+    outputTree_->Branch("ht_eta2d4",&ht_eta2d4_);
+    outputTree_->Branch("ht30_eta2d4",&ht30_eta2d4_);
+    outputTree_->Branch("mht30_eta2d4",&mht30_eta2d4_);
 
     outputTree_->Branch("unclustered_et",&unclustered_et_);
     outputTree_->Branch("jetunclet_mindphi",&jetunclet_mindphi_);
@@ -796,11 +816,13 @@ namespace ic {
     lumi_= eventInfo->lumi_block();
     event_= eventInfo->event();
     n_vertices_=eventInfo->good_vertices();
-    std::vector<PileupInfo *> const& puInfo = event->GetPtrVec<PileupInfo>("pileupInfo");
     n_true_int_ = -1;
-    for (unsigned i = 0; i < puInfo.size(); ++i) {
-      if (puInfo[i]->bunch_crossing() == 0) {
-        n_true_int_ = puInfo[i]->true_num_interactions();
+    if (!is_data_) {
+      std::vector<PileupInfo *> const& puInfo = event->GetPtrVec<PileupInfo>("pileupInfo");
+      for (unsigned i = 0; i < puInfo.size(); ++i) {
+        if (puInfo[i]->bunch_crossing() == 0) {
+          n_true_int_ = puInfo[i]->true_num_interactions();
+        }
       }
     }
 
@@ -915,6 +937,9 @@ namespace ic {
     if(!is_data_){
       v_nlo_Reweight_= eventInfo->weight_defined("v_nlo_Reweighting")?eventInfo->weight("v_nlo_Reweighting"):1;
       ewk_v_nlo_Reweight_= eventInfo->weight_defined("ewk_v_nlo_Reweighting")?eventInfo->weight("ewk_v_nlo_Reweighting"):1;
+      prefiring_Reweight_= eventInfo->weight_defined("prefiring_Reweighting")?eventInfo->weight("prefiring_Reweighting"):1;
+      prefiring_SingleMuon_Reweight_= eventInfo->weight_defined("prefiring_SingleMuon_Reweighting")?eventInfo->weight("prefiring_SingleMuon_Reweighting"):1;
+      prefiring_JetHT_Reweight_= eventInfo->weight_defined("prefiring_JetHT_Reweighting")?eventInfo->weight("prefiring_JetHT_Reweighting"):1;
       weight_pileup_=eventInfo->weight("pileup");
       weight_xsection_=eventInfo->weight("lumixs");
       weight_lepveto_= eventInfo->weight("idisoVeto");
@@ -1251,9 +1276,9 @@ namespace ic {
           vbf_digenjet_m_ = (genvec[genjet1]->vector()+genvec[genjet2]->vector()).M();
           countGenjets_++;
         } else {
-          std::cout << " Warning, event " << event_ << " genjet pair for VBF jets not found! Taking leading pair." << std::endl;
+//           std::cout << " Warning, event " << event_ << " genjet pair for VBF jets not found! Taking leading pair." << std::endl;
           if (genvec.size()>1) vbf_digenjet_m_ = (genvec[0]->vector()+genvec[1]->vector()).M();
-          std::cout << " Check mass: " << vbf_diquark_m_ << " " << vbf_digenjet_m_ << std::endl;
+//           std::cout << " Check mass: " << vbf_diquark_m_ << " " << vbf_digenjet_m_ << std::endl;
         }
       } else {
         if (debug_) std::cout << " Problem event " << event_ << " found " << Quarks.size() << " quarks" << std::endl;
@@ -1386,6 +1411,8 @@ namespace ic {
     if (!is_data_) getGenRecoMatches<PFJet,GenJet>(jets,genvec,recotogenmatch);
 
     ROOT::Math::PtEtaPhiEVector mhtVec(0,0,0,0);
+    ROOT::Math::PtEtaPhiEVector mhtVec30_eta3d0(0,0,0,0);
+    ROOT::Math::PtEtaPhiEVector mhtVec30_eta2d4(0,0,0,0);
     threejetsmetnomu_mindphi_=jetmetnomu_mindphi_;
     threejetsnotaumetnomu_mindphi_=1000;
     threejetsmetnoel_mindphi_=jetmetnoel_mindphi_;
@@ -1467,6 +1494,13 @@ namespace ic {
       ht_+=jetvec.Et();
       if(jets[i]->pt()>30)	ht30_+=jetvec.Et();
       mhtVec += jetvec;
+
+      if(fabs(jets[i]->eta())<3.0)	ht_eta3d0_+=jetvec.Et();
+      if(jets[i]->pt()>30 && fabs(jets[i]->eta())<3.0)	ht30_eta3d0_+=jetvec.Et();
+      if(jets[i]->pt()>30 && fabs(jets[i]->eta())<3.0)	mhtVec30_eta3d0 += jetvec;
+      if(fabs(jets[i]->eta())<2.4)	ht_eta2d4_+=jetvec.Et();
+      if(jets[i]->pt()>30 && fabs(jets[i]->eta())<2.4)	ht30_eta2d4_+=jetvec.Et();
+      if(jets[i]->pt()>30 && fabs(jets[i]->eta())<2.4)	mhtVec30_eta2d4 += jetvec;
 
       if(jets[i]->pt()>15) n_jets_15_++;
       if(jets[i]->pt()>30) n_jets_30_++;
@@ -1607,6 +1641,9 @@ namespace ic {
 
     mht_ = mhtVec.Et();
     sqrt_ht_ = sqrt(ht_);
+
+    mht30_eta3d0_ = mhtVec30_eta3d0.Et();
+    mht30_eta2d4_ = mhtVec30_eta2d4.Et();
 
     unclustered_et_ = unclVec.Et();
     metnomuunclet_dphi_ = fabs(ROOT::Math::VectorUtil::DeltaPhi(unclVec,metnomuvec));

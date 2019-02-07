@@ -20,7 +20,7 @@ class HinvWeights : public ModuleBase {
   CLASS_MEMBER(HinvWeights, ic::mc, mc)
   CLASS_MEMBER(HinvWeights, ic::era, era)
   CLASS_MEMBER(HinvWeights, bool, save_weights)
-  CLASS_MEMBER(HinvWeights, bool, save_lumixs_weights)
+  CLASS_MEMBER(HinvWeights, bool, save_lumixs_weights)  
   CLASS_MEMBER(HinvWeights, bool, do_top_reweighting)
   CLASS_MEMBER(HinvWeights, bool, do_trg_weights)
 
@@ -33,7 +33,6 @@ class HinvWeights : public ModuleBase {
   CLASS_MEMBER(HinvWeights, bool, do_dy_soup)
   CLASS_MEMBER(HinvWeights, bool, do_dy_soup_htbinned)
   CLASS_MEMBER(HinvWeights, bool, do_dy_reweighting)
-  CLASS_MEMBER(HinvWeights, bool, do_z_reweighting)
   CLASS_MEMBER(HinvWeights, bool, do_ewk_dy_reweighting)
   CLASS_MEMBER(HinvWeights, std::string, input_met)
   CLASS_MEMBER(HinvWeights, std::string, input_jet)
@@ -43,28 +42,14 @@ class HinvWeights : public ModuleBase {
   CLASS_MEMBER(HinvWeights, std::string, mettrg_weight_file)
   CLASS_MEMBER(HinvWeights, std::string, mettrg_zmm_weight_file)
 
-  //L1EG pre-firing
-  CLASS_MEMBER(HinvWeights, bool, do_prefiring_reweighting)
-  CLASS_MEMBER(HinvWeights, std::string, prefiring_etaPt_file)
-  TFile *prefiring_etaPt_;
-  TH2F *hist_prefiring_etaPt_SingleMuon;
-  TH2F *hist_prefiring_etaPt_JetHT;
-
   // For v_nlo_Reweighting (kfactors.root file in input/scalefactors from MIT group)
   CLASS_MEMBER(HinvWeights, std::string, kfactors_wjets_file)
   CLASS_MEMBER(HinvWeights, std::string, kfactors_zjets_file)
-  CLASS_MEMBER(HinvWeights, std::string, kfactors_dyjets_file)
-  CLASS_MEMBER(HinvWeights, std::string, kfactors_file)
   TFile *kfactors_wjets_;
-  TFile *kfactors_zjets_;
-  TFile *kfactors_dyjets_;
-  TFile *kfactors_;
-  TH1F *hist_kfactors_EWKcorr_W;
-  TH1F *hist_kfactors_WJets_012j_NLO;
-  TH1F *hist_kfactors_EWKcorr_Z;
-  TH1F *hist_kfactors_ZJets_012j_NLO;
+  TH1F *hist_kfactors_qcdewk_W;
   TH1F *hist_kfactors_vbf_cnc_W;
-  TH1F *hist_kfactors_vbf_cnc_DY;
+  TFile *kfactors_zjets_;
+  TH1F *hist_kfactors_qcdewk_Z;
   TH1F *hist_kfactors_vbf_cnc_Z;
 
   CLASS_MEMBER(HinvWeights, std::string, kFactor_ZToNuNu_pT_Mjj_file)
@@ -78,13 +63,7 @@ class HinvWeights : public ModuleBase {
   TFile *mettrigZmmSF_;
   std::vector<TF1*> func_mettrigSF_;
   std::vector<TF1*> func_mettrigZmmSF_;
-//   std::vector<TF1*> func_mettrigSF_[2];
-//   std::vector<TF1*> func_mettrigZmmSF_[2];
-//   std::vector<unsigned> trigMjjBins_;
-//   std::vector<double> trigDetajjBins_cc_;
-//   std::vector<double> trigDetajjBins_cf_;
-//   std::vector<double> trigDetajjBins_Zmm_cc_;
-//   std::vector<double> trigDetajjBins_Zmm_cf_;
+  std::vector<unsigned> trigMjjBins_;
 
   TH1F *tighteleweight;
   TH1F *tightmuweight;

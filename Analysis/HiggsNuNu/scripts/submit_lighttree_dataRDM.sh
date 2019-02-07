@@ -4,10 +4,10 @@ DOSUBMIT=1
 MYEXEC=LightTreeMakerFromMiniAODRDM
 PRODUCTION=170201
 PRODUSER=rdimaria
-J1PTCUTVAL=80
+J1PTCUTVAL=40
 J2PTCUTVAL=40
 
-DATE=170830
+DATE=180718_preFiring
 
 ## Try and take the JOBWRAPPER and JOBSUBMIT commands
 ## from the environment if set, otherwise use these defaults
@@ -38,11 +38,9 @@ for SYST in central
   do
   SYSTOPTIONS="--dojessyst=false --dojersyst=false" 
 
-  #JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_${DATE}
-  JOBDIRPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/jobs_lighttree_${DATE}
+  JOBDIRPREFIX=/vols/cms/rd1715/HiggsToInv/jobs_lighttree_${DATE}
   JOBDIR=$JOBDIRPREFIX/
-  #OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_${DATE}
-  OUTPUTPREFIX=/vols/cms/magnan/Hinvisible/RunIILT/output_lighttree_${DATE}
+  OUTPUTPREFIX=/vols/cms/rd1715/HiggsToInv/output_lighttree_${DATE}
   OUTPUTDIR=$OUTPUTPREFIX/
 
   if [ "$SYST" != "central" ]
@@ -93,7 +91,7 @@ for SYST in central
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_SingleElectron*`
     for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_MET*`
     #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_JetHT*`
-    #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_*`
+    #for FILELIST in `ls filelists/$PRODUCTION/$QUEUEDIR/${PRODUCTION}_DATA_MET-2016H-ReMiniAOD_ver3-v1*`
       do
       echo "Processing files in "$FILELIST
 

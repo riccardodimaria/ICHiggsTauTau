@@ -844,8 +844,10 @@ int main(int argc, char* argv[]){
     ("JetIDFilter")
     .set_input_label(jettype);
     if(!turnoffpuid){
+      //true=Tight ID. Medium ID implemented. To use Loose ID, Analysis/Utilities/src/FnPredicates.cc#L406
       jetIDFilter.set_predicate((bind(PFJetID2016v2, _1)) && bind(PileupJetID, _1,is2012?2:4,true));
       //jetIDFilter.set_predicate((bind(PFJetID2015, _1)) && bind(PileupJetID, _1,is2012?2:3,true));
+      //jetIDFilter.set_predicate((bind(PFJetID2016v2, _1)) && bind(PileupJetID, _1,is2012?2:4,false));
     }
     else{
       jetIDFilter.set_predicate(bind(PFJetID2016v2, _1));
@@ -998,10 +1000,13 @@ int main(int argc, char* argv[]){
 //     SetDoDY( mc, &xsWeights );
 //   }
 
-  if (output_name.find("JetsToLL-mg-m50-ht") != output_name.npos ||
-      output_name.find("JetsToNuNu") != output_name.npos) {
+  if (output_name.find("JetsToLL-mg-m50-ht") != output_name.npos) {
     xsWeights.set_do_dy_reweighting(true);
   }
+
+  if (output_name.find("JetsToNuNu") != output_name.npos) {
+    xsWeights.set_do_z_reweighting(true);
+    }
 
   if (output_name.find("JetsToLNu-mg-ht") != output_name.npos) {
     xsWeights.set_do_w_reweighting(true);
@@ -1021,6 +1026,19 @@ int main(int argc, char* argv[]){
   if (output_name.find("EWKW") != output_name.npos) {
     nloWeights.set_do_ewk_w_reweighting(true);
   }
+
+  HinvWeights preFiringWeights = HinvWeights("PreFiringWeights")
+  .set_era(era)
+  .set_mc(mc)
+  .set_input_params(inputparams)
+  .set_sample_name(output_name)
+  .set_fs(fs)
+  .set_do_prefiring_reweighting(true);
+
+//   if (output_name.find("mH") != output_name.npos) {
+//     preFiringWeights.set_do_prefiring_reweighting(true);
+//   }
+
 
   // ------------------------------------------------------------------------------------
   // Gen particle selection modules
@@ -1219,7 +1237,10 @@ int main(int argc, char* argv[]){
   //record the number of jets in the gap
   analysis.AddModule(&jetPairFilter);
   analysis.AddModule(&FilterCJV);
-  if (!is_data) analysis.AddModule(&nloWeights);
+  if (!is_data){
+    analysis.AddModule(&nloWeights);
+    analysis.AddModule(&preFiringWeights);
+  }
 
   //jet pair selection
   //if (printEventList) analysis.AddModule(&hinvPrintList);

@@ -67,6 +67,9 @@ namespace ic {
 
     double v_nlo_Reweight_;
     double ewk_v_nlo_Reweight_;
+    double prefiring_Reweight_;
+    double prefiring_SingleMuon_Reweight_;
+    double prefiring_JetHT_Reweight_;
 
     double weight_eleVeto_[7];
     double weight_muVeto_[7];
@@ -185,11 +188,18 @@ namespace ic {
     double met_significance_;
     double metnomu_significance_;
     double metnoel_significance_;
- 
+
     double ht_;
     double ht30_;
     double mht_;
     double sqrt_ht_;
+
+    double ht_eta3d0_;
+    double ht30_eta3d0_;
+    double mht30_eta3d0_;
+    double ht_eta2d4_;
+    double ht30_eta2d4_;
+    double mht30_eta2d4_;
 
     double unclustered_et_;
     double jetunclet_mindphi_;

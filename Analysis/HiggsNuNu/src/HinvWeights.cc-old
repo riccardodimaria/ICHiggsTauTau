@@ -27,41 +27,12 @@ namespace ic {//namespace
     do_top_reweighting_               = false;
     do_trg_weights_                   = false; //Store as part of total weight
 
-//     //binning in Mjj
-//     trigMjjBins_.push_back(0);
-//     trigMjjBins_.push_back(800);
-//     trigMjjBins_.push_back(1200);
-//     trigMjjBins_.push_back(1700);
-//     trigMjjBins_.push_back(3000);
-// 
-//     //binning in Detajj
-//     trigDetajjBins_cc_.push_back(1.0);
-//     trigDetajjBins_cc_.push_back(1.5);
-//     trigDetajjBins_cc_.push_back(2.0);
-//     trigDetajjBins_cc_.push_back(2.5);
-//     trigDetajjBins_cc_.push_back(3.0);
-//     trigDetajjBins_cc_.push_back(3.5);
-//     trigDetajjBins_cc_.push_back(4.0);
-//     trigDetajjBins_cc_.push_back(5.0);
-//     trigDetajjBins_cc_.push_back(10.0);
-// 
-//     trigDetajjBins_cf_.push_back(3.0);
-//     trigDetajjBins_cf_.push_back(3.5);
-//     trigDetajjBins_cf_.push_back(4.0);
-//     trigDetajjBins_cf_.push_back(5.0);
-//     trigDetajjBins_cf_.push_back(6.0);
-//     trigDetajjBins_cf_.push_back(10.0);
-// 
-//     trigDetajjBins_Zmm_cc_.push_back(1.0);
-//     trigDetajjBins_Zmm_cc_.push_back(2.0);
-//     trigDetajjBins_Zmm_cc_.push_back(3.0);
-//     trigDetajjBins_Zmm_cc_.push_back(4.0);
-//     trigDetajjBins_Zmm_cc_.push_back(10.0);
-// 
-//     trigDetajjBins_Zmm_cf_.push_back(3.0);
-//     trigDetajjBins_Zmm_cf_.push_back(4.0);
-//     trigDetajjBins_Zmm_cf_.push_back(5.0);
-//     trigDetajjBins_Zmm_cf_.push_back(10.0);
+    //binning in Mjj
+    trigMjjBins_.push_back(0);
+    trigMjjBins_.push_back(800);
+    trigMjjBins_.push_back(1200);
+    trigMjjBins_.push_back(1700);
+    trigMjjBins_.push_back(3000);
 
     trg_applied_in_mc_      = false;
     do_idiso_tight_weights_ = false;
@@ -72,9 +43,7 @@ namespace ic {//namespace
     do_dy_soup_             = false;
     do_dy_soup_htbinned_    = false;
     do_dy_reweighting_      = false;
-    do_z_reweighting_       = false;
     do_ewk_dy_reweighting_  = false;
-    do_prefiring_reweighting_ = false;
     do_lumixs_weights_      = false;
     save_lumixs_weights_    = true;
     input_params_ = "";
@@ -84,16 +53,12 @@ namespace ic {//namespace
     mettrg_weight_file_="";
     mettrg_zmm_weight_file_="";
 
-    // For v_nlo_Reweighting (in input/nlo_factors from gitlab)
-    kfactors_file_        = "input/nlo_factors/kfactor_24bins.root";
-    kfactors_dyjets_file_ = "input/nlo_factors/kfactor_VBF_zll.root";
-    kfactors_zjets_file_  = "input/nlo_factors/kfactor_VBF_znn.root";
-    kfactors_wjets_file_  = "input/nlo_factors/kfactor_VBF_wjet.root";
+    // For v_nlo_Reweighting (merged_kfactors_wjets.root and merged_kfactors_zjets.root files in input/nlo_factors from gitlab)
+    kfactors_zjets_file_="input/nlo_factors/merged_kfactors_zjets.root";
+    kfactors_wjets_file_="input/nlo_factors/merged_kfactors_wjets.root";
 
     kFactor_ZToNuNu_pT_Mjj_file_="input/nlo_factors/kFactor_ZToNuNu_pT_Mjj.root";
     kFactor_WToLNu_pT_Mjj_file_ ="input/nlo_factors/kFactor_WToLNu_pT_Mjj.root";
-
-    prefiring_etaPt_file_="input/trig_factors/l1v3.root";
   }
 
   HinvWeights::~HinvWeights() {
@@ -205,31 +170,20 @@ namespace ic {//namespace
       std::cout << "f3 = " << zf3_ << "\t" << "n3 = " << zn3_ << "\t" << "w3 = " << zw3_ << std::endl;
       std::cout << "f4 = " << zf4_ << "\t" << "n4 = " << zn4_ << "\t" << "w4 = " << zw4_ << std::endl;
     }
-    if (do_w_reweighting_ || do_dy_reweighting_ || do_z_reweighting_) { // For v_nlo_Reweighting (kfactors.root file in input/scalefactors from MIT group)
+    if (do_w_reweighting_ || do_dy_reweighting_) { // For v_nlo_Reweighting (kfactors.root file in input/scalefactors from MIT group)
 
-      kfactors_wjets_  = TFile::Open(kfactors_wjets_file_.c_str());
-      kfactors_zjets_  = TFile::Open(kfactors_zjets_file_.c_str());
-      kfactors_dyjets_ = TFile::Open(kfactors_dyjets_file_.c_str());
-      kfactors_        = TFile::Open(kfactors_file_.c_str());
-
+      kfactors_wjets_ = TFile::Open(kfactors_wjets_file_.c_str());
+      kfactors_zjets_ = TFile::Open(kfactors_zjets_file_.c_str());
 
       if (do_w_reweighting_) {
         std::cout << " -- Applying reweighting of W events to NLO from MIT (Raffaele)." << std::endl;
-        hist_kfactors_EWKcorr_W      = (TH1F*)kfactors_->Get("EWKcorr/W");
-        hist_kfactors_WJets_012j_NLO = (TH1F*)kfactors_->Get("WJets_012j_NLO/nominal");
-        hist_kfactors_vbf_cnc_W      = (TH1F*)kfactors_wjets_->Get("kfactors_cc/kfactor_vbf");
+        hist_kfactors_qcdewk_W = (TH1F*)kfactors_wjets_->Get("kfactor_monojet_qcd_ewk");
+        hist_kfactors_vbf_cnc_W = (TH1F*)kfactors_wjets_->Get("kfactor_vbf_cnc_modifier");
       }
       if (do_dy_reweighting_) {
         std::cout << " -- Applying reweighting of DY events to NLO from MIT (Raffaele)." << std::endl;
-        hist_kfactors_EWKcorr_Z      = (TH1F*)kfactors_->Get("EWKcorr/Z");
-        hist_kfactors_ZJets_012j_NLO = (TH1F*)kfactors_->Get("ZJets_012j_NLO/nominal");
-        hist_kfactors_vbf_cnc_DY     = (TH1F*)kfactors_dyjets_->Get("kfactors_cc/kfactor_vbf");
-      }
-      if (do_z_reweighting_) {
-        std::cout << " -- Applying reweighting of Zvv events to NLO from MIT (Raffaele)." << std::endl;
-        hist_kfactors_EWKcorr_Z      = (TH1F*)kfactors_->Get("EWKcorr/Z");
-        hist_kfactors_ZJets_012j_NLO = (TH1F*)kfactors_->Get("ZJets_012j_NLO/nominal");
-        hist_kfactors_vbf_cnc_Z      = (TH1F*)kfactors_zjets_->Get("kfactors_cc/kfactor_vbf");
+        hist_kfactors_qcdewk_Z = (TH1F*)kfactors_zjets_->Get("kfactor_monojet_qcd_ewk");
+        hist_kfactors_vbf_cnc_Z = (TH1F*)kfactors_zjets_->Get("kfactor_vbf_cnc_modifier");
       }
     }
 
@@ -250,16 +204,6 @@ namespace ic {//namespace
       }
     }
 
-    if (do_prefiring_reweighting_) {
-      prefiring_etaPt_ = TFile::Open(prefiring_etaPt_file_.c_str());
-
-      if (!prefiring_etaPt_) return 1;
-
-      std::cout << " -- Applying reweighting signal events (VBF and ggH) to account for pre-firing." << std::endl;
-      hist_prefiring_etaPt_SingleMuon = (TH2F*)prefiring_etaPt_->Get("h_SingleMuon_spike_finor_pteta");
-      hist_prefiring_etaPt_JetHT      = (TH2F*)prefiring_etaPt_->Get("h_JetHT_spike_finor_pteta");
-    }
-
     if (save_weights_ && do_trg_weights_){
       // do weights even if not applied, to fill histo with weight for comparison !
 
@@ -269,168 +213,64 @@ namespace ic {//namespace
       mettrigZmmSF_ = new TFile(mettrg_zmm_weight_file_.c_str());
       if (!mettrigZmmSF_) return 1;
       std::cout<<"Getting trigger efficiency functions"<<std::endl;
-
+      
       mettrigSF_->cd();
       TIter next(mettrigSF_->GetListOfKeys());
       TKey *key;
-      TF1 *ftmp = 0;
+      TF1 *ftmp[10];
       while ((key = (TKey*)next())) {
-        TClass *cl = gROOT->GetClass(key->GetClassName());
-        if (!cl->InheritsFrom("TF1")) continue;
-        TF1 *tmp = (TF1*)key->ReadObj();
-//         //binning in Mjj
-//         for(unsigned iVar1=0;iVar1<(trigMjjBins_.size()-1);iVar1++){
-//           std::ostringstream flabel;
-//           flabel << "fitfunc_vbf_mjj_"
-//           << trigMjjBins_[iVar1]
-//           << ".000000_"
-//           << trigMjjBins_[iVar1+1]
-//           << ".000000";
-// 
-//           std::string str1 = flabel.str();
-//           std::string str2 = tmp->GetName();
-//           if (str1==str2){
-//             ftmp[iVar1] = tmp;
-//             std::cout << " -- trigger Function label " << flabel.str() << " bin " << iVar1 << std::endl;
-//             break;
-//           }
-//         }
+	TClass *cl = gROOT->GetClass(key->GetClassName());
+	if (!cl->InheritsFrom("TF1")) continue;
+	TF1 *tmp = (TF1*)key->ReadObj();
 
-//         //binning in Detajj cc
-//         for(unsigned iVar1=0;iVar1<(trigDetajjBins_cc_.size()-1);iVar1++){
-//           std::ostringstream flabel_cc;
-//           flabel_cc << "fitfunc_recoil_cc_vs_detajj_"
-//                     << std::setprecision(1) << std::fixed << trigDetajjBins_cc_[iVar1]
-//                     << "_"
-//                     << trigDetajjBins_cc_[iVar1+1];
-// 
-//           std::string str1 = flabel_cc.str();
-//           std::string str2 = tmp->GetName();
-//           if (str1==str2){
-//             ftmp[0][iVar1] = tmp;
-//             std::cout << " -- trigger Function label " << flabel_cc.str() << " bin " << iVar1 << std::endl;
-//             break;
-//           }
-//         }
-//         //binning in Detajj cf
-//         for(unsigned iVar1=0;iVar1<(trigDetajjBins_cf_.size()-1);iVar1++){
-//           std::ostringstream flabel_cf;
-//           flabel_cf << "fitfunc_recoil_cf_vs_detajj_"
-//                     << std::setprecision(1) << std::fixed << trigDetajjBins_cf_[iVar1]
-//                     << "_"
-//                     << trigDetajjBins_cf_[iVar1+1];
-// 
-//           std::string str1 = flabel_cf.str();
-//           std::string str2 = tmp->GetName();
-//           if (str1==str2){
-//             ftmp[1][iVar1] = tmp;
-//             std::cout << " -- trigger Function label " << flabel_cf.str() << " bin " << iVar1 << std::endl;
-//             break;
-//           }
-//         }
-        std::ostringstream flabel;
-        flabel << "sigmoidFit";
-
-        std::string str1 = flabel.str();
-        std::string str2 = tmp->GetName();
-        if (str1==str2){
-          ftmp = tmp;
-          std::cout << " -- trigger Function label " << flabel.str() << std::endl;
-          break;
-        }
+	for(unsigned iVar1=0;iVar1<(trigMjjBins_.size()-1);iVar1++){
+	  std::ostringstream flabel;
+	  flabel << "fitfunc_vbf_mjj_"
+		 << trigMjjBins_[iVar1]
+		 << ".000000_"
+		 << trigMjjBins_[iVar1+1]
+		 << ".000000";
+	  
+	  std::string str1 = flabel.str();
+	  std::string str2 = tmp->GetName();
+	  if (str1==str2){
+	    ftmp[iVar1] = tmp;
+	    std::cout << " -- trigger Function label " << flabel.str() << " bin " << iVar1 << std::endl;
+	    break;
+	  }
+	}
       }
-
 
       mettrigZmmSF_->cd();
       TIter nextZmm(mettrigZmmSF_->GetListOfKeys());
-      TF1 *ftmp2 = 0;
-
+      TF1 *ftmp2[10];
+      
       while ((key = (TKey*)nextZmm())) {
-        TClass *cl = gROOT->GetClass(key->GetClassName());
-        if (!cl->InheritsFrom("TF1")) continue;
-        TF1 *tmp = (TF1*)key->ReadObj();
-//         //binning in Mjj
-//         for(unsigned iVar1=0;iVar1<(trigMjjBins_.size()-1);iVar1++){
-//           std::ostringstream flabel;
-//           flabel << "fitfunc_vbf_mjj_"
-//           << trigMjjBins_[iVar1]
-//           << ".000000_"
-//           << trigMjjBins_[iVar1+1]
-//           << ".000000";
-// 
-//           std::string str1 = flabel.str();
-//           std::string str2 = tmp->GetName();
-//           if (str1==str2){
-//             ftmp2[iVar1] = tmp;
-//             std::cout << " -- Zmm trigger Function label " << flabel.str()  << " bin " << iVar1 << std::endl;
-//             break;
-//           }
-//         }
+	TClass *cl = gROOT->GetClass(key->GetClassName());
+	if (!cl->InheritsFrom("TF1")) continue;
+	TF1 *tmp = (TF1*)key->ReadObj();
 
-//         //binning in Detajj cc
-//         for( unsigned iVar1=0; iVar1<(trigDetajjBins_Zmm_cc_.size()-1); iVar1++ ){
-//           std::ostringstream flabel_cc;
-//           flabel_cc << "fitfunc_recoil_cc_vs_detajj_"
-//                     << std::setprecision(1) << std::fixed << trigDetajjBins_Zmm_cc_[iVar1]
-//                     << "_"
-//                     << trigDetajjBins_Zmm_cc_[iVar1+1];
-// 
-//           std::string str1 = flabel_cc.str();
-//           std::string str2 = tmp->GetName();
-//           if (str1==str2){
-//             ftmp2[0][iVar1] = tmp;
-//             std::cout << " -- Zmm trigger Function label " << flabel_cc.str() << " bin " << iVar1 << std::endl;
-//             break;
-//           }
-//         }
-//         //binning in Detajj cf
-//         for(unsigned iVar1=0;iVar1<(trigDetajjBins_Zmm_cf_.size()-1);iVar1++){
-//           std::ostringstream flabel_cf;
-//           flabel_cf << "fitfunc_recoil_cf_vs_detajj_"
-//                     << std::setprecision(1) << std::fixed << trigDetajjBins_Zmm_cf_[iVar1]
-//                     << "_"
-//                     << trigDetajjBins_Zmm_cf_[iVar1+1];
-// 
-//           std::string str1 = flabel_cf.str();
-//           std::string str2 = tmp->GetName();
-//           if (str1==str2){
-//             ftmp2[1][iVar1] = tmp;
-//             std::cout << " -- Zmm trigger Function label " << flabel_cf.str() << " bin " << iVar1 << std::endl;
-//             break;
-//           }
-//         }
-        std::ostringstream flabel;
-        flabel << "sigmoidFit";
-
-        std::string str1 = flabel.str();
-        std::string str2 = tmp->GetName();
-        if (str1==str2){
-          ftmp2 = tmp;
-          std::cout << " -- Zmm trigger Function label " << flabel.str() << std::endl;
-          break;
-        }
+	for(unsigned iVar1=0;iVar1<(trigMjjBins_.size()-1);iVar1++){
+	  std::ostringstream flabel;
+	  flabel << "fitfunc_vbf_mjj_"
+		 << trigMjjBins_[iVar1]
+		 << ".000000_"
+		 << trigMjjBins_[iVar1+1]
+		 << ".000000";
+	  
+	  std::string str1 = flabel.str();
+	  std::string str2 = tmp->GetName();
+	  if (str1==str2){
+	    ftmp2[iVar1] = tmp;
+	    std::cout << " -- Zmm trigger Function label " << flabel.str()  << " bin " << iVar1 << std::endl;
+	    break;
+	  }
+	}
       }
-//       //binning in Mjj
-//       for(unsigned iVar1=0;iVar1<(trigMjjBins_.size()-1);iVar1++){
-//         func_mettrigSF_.push_back(ftmp[iVar1]);
-//         func_mettrigZmmSF_.push_back(ftmp2[iVar1]);
-//       }
-//       //binning in Detajj cc
-//       for( unsigned iVar1=0; iVar1<(trigDetajjBins_cc_.size()-1); iVar1++ ){
-//         func_mettrigSF_[0].push_back(ftmp[0][iVar1]);
-//       }
-//       for( unsigned iVar1=0; iVar1<(trigDetajjBins_Zmm_cc_.size()-1); iVar1++ ){
-//         func_mettrigZmmSF_[0].push_back(ftmp2[0][iVar1]);
-//       }
-//       //binning in Detajj cf
-//       for( unsigned iVar1=0; iVar1<(trigDetajjBins_cf_.size()-1); iVar1++ ){
-//         func_mettrigSF_[1].push_back(ftmp[1][iVar1]);
-//       }
-//       for( unsigned iVar1=0; iVar1<(trigDetajjBins_Zmm_cf_.size()-1); iVar1++ ){
-//         func_mettrigZmmSF_[1].push_back(ftmp2[1][iVar1]);
-//       }
-      func_mettrigSF_.push_back(ftmp);
-      func_mettrigZmmSF_.push_back(ftmp2);
+      for(unsigned iVar1=0;iVar1<(trigMjjBins_.size()-1);iVar1++){
+	func_mettrigSF_.push_back(ftmp[iVar1]);
+	func_mettrigZmmSF_.push_back(ftmp2[iVar1]);
+      }
       std::cout<<"-- Done!"<<std::endl;
     }
     if (save_weights_){
@@ -455,7 +295,7 @@ namespace ic {//namespace
       fillVector("input/scale_factors/Summer16_80X_mu_loose_iso_data_eff.txt",6,8,muVeto_isoDataEff_,dummypt,dummyeta,true);
       fillVector("input/scale_factors/Summer16_80X_mu_loose_id_mc_eff.txt",6,8,muVeto_idMCEff_,dummypt,dummyeta,true);
       fillVector("input/scale_factors/Summer16_80X_mu_loose_iso_mc_eff.txt",6,8,muVeto_isoMCEff_,dummypt,dummyeta,true);
-
+      
       /*for (unsigned iBin(0); iBin<muTight_idSF_[0].size();++iBin){
         muTight_idisoSF_[0].push_back(muTight_idSF_[0][iBin]*muTight_isoSF_[0][iBin]);
         muTight_idisoSF_[1].push_back(muTight_idSF_[1][iBin]*muTight_isoSF_[1][iBin]);
@@ -511,243 +351,78 @@ namespace ic {//namespace
 //       event->Add("inclusive_btag_weight", inclusive_btag_weight);
 //     }
 
-//     //get METnoMuons:
-//     Met const* metHLT = event->GetPtr<Met>(input_met_);
-//     Met const* metL1 = event->GetPtr<Met>("metNoMuons");
-//     double l1met = metL1->pt();
-//     double hltmet = metHLT->pt();
+      //get METnoMuons:
+      Met const* metHLT = event->GetPtr<Met>(input_met_);
+      //Met const* metL1 = event->GetPtr<Met>("metNoMuons");
 
-    std::vector<PFJet*> & jets = event->GetPtrVec<PFJet>("pfJetsPFlow");
-    std::sort(jets.begin(), jets.end(), bind(&Candidate::pt, _1) > bind(&Candidate::pt, _2));
-    ROOT::Math::PtEtaPhiEVector mhtVec30_eta3d0(0,0,0,0);
-    double mht30_eta3d0 = -1;
-
-    for (unsigned i = 0; i < jets.size(); ++i) {//Loop on jets
-      ROOT::Math::PtEtaPhiEVector jetvec = jets[i]->vector();
-      if(jets[i]->pt()>30 && fabs(jets[i]->eta())<3.0) mhtVec30_eta3d0 += jetvec;
-    }//endof Loop on jets
-    mht30_eta3d0 = mhtVec30_eta3d0.Et();
-//     std::cout << " ***---*** mht30_eta3d0 : " << mht30_eta3d0 << std::endl;
-//     if(mht30_eta3d0<=0){
-//       std::cout << " ---*** Error: mht30_eta3d0 has not been filled: " << mht30_eta3d0 << std::endl;
-//       return 1;
-//     }
+      //double l1met = metL1->pt();
+    double hltmet = metHLT->pt();
 
     if (do_trg_weights_){//do_trg_weights_
-//       double mjj=0.;
-//       double detajj=-1;
-//       double jet1pt=0.;
-//       double jet2pt=0.;
-//       bool hasJetsInHF = false;
+      double mjj=0.;
+      //double jet1pt=0.;
+      //double jet2pt=0.;
+      //bool hasJetsInHF = false;
 
-//       //get 2 leading jets
-//       std::vector<CompositeCandidate *> const& dijet_vec = event->GetPtrVec<CompositeCandidate>("jjLeadingCandidates");
-//       if (dijet_vec.size() > 0) {//if dijets
+      //get 2 leading jets
+      std::vector<CompositeCandidate *> const& dijet_vec = event->GetPtrVec<CompositeCandidate>("jjLeadingCandidates");
+      if (dijet_vec.size() > 0) {//if dijets
 
-//         CompositeCandidate const* dijet = dijet_vec.at(0);
-// 
-//         Candidate const* jet1 = dijet->GetCandidate("jet1");
-//         Candidate const* jet2 = dijet->GetCandidate("jet2");
-// 
-//         mjj = dijet->M();
-//         detajj = fabs(jet1->eta() - jet2->eta());
-//         jet1pt = jet1->pt();
-//         jet2pt = jet2->pt();
-//         hasJetsInHF = fabs(jet1->eta())>=3 || fabs(jet2->eta())>=3 ;
-//         std::cout<<"mjj "<<mjj<<" j2pt "<<jet2pt<<" metl1 "<<l1met<<" hltmet "<<hltmet<<std::endl;
-//         if(l1met!=hltmet){
-//           std::cout<<"Error: you must use metnomuons for both l1met and hltmet"<<std::endl;
-//           return 1;
-//         }
+        CompositeCandidate const* dijet = dijet_vec.at(0);
 
-//         //FIND WHICH BIN YOU'RE IN
-//         int var1bin=-10;
-//         if(mjj<trigMjjBins_[0])var1bin=-1;
-//         else{
-//           for(unsigned iBin=0;iBin<(trigMjjBins_.size()-1);iBin++){
-//             if(mjj<trigMjjBins_[iBin+1]){
-//               var1bin=iBin;
-//               break;
-//             }
-//           }
-//           if(var1bin==-10)var1bin=trigMjjBins_.size()-2;
-//         }
-// 
-// 
-//         double trgweight = 0;
-//         double trgweightzmm = 0;
-//         double xmin,xmax;
-//         if(var1bin!=-1){
-// 
-//           func_mettrigSF_[var1bin]->GetRange(xmin,xmax);
-// 
-//           if(hltmet<=xmax){
-//             if(hltmet>=xmin){
-//               trgweight = func_mettrigSF_[var1bin]->Eval(hltmet);
-//               trgweightzmm = func_mettrigZmmSF_[var1bin]->Eval(hltmet);
-//             }
-//           }
-//           else {
-//             trgweight = func_mettrigSF_[var1bin]->Eval(xmax);
-//             trgweightzmm = func_mettrigZmmSF_[var1bin]->Eval(xmax);
-//           }
-//         }
-//         std::cout << " -- Mjj " << mjj << " bin " << var1bin << " " << trigMjjBins_[var1bin] << "-" << trigMjjBins_[var1bin+1]
-//             << " weights " << func_mettrigSF_[var1bin]->Eval(260.) << " " << func_mettrigZmmSF_[var1bin]->Eval(260.)
-//             << std::endl;
+        //Candidate const* jet1 = dijet->GetCandidate("jet1");
+        //Candidate const* jet2 = dijet->GetCandidate("jet2");
 
-//         double trgweight = 0;
-//         double trgweightzmm = 0;
+        mjj = dijet->M();
+        //jet1pt = jet1->pt();
+        //jet2pt = jet2->pt();
+        //hasJetsInHF = fabs(jet1->eta())>=3 || fabs(jet2->eta())>=3 ;
+        //std::cout<<"mjj "<<mjj<<" j2pt "<<jet2pt<<" metl1 "<<l1met<<" hltmet "<<hltmet<<std::endl;
+	//if(l1met!=hltmet){
+	//std::cout<<"Error: you must use metnomuons for both l1met and hltmet"<<std::endl;
+	//return 1;
+	//}
 
-//         if (fabs(jet1->eta())<3 && fabs(jet2->eta())<3) {
-//           //FIND WHICH BIN YOU'RE IN
-//           int var1bin=-10;
-//           if(detajj<trigDetajjBins_cc_[0]){
-//             var1bin=-1;
-//           }
-//           else{
-//             for(unsigned iBin=0;iBin<(trigDetajjBins_cc_.size()-1);iBin++){
-//               if(detajj<trigDetajjBins_cc_[iBin+1]){
-//                 var1bin=iBin;
-//                 break;
-//               }
-//             }
-//             if(var1bin==-10)var1bin=trigDetajjBins_cc_.size()-2;
-//           }
-// 
-//           int var1binzmm=-10;
-//           if(detajj<trigDetajjBins_Zmm_cc_[0]){
-//             var1binzmm=-1;
-//           }
-//           else{
-//             for(unsigned iBin=0;iBin<(trigDetajjBins_Zmm_cc_.size()-1);iBin++){
-//               if(detajj<trigDetajjBins_Zmm_cc_[iBin+1]){
-//                 var1binzmm=iBin;
-//                 break;
-//               }
-//             }
-//             if(var1binzmm==-10)var1binzmm=trigDetajjBins_Zmm_cc_.size()-2;
-//           }
-// 
-//           double xmin,xmax;
-//           if(var1bin!=-1){
-// 
-//             func_mettrigSF_[0].at(var1bin)->GetRange(xmin,xmax);
-// 
-//             if(hltmet<=xmax){
-//               if(hltmet>=xmin){
-//                   trgweight = func_mettrigSF_[0].at(var1bin)->Eval(hltmet);
-//               }
-//             }
-//             else {
-//                 trgweight = func_mettrigSF_[0].at(var1bin)->Eval(xmax);
-//             }
-//           }
-// 
-//           double xminzmm,xmaxzmm;
-//           if(var1binzmm!=-1){
-// 
-//             func_mettrigZmmSF_[0][var1binzmm]->GetRange(xminzmm,xmaxzmm);
-// 
-//             if(hltmet<=xmaxzmm){
-//               if(hltmet>=xminzmm){
-//                 trgweightzmm = func_mettrigZmmSF_[0][var1binzmm]->Eval(hltmet);
-//               }
-//             }
-//             else {
-//               trgweightzmm = func_mettrigZmmSF_[0][var1binzmm]->Eval(xmaxzmm);
-//             }
-//           }
-//         } else if ((fabs(jet1->eta())<3 && fabs(jet2->eta())>=3)||(fabs(jet1->eta())>=3 && fabs(jet2->eta())<3)) {
-//           //FIND WHICH BIN YOU'RE IN
-//           int var1bin=-10;
-//           if(detajj<trigDetajjBins_cf_[0]){
-//             var1bin=-1;
-//           }
-//           else{
-//             for(unsigned iBin=0;iBin<(trigDetajjBins_cf_.size()-1);iBin++){
-//               if(detajj<trigDetajjBins_cf_[iBin+1]){
-//                 var1bin=iBin;
-//                 break;
-//               }
-//             }
-//             if(var1bin==-10)var1bin=trigDetajjBins_cf_.size()-2;
-//           }
-// 
-//           int var1binzmm=-10;
-//           if(detajj<trigDetajjBins_Zmm_cf_[0]) {
-//             var1binzmm=-1;
-//           }
-//           else{
-//             for(unsigned iBin=0;iBin<(trigDetajjBins_Zmm_cf_.size()-1);iBin++){
-//               if(detajj<trigDetajjBins_Zmm_cf_[iBin+1]){
-//                 var1binzmm=iBin;
-//                 break;
-//               }
-//             }
-//             if(var1binzmm==-10)var1binzmm=trigDetajjBins_Zmm_cf_.size()-2;
-//           }
-// 
-//           double xmin,xmax;
-//           if(var1bin!=-1){
-// 
-//             func_mettrigSF_[1][var1bin]->GetRange(xmin,xmax);
-// 
-//             if(hltmet<=xmax){
-//               if(hltmet>=xmin){
-//                 trgweight = func_mettrigSF_[1][var1bin]->Eval(hltmet);
-//               }
-//             }
-//             else {
-//               trgweight = func_mettrigSF_[1][var1bin]->Eval(xmax);
-//             }
-//           }
-// 
-//           double xminzmm,xmaxzmm;
-//           if(var1binzmm!=-1){
-// 
-//             func_mettrigZmmSF_[1][var1binzmm]->GetRange(xminzmm,xmaxzmm);
-// 
-//             if(hltmet<=xmaxzmm){
-//               if(hltmet>=xminzmm){
-//                 trgweightzmm = func_mettrigZmmSF_[1][var1binzmm]->Eval(hltmet);
-//               }
-//             }
-//             else {
-//               trgweightzmm = func_mettrigZmmSF_[1][var1binzmm]->Eval(xmaxzmm);
-//             }
-//           }
-//         }
+	//FIND WHICH BIN YOU'RE IN
+	int var1bin=-10;
+	if(mjj<trigMjjBins_[0])var1bin=-1;
+	else{
+	  for(unsigned iBin=0;iBin<(trigMjjBins_.size()-1);iBin++){
+	    if(mjj<trigMjjBins_[iBin+1]){
+	      var1bin=iBin;
+	      break;
+	    }
+	  }
+	  if(var1bin==-10)var1bin=trigMjjBins_.size()-2;
+	}
 
-      if (mht30_eta3d0>0.) {
-        double trgweight = 0;
-        double trgweightzmm = 0;
+	
+	double trgweight = 0;
+	double trgweightzmm = 0;
+	double xmin,xmax;
+	if(var1bin!=-1){
 
-        double xmin,xmax;
-        func_mettrigSF_[0]->GetRange(xmin,xmax);
-        if(mht30_eta3d0<=xmax){
-          if(mht30_eta3d0>=xmin){
-            trgweight = func_mettrigSF_[0]->Eval(mht30_eta3d0);
-          }
-        } else {
-          trgweight = func_mettrigSF_[0]->Eval(xmax);
-        }
+	  func_mettrigSF_[var1bin]->GetRange(xmin,xmax);
+	  
+	  if(hltmet<=xmax){
+	    if(hltmet>=xmin){
+	      trgweight = func_mettrigSF_[var1bin]->Eval(hltmet);
+	      trgweightzmm = func_mettrigZmmSF_[var1bin]->Eval(hltmet);
+	    }
+	  }
+	  else {
+	    trgweight = func_mettrigSF_[var1bin]->Eval(xmax);
+	    trgweightzmm = func_mettrigZmmSF_[var1bin]->Eval(xmax);
+	  }
+	}
+	//std::cout << " -- Mjj " << mjj << " bin " << var1bin << " " << trigMjjBins_[var1bin] << "-" << trigMjjBins_[var1bin+1]
+	//	  << " weights " << func_mettrigSF_[var1bin]->Eval(260.) << " " << func_mettrigZmmSF_[var1bin]->Eval(260.)
+	//	  << std::endl;
+	//SET TRIGGER WEIGHT
+	eventInfo->set_weight("!mettrigSF",trgweight);
+	eventInfo->set_weight("!mettrigZmmSF",trgweightzmm);
 
-        double xminzmm,xmaxzmm;
-        func_mettrigZmmSF_[0]->GetRange(xminzmm,xmaxzmm);
-        if(mht30_eta3d0<=xmaxzmm){
-          if(mht30_eta3d0>=xminzmm){
-            trgweightzmm = func_mettrigZmmSF_[0]->Eval(mht30_eta3d0);
-          }
-        } else {
-          trgweightzmm = func_mettrigZmmSF_[0]->Eval(xmaxzmm);
-        }
-        //SET TRIGGER WEIGHT
-        eventInfo->set_weight("!mettrigSF",trgweight);
-        eventInfo->set_weight("!mettrigZmmSF",trgweightzmm);
-      }
-
-//       }//endof if dijets //dijet pair
+      }//endof if dijets //dijet pair
     }//do trig weights
     //else {
     //std::cout << " skipping trigger stuff" << std::endl;
@@ -1026,8 +701,9 @@ namespace ic {//namespace
 
     //std::cout << " IDISO veto done." << std::endl;
 
+    
     }//endof Save weights
-
+    
 
     bool zeroParton = false;
 
@@ -1070,7 +746,7 @@ namespace ic {//namespace
       }
     }
 
-    if (do_w_reweighting_ || do_dy_reweighting_ || do_z_reweighting_) { // For v_nlo_Reweighting (kfactors.root file in input/scalefactors from MIT group)
+    if (do_w_reweighting_ || do_dy_reweighting_) { // For v_nlo_Reweighting (kfactors.root file in input/scalefactors from MIT group)
       double v_nlo_Reweight = 1.0;
       double v_pt = -50.0;
       double v_pt_oldBinning = -50.0;
@@ -1142,20 +818,13 @@ namespace ic {//namespace
       }
 
       if (do_w_reweighting_) {
-        int idx0 = hist_kfactors_EWKcorr_W->FindBin(v_pt_oldBinning);
-        int idx1 = hist_kfactors_WJets_012j_NLO->FindBin(v_pt_oldBinning);
-        int idx2 = hist_kfactors_vbf_cnc_W->FindBin(v_pt);
-        v_nlo_Reweight = (hist_kfactors_EWKcorr_W->GetBinContent(idx0)/hist_kfactors_WJets_012j_NLO->GetBinContent(idx1))*hist_kfactors_vbf_cnc_W->GetBinContent(idx2);
+	int idx1 = hist_kfactors_qcdewk_W->FindBin(v_pt_oldBinning);
+	int idx2 = hist_kfactors_vbf_cnc_W->FindBin(v_pt);
+	v_nlo_Reweight = hist_kfactors_qcdewk_W->GetBinContent(idx1)*hist_kfactors_vbf_cnc_W->GetBinContent(idx2);
       } else if (do_dy_reweighting_) {
-        int idx0 = hist_kfactors_EWKcorr_Z->FindBin(v_pt_oldBinning);
-        int idx1 = hist_kfactors_ZJets_012j_NLO->FindBin(v_pt_oldBinning);
-        int idx2 = hist_kfactors_vbf_cnc_DY->FindBin(v_pt);
-        v_nlo_Reweight = (hist_kfactors_EWKcorr_Z->GetBinContent(idx0)/hist_kfactors_ZJets_012j_NLO->GetBinContent(idx1))*hist_kfactors_vbf_cnc_DY->GetBinContent(idx2);
-      } else if (do_z_reweighting_) {
-        int idx0 = hist_kfactors_EWKcorr_Z->FindBin(v_pt_oldBinning);
-        int idx1 = hist_kfactors_ZJets_012j_NLO->FindBin(v_pt_oldBinning);
-        int idx2 = hist_kfactors_vbf_cnc_Z->FindBin(v_pt);
-        v_nlo_Reweight = (hist_kfactors_EWKcorr_Z->GetBinContent(idx0)/hist_kfactors_ZJets_012j_NLO->GetBinContent(idx1))*hist_kfactors_vbf_cnc_Z->GetBinContent(idx2);
+	int idx1 = hist_kfactors_qcdewk_Z->FindBin(v_pt_oldBinning);
+	int idx2 = hist_kfactors_vbf_cnc_Z->FindBin(v_pt);
+	v_nlo_Reweight = hist_kfactors_qcdewk_Z->GetBinContent(idx1)*hist_kfactors_vbf_cnc_Z->GetBinContent(idx2);
       }
 
       eventInfo->set_weight("!v_nlo_Reweighting", v_nlo_Reweight);
@@ -1171,7 +840,7 @@ namespace ic {//namespace
 
       //dijet mass from genjets from VBF quarks
       double vbf_digenjet_m = 0;
-//       double vbf_diquark_m = 0;
+      double vbf_diquark_m = 0;
       double mjj      = -50.0;
 
       std::vector<GenParticle*> const& parts = event->GetPtrVec<GenParticle>("genParticles");
@@ -1260,7 +929,7 @@ namespace ic {//namespace
 
       if (Quarks.size()==2){
         countQuarks++;
-//         vbf_diquark_m = (Quarks[0]->vector()+Quarks[1]->vector()).M();
+        vbf_diquark_m = (Quarks[0]->vector()+Quarks[1]->vector()).M();
         //get genlevel dijet mass
         unsigned genjet1 = 1000; 
         unsigned genjet2 = 1000; 
@@ -1283,9 +952,9 @@ namespace ic {//namespace
           vbf_digenjet_m = (genvec[genjet1]->vector()+genvec[genjet2]->vector()).M();
           countGenjets++;
         } else {
-//           std::cout << " Warning, event genjet pair for VBF jets not found! Taking leading pair." << std::endl;
+          std::cout << " Warning, event genjet pair for VBF jets not found! Taking leading pair." << std::endl;
           if (genvec.size()>1) vbf_digenjet_m = (genvec[0]->vector()+genvec[1]->vector()).M();
-//           std::cout << " Check mass: " << vbf_diquark_m << " " << vbf_digenjet_m << std::endl;
+          std::cout << " Check mass: " << vbf_diquark_m << " " << vbf_digenjet_m << std::endl;
         }
       } else {
         std::cout << " Problem event found " << Quarks.size() << " quarks" << std::endl;
@@ -1293,7 +962,7 @@ namespace ic {//namespace
       mjj = vbf_digenjet_m;
 
       if (v_pt<0 || boson_pt<0 || mjj<0) {
-        std::cout << " Warning: SOMETHING IS GOING WRONG! " << std::endl;
+        std::cout << " SOMETHING IS GOING WRONG! " << std::endl;
         std::cout << " -- Boson pT: " << boson_pt << std::endl;
         std::cout << " -- V pT: " << v_pt << std::endl;
         std::cout << " -- Mjj: " << mjj << std::endl;
@@ -1315,89 +984,13 @@ namespace ic {//namespace
       }
 
       if (do_ewk_w_reweighting_) {
-//         ewk_v_nlo_Reweight = hist_kFactors_ewk_W->GetBinContent( hist_kFactors_ewk_W->FindBin(v_pt), hist_kFactors_ewk_W->FindBin(mjj) ); WRONG!
-        ewk_v_nlo_Reweight = hist_kFactors_ewk_W->GetBinContent( hist_kFactors_ewk_W->FindBin(v_pt,mjj) );
+        ewk_v_nlo_Reweight = hist_kFactors_ewk_W->GetBinContent( hist_kFactors_ewk_W->FindBin(v_pt), hist_kFactors_ewk_W->FindBin(mjj) );
       } else if (do_ewk_dy_reweighting_) {
-//         ewk_v_nlo_Reweight = hist_kFactors_ewk_Z->GetBinContent( hist_kFactors_ewk_Z->FindBin(v_pt), hist_kFactors_ewk_Z->FindBin(mjj) ); WRONG!
-        ewk_v_nlo_Reweight = hist_kFactors_ewk_Z->GetBinContent( hist_kFactors_ewk_Z->FindBin(v_pt,mjj) );
+        ewk_v_nlo_Reweight = hist_kFactors_ewk_Z->GetBinContent( hist_kFactors_ewk_Z->FindBin(v_pt), hist_kFactors_ewk_Z->FindBin(mjj) );
       }
 
       eventInfo->set_weight("!ewk_v_nlo_Reweighting", ewk_v_nlo_Reweight);
 
-    }
-
-    if (do_prefiring_reweighting_) { // For prefiring_Reweighting (l1.root file in input/trig_factors from MIT group)
-      double prefiring_Reweight            = 1.0;
-      double prefiring_SingleMuon_Reweight = 1.0;
-      double prefiring_JetHT_Reweight      = 1.0;
-      double dijet_jet1_eta = -50.;
-      double dijet_jet2_eta = -50.;
-      double dijet_jet1_pt  = -50.;
-      double dijet_jet2_pt  = -50.;
-      double jet1_SingleMuon_weight = 0.;
-      double jet1_JetHT_weight      = 0.;
-      double jet1_weight            = 0.;
-      double jet2_SingleMuon_weight = 0.;
-      double jet2_JetHT_weight      = 0.;
-      double jet2_weight            = 0.;
-
-      std::vector<CompositeCandidate *> const& dijet_vec = event->GetPtrVec<CompositeCandidate>("jjLeadingCandidates");
-      if (dijet_vec.size() > 0) {//if dijets
-        CompositeCandidate const* dijet = dijet_vec.at(0);
-        Candidate const* jet1 = dijet->GetCandidate("jet1");
-        Candidate const* jet2 = dijet->GetCandidate("jet2");
-        dijet_jet1_eta = fabs(jet1->eta());
-        dijet_jet2_eta = fabs(jet2->eta());
-        dijet_jet1_pt  = jet1->pt();
-        dijet_jet2_pt  = jet2->pt();
-      }
-
-      if ((dijet_jet1_eta>2.25 && dijet_jet1_eta<3. && dijet_jet1_pt>40.)||
-          (dijet_jet2_eta>2.25 && dijet_jet2_eta<3. && dijet_jet2_pt>40.)) {
-        if ( dijet_jet1_pt<0. || dijet_jet2_pt<0. ) {
-          std::cout << " Warning: SOMETHING IS GOING WRONG! " << std::endl;
-          std::cout << " -- Jet1 pT: " << dijet_jet1_pt << std::endl;
-          std::cout << " -- Jet2 pT: " << dijet_jet2_pt << std::endl;
-        }
-        if (dijet_jet1_pt>600) dijet_jet1_pt = 599.0;
-        if (dijet_jet2_pt>600) dijet_jet2_pt = 599.0;
-
-        if (dijet_jet1_eta>2.25 && dijet_jet1_eta<3. && dijet_jet1_pt>40.) {
-          if (dijet_jet1_pt<=300) {
-            jet1_SingleMuon_weight = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
-            jet1_JetHT_weight      = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
-            jet1_weight            = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
-          } else {
-            jet1_SingleMuon_weight = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
-            if (jet1_SingleMuon_weight<0.001) {
-              jet1_SingleMuon_weight = 1.;
-            }
-            jet1_JetHT_weight      = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
-            jet1_weight            = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet1_pt,dijet_jet1_eta) );
-          }
-        }
-
-        if (dijet_jet2_eta>2.25 && dijet_jet2_eta<3. && dijet_jet2_pt>40.) {
-          if (dijet_jet2_pt<=300) {
-            jet2_SingleMuon_weight = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
-            jet2_JetHT_weight      = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
-            jet2_weight            = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
-          } else {
-            jet2_SingleMuon_weight = hist_prefiring_etaPt_SingleMuon->GetBinContent( hist_prefiring_etaPt_SingleMuon->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
-            if (jet2_SingleMuon_weight<0.001) {
-              jet2_SingleMuon_weight = 1.;
-            }
-            jet2_JetHT_weight      = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
-            jet2_weight            = hist_prefiring_etaPt_JetHT->GetBinContent( hist_prefiring_etaPt_JetHT->FindBin(dijet_jet2_pt,dijet_jet2_eta) );
-          }
-        }
-        prefiring_SingleMuon_Reweight = (1.-jet1_SingleMuon_weight)*(1.-jet2_SingleMuon_weight);
-        prefiring_JetHT_Reweight      = (1.-jet1_JetHT_weight)*(1.-jet2_JetHT_weight);
-        prefiring_Reweight            = (1.-jet1_weight)*(1.-jet2_weight);
-      }
-      eventInfo->set_weight("!prefiring_SingleMuon_Reweighting", prefiring_SingleMuon_Reweight);
-      eventInfo->set_weight("!prefiring_JetHT_Reweighting", prefiring_JetHT_Reweight);
-      eventInfo->set_weight("!prefiring_Reweighting", prefiring_Reweight); 
     }
 
 

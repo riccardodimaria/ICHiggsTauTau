@@ -158,6 +158,7 @@ namespace ic{
     do_ratio_fitline_=false;
     add_underflows_=false;
     add_overflows_=false;
+    add_preliminary_=true;
     outsuffix_="";
     toterror_ = 0;
   };
@@ -581,8 +582,12 @@ namespace ic{
       leg->Draw("SAME");
 
 
-      if(do_debug_)std::cout<<"  Drawing CMS Logo"<<std::endl;      
-      DrawCMSLogoTest(upper,"CMS","Preliminary",10);
+      if(do_debug_)std::cout<<"  Drawing CMS Logo"<<std::endl;
+      if(add_preliminary_){
+        DrawCMSLogoTest(upper,"CMS","Preliminary",10);
+      } else{
+        DrawCMSLogoTest(upper,"CMS","",10);
+      }
       upper->cd();
 
       //DRAW RATIO PLOT
@@ -782,7 +787,7 @@ namespace ic{
       //c1->Update();
       std::ostringstream lsave;
 //       std::ostringstream lsavepng;
-      std::ostringstream lsavec;
+//       std::ostringstream lsavec;
       std::string tmpstr = file->GetName();
       tmpstr.erase(std::string(file->GetName()).find(".root"),5);
       tmpstr=tmpstr+outsuffix_;
@@ -818,11 +823,11 @@ namespace ic{
 //       lsavepng << ".png" ;
 //       c1->Print((lsavepng.str()).c_str());
 
-      lsavec.str("");
-      lsavec << tmpstr << "_" << c1->GetName();
-      if (shapes_[iShape].dology()) lsavec << "_logy";
-      lsavec << ".C" ;
-      c1->Print((lsavec.str()).c_str());
+//       lsavec.str("");
+//       lsavec << tmpstr << "_" << c1->GetName();
+//       if (shapes_[iShape].dology()) lsavec << "_logy";
+//       lsavec << ".C" ;
+//       c1->Print((lsavec.str()).c_str());
 
       //WRITE TO FILE
       writedir->cd();

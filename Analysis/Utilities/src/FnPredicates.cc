@@ -407,23 +407,23 @@ namespace ic {
       //reference: page 16 of https://indico.cern.ch/event/559594/contributions/2257924/attachments/1317046/1973307/PUID_JMAR_2016_07_26_v1.pdf
       if (pt <= 30.) {
 	if (abs_eta < 2.5) {
-	  return (pu_id_mva_value > (doTight?0.69:0.18));
+    return (pu_id_mva_value > (doTight?0.69:0.18)); //-0.97)); //Loose ID. The Medium ID is: 0.18));
 	} else if (abs_eta < 2.75) {
-	  return (pu_id_mva_value > (doTight?-0.35:-0.55));
+    return (pu_id_mva_value > (doTight?-0.35:-0.55)); //-0.68)); //Loose ID. The Medium ID is: -0.55));
 	} else if (abs_eta < 3.0) {
-	  return (pu_id_mva_value > (doTight?-0.26:-0.42));
+    return (pu_id_mva_value > (doTight?-0.26:-0.42)); //-0.53)); //Loose ID. The Medium ID is: -0.42));
 	} else if (abs_eta < 5.0) {
-	  return (pu_id_mva_value > (doTight?-0.21:-0.36));
+    return (pu_id_mva_value > (doTight?-0.21:-0.36)); //-0.47)); //Loose ID. The Medium ID is: -0.36));
 	} else return true;
       } else if (pt > 30.) {
 	if (abs_eta < 2.5) {
-	  return (pu_id_mva_value > (doTight?0.86:0.61));
+    return (pu_id_mva_value > (doTight?0.86:0.61)); //-0.89)); //Loose ID. The Medium ID is: 0.61));
 	} else if (abs_eta < 2.75) {
-	  return (pu_id_mva_value > (doTight?-0.10:-0.35));
+    return (pu_id_mva_value > (doTight?-0.10:-0.35)); //-0.52)); //Loose ID. The Medium ID is: -0.35));
 	} else if (abs_eta < 3.0) {
-	  return (pu_id_mva_value > (doTight?-0.05:-0.23));
+    return (pu_id_mva_value > (doTight?-0.05:-0.23)); //-0.38)); //Loose ID. The Medium ID is: -0.23));
 	} else if (abs_eta < 5.0) {
-	  return (pu_id_mva_value > (doTight?-0.01:-0.17));
+    return (pu_id_mva_value > (doTight?-0.01:-0.17)); //-0.30)); //Loose ID. The Medium ID is: -0.17));
 	} else return true;
       } else return true;
     } else {

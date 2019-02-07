@@ -835,6 +835,8 @@ int main(int argc, char* argv[]){
     qcdmcstat.set_name("CMS_VBFHinv_WMCR_qcd_norm");
   } else if (channel=="nunu"){
     qcdmcstat.set_name("CMS_VBFHinv_SR_qcd_norm");
+    qcdmcstat.set_type("constlnN");
+    qcdmcstat.set_constvalue(1.42);
   }
 
 
@@ -843,7 +845,7 @@ int main(int argc, char* argv[]){
     .set_latexname("QCD control region extrapolation")
     .set_procsaffected({"qcd"})
     .set_type("constlnN")
-    .set_constvalue(2.0);
+    .set_constvalue(1.5);
 
 
 
@@ -1871,7 +1873,7 @@ datacard<<std::endl;
       datacard<<"W_tau_xsection rateParam ch1 wtauqcd 1"<<std::endl;
       datacard<<"W_tau_xsection rateParam ch1 wtauewk 1"<<std::endl;
     }
-    datacard<<"QCD_xsection rateParam ch1 qcd 1"<<std::endl;
+//     datacard<<"QCD_xsection rateParam ch1 qcd 1"<<std::endl;
     if (channel=="topl" || channel=="topb") datacard<<"Top_xsection rateParam ch1 top 1"<<std::endl;
   }
   else if (do_1param){
@@ -1882,7 +1884,7 @@ datacard<<std::endl;
       datacard<<"WZ_xsection rateParam ch1 wmuewk 1"<<std::endl;
       datacard<<"WZ_xsection rateParam ch1 welewk 1"<<std::endl;
       datacard<<"WZ_xsection rateParam ch1 wtauewk 1"<<std::endl;
-      datacard<<"QCD_xsection rateParam ch1 qcd 1"<<std::endl;
+//       datacard<<"QCD_xsection rateParam ch1 qcd 1"<<std::endl;
 
     if (channel=="mumu"){
       datacard<<"WZ_xsection rateParam ch1 zmumuqcd 1"<<std::endl;
